@@ -8,13 +8,13 @@ export function CoachAvatar({ className }: { className?: string }) {
     const portrait = new Image();
     portrait.onload = () => setAvailable(true);
     portrait.onerror = () => setAvailable(false);
-    portrait.src = "/coach-champ.webp";
+    portrait.src = "/coach-hero.png";
     return () => { portrait.onload = null; portrait.onerror = null; };
   }, []);
   return (
     <div className={cn("coach-portrait relative shrink-0 overflow-hidden rounded-full", className)}>
-      <GoblinAvatar className="size-full" />
-      {available && <img src="/coach-champ.webp" alt={COACH_NAME} onError={() => setAvailable(false)} className="absolute inset-0 size-full rounded-full object-cover object-[50%_22%]" />}
+      {!available && <GoblinAvatar className="size-full" />}
+      {available && <img src="/coach-hero.png" alt={COACH_NAME} onError={() => setAvailable(false)} className="absolute inset-0 size-full rounded-full object-cover object-[50%_22%]" />}
     </div>
   );
 }
@@ -45,8 +45,8 @@ function GoblinAvatar({ className }: { className?: string }) {
 export function CoachBubble({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("flex items-start gap-3", className)}>
-      <CoachAvatar className="size-16 animate-float" />
-      <div className="speech flex-1 text-base leading-snug">{children}</div>
+      <CoachAvatar className="size-10" />
+      <div className="speech min-w-0 flex-1 text-sm leading-relaxed">{children}</div>
     </div>
   );
 }

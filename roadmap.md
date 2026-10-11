@@ -1,3 +1,9 @@
+# Premium UI redesign
+- [x] Apply shared modern tokens, typography and navigation on every route.
+- [x] Redesign overview, coach portraits, ladder, free play and progress.
+- [x] Refine puzzle, game, result and review presentation without changing logic.
+- [x] Verify all routes, controls and existing tests without altering saved progress; do not publish.
+
 # Goblin visual update
 - [x] Rename coach and replace avatar with goblin knight.
 - [x] Build shared procedural stone knight, textures and mossy scene elements.

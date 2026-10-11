@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight, RotateCcw, Flag, Search, Lightbulb, Swords, House, Award, TrendingUp, Puzzle, LockKeyholeOpen } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Chess } from "chess.js";
 import { Board } from "./Board";
@@ -43,22 +45,22 @@ export function CoachReview({ mistakes, orientation }: { mistakes: Mistake[]; or
     <div className="space-y-4">
       <div className="flex gap-2">
         {mistakes.map((mm, i) => (
-          <button key={mm.ply} onClick={() => { setIdx(i); setStep(0); }} className={cn("btn-game btn-ghost flex-1 !min-h-12 !text-base", i === idx && "ring-2 ring-secondary bg-secondary/20")}>
+          <Button variant="outline" key={mm.ply} onClick={() => { setIdx(i); setStep(0); }} className={cn("flex-1 min-h-11 ", i === idx && "border-primary bg-primary/10")}>
             Feil {i + 1}
-          </button>
+          </Button>
         ))}
       </div>
       <CoachBubble>
-        <span className="block text-sm font-black text-secondary">{COACH_NAME} · Trekk {m.moveNumber} · {SEVERITY[m.facts.severity]}</span>
+        <span className="block text-sm font-semibold text-muted-foreground">{COACH_NAME} · Trekk {m.moveNumber} · {SEVERITY[m.facts.severity]}</span>
         {m.text}
       </CoachBubble>
       <div className="mx-auto w-full max-w-[min(92vw,60vh)]">
         <Board fen={f.fen} orientation={orientation} canMove={false} lastMove={f.last} arrows={f.arrow ? [f.arrow] : []} />
       </div>
-      <p className="text-center font-display text-xl">{f.label}</p>
+      <p className="text-center text-base font-medium">{f.label}</p>
       <div className="grid grid-cols-2 gap-3">
-        <button className="btn-game btn-ghost" disabled={step === 0} onClick={() => setStep((s) => s - 1)}>◀ Tilbake</button>
-        <button className="btn-game btn-primary" disabled={step >= frames.length - 1} onClick={() => setStep((s) => s + 1)}>Neste ▶</button>
+        <Button variant="outline" className="" disabled={step === 0} onClick={() => setStep((s) => s - 1)}><ArrowLeft /> Tilbake</Button>
+        <Button className="" disabled={step >= frames.length - 1} onClick={() => setStep((s) => s + 1)}>Neste <ArrowRight /></Button>
       </div>
     </div>
   );

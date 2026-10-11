@@ -21,15 +21,15 @@ export const Route = createFileRoute("/fritt")({
 function Free() {
   const [elo, setElo] = useState(1600);
   return (
-    <main className="mx-auto max-w-xl pb-10 safe-bottom">
+    <main className="page-layout page-narrow">
       <AppHeader title="Fritt parti" />
-      <div className="px-4 space-y-5">
+      <div className="space-y-6">
         <CoachBubble>Velg hvor sterk datamaskinen skal være. Litt over ditt nivå er best for å bli bedre!</CoachBubble>
-        <div className="card-game p-5 space-y-5">
+        <div className="border-t border-border pt-6 space-y-6">
           <div>
-            <div className="flex justify-between font-extrabold">
+            <div className="flex justify-between text-sm font-medium">
               <span>Motstanderstyrke</span>
-              <span className="font-display text-2xl neon-text">{elo}</span>
+              <span className="text-xl font-semibold text-primary">{elo}</span>
             </div>
             <input type="range" min={1350} max={2400} step={50} value={elo} onChange={(e) => setElo(Number(e.target.value))} className="mt-3 w-full h-10 accent-primary" aria-label="Motstanderstyrke" />
           </div>

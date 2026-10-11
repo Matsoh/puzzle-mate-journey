@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { Sparkles, ChessKnight } from "lucide-react";
 import { ClientOnly } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { COACH_NAME } from "@/lib/coach-config";
@@ -85,9 +86,9 @@ export function ChampAvatarScene({ celebrate = false }: { celebrate?: boolean | 
         {particles.map((style, i) => <i key={i} className="chess-avatar__particle" style={style} />)}
       </div>
       <div className="chess-avatar__flash" aria-hidden="true" />
-      <div className="chess-avatar__badge"><span>♞</span>{COACH_NAME}</div>
+      <div className="chess-avatar__badge"><ChessKnight className="size-4 text-primary" />{COACH_NAME}</div>
       <Button variant="ghost" size="icon" className="chess-avatar__trigger" aria-label="Spill seiersanimasjon" title="Spill seiersanimasjon"
-        onClick={() => { unlockAudio(); play("win"); replay(); }}>✦</Button>
+        onClick={() => { unlockAudio(); play("win"); replay(); }}><Sparkles /></Button>
     </div>
   );
 }

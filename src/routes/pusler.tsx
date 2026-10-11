@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { ArrowRight, RotateCcw, Lightbulb, Swords, House, Puzzle as PuzzleIcon } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Chess } from "chess.js";
@@ -53,16 +55,16 @@ function Puzzles() {
   const allDone = ids.length > 0 && current >= ids.length;
 
   return (
-    <main className="mx-auto max-w-5xl pb-8 safe-bottom" onPointerDown={unlockAudio}>
+    <main className="page-layout" onPointerDown={unlockAudio}>
       <AppHeader title="Dagens pusler" />
-      <div className="px-4 space-y-4">
+      <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex gap-2">
             {ids.map((id, i) => (
               <span
                 key={id}
                 className={cn(
-                  "grid size-10 place-items-center rounded-full border-2 font-display text-lg",
+                  "grid size-9 place-items-center rounded-lg border text-sm font-medium",
                   results[id] === "solved" && "bg-success/30 border-success",
                   results[id] === "failed" && "bg-destructive/30 border-destructive",
                   !results[id] && i === current && "border-primary animate-pulse",
@@ -73,7 +75,7 @@ function Puzzles() {
               </span>
             ))}
           </div>
-          <span className="chip">🧩 {p.puzzleRating}</span>
+          <span className="chip"><PuzzleIcon className="size-3" /> {p.puzzleRating}</span>
         </div>
 
         {allDone ? (
@@ -188,7 +190,7 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
   const arrows = hintSquare && status !== "solved" ? [{ startSquare: solution[idx]!.slice(0, 2), endSquare: solution[idx]!.slice(2, 4), color: "var(--arrow-good)" }] : [];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="mx-auto w-full max-w-[min(94vw,66vh)]">
         <Board fen={fen} orientation={playerColor === "w" ? "white" : "black"} onMove={onMove} canMove={status === "yourTurn" || status === "retry"} lastMove={lastMove} arrows={arrows} shake={shake} />
       </div>
@@ -198,9 +200,9 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
             {labels.map((l) => (
               <span key={l} className="chip text-accent">{l}</span>
             ))}
-            <span className="chip">⭐ {puzzle.rating}</span>
+            <span className="chip">Rating {puzzle.rating}</span>
           </div>
-          <p className="font-display text-2xl">{playerColor === "w" ? "♔ Hvit" : "♚ Svart"} i trekket</p>
+          <p className="text-xl font-semibold">{playerColor === "w" ? "Hvit" : "Svart"} i trekket</p>
         </div>
 
         {status === "intro" && <CoachBubble>Se nøye på stillingen… motstanderen flytter først!</CoachBubble>}
@@ -210,19 +212,19 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
           <div className="space-y-3 animate-pop">
             <CoachBubble>Nesten! Det var ikke helt riktig. {delta !== null && <b>({delta} poeng)</b>}</CoachBubble>
             <div className="grid grid-cols-2 gap-3">
-              <button className="btn-game btn-ghost" onClick={() => setStatus("retry")}>🔁 Prøv igjen</button>
-              <button className="btn-game btn-ghost" onClick={() => { setStatus("retry"); showSolution(); }}>💡 Vis trekk</button>
+              <Button variant="outline" className="" onClick={() => setStatus("retry")}><RotateCcw /> Prøv igjen</Button>
+              <Button variant="outline" className="" onClick={() => { setStatus("retry"); showSolution(); }}><Lightbulb /> Vis trekk</Button>
             </div>
-            <button className="btn-game btn-primary w-full" onClick={onNext}>Neste pusle ▶</button>
+            <Button className=" w-full" onClick={onNext}>Neste pusle <ArrowRight /></Button>
           </div>
         )}
         {status === "solved" && (
           <div className="space-y-3 animate-pop">
             <div className="card-game p-5 text-center">
-              <p className="font-display text-4xl text-gradient-gold">RIKTIG! 🎉</p>
+              <p className="text-2xl font-semibold text-primary">Riktig!</p>
               {delta !== null && <p className="chip mt-2 text-success">+{delta} puslerating · +{XP.puzzleSolved} XP</p>}
             </div>
-            <button className="btn-game btn-accent w-full" onClick={onNext}>Neste pusle ▶</button>
+            <Button className=" w-full" onClick={onNext}>Neste pusle <ArrowRight /></Button>
           </div>
         )}
       </div>
@@ -238,16 +240,16 @@ function DailySummary({ ids, results }: { ids: string[]; results: Record<string,
   return (
     <div className="mx-auto max-w-lg space-y-4 animate-pop">
       <div className="card-game p-6 text-center space-y-2">
-        <p className="font-display text-5xl text-gradient-gold">Ferdig for i dag!</p>
-        <p className="font-display text-3xl">{solved} / {ids.length} løst</p>
+        <p className="text-3xl font-semibold text-primary">Ferdig for i dag!</p>
+        <p className="text-2xl font-semibold">{solved} / {ids.length} løst</p>
         <span className="chip text-accent">+{XP.dailyAllDone} XP bonus</span>
       </div>
       <CoachBubble>
         {solved >= 4 ? "Fantastisk! Hjernen din er en tornado av taktikk! 🌪️" : solved >= 2 ? "Godt jobbet! Hver dag blir du litt skarpere." : "Tøffe pusler i dag! Det er sånn man blir sterk. Nye pusler i morgen!"}
       </CoachBubble>
       <div className="grid gap-3">
-        <Link to="/stigen" className="btn-game btn-secondary">🪜 Utfordre en motstander</Link>
-        <Link to="/" className="btn-game btn-ghost">🏠 Hovedkvarter</Link>
+        <Link to="/stigen" className="btn-game btn-secondary"><Swords /> Utfordre en motstander</Link>
+        <Link to="/" className="btn-game btn-ghost"><House /> Oversikt</Link>
       </div>
     </div>
   );
