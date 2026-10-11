@@ -2,48 +2,52 @@ import type { Progress } from "./progress";
 import { OPPONENTS } from "./opponents";
 import { liveStreak } from "./rules";
 
-export const PEPTALKS = [
-  "Grrr… ti minutter med skarpe trekk slår en hel time med tankeløs flytting, champ!",
-  "Steinspringeren min har sprekker. Det betyr ikke at den gir opp. Det gjør ikke du heller!",
-  "Snøft… et tap er ikke slutten. Det er et spor som viser hva vi kan trene på.",
-  "Små steg, sterke trekk. Vi bygger sjakkstyrke én dag om gangen.",
-  "Du trenger ikke vinne alt i dag. Bare møt opp og bruk hodet, champ.",
-  "Grrr… vær nysgjerrig! Hva pønsker motstanderen på nå?",
-  "En modig champ tør å se på egne feil. Det er der neste gode idé gjemmer seg.",
-  "Pust ut. Senk skuldrene. Brettet venter på din beste tanke.",
-  "Mosen vokser sakte, men gir seg aldri. Sånn trener vi også!",
-  "Ikke la et dårlig trekk bestemme resten av dagen. Neste trekk er en ny sjanse.",
-  "Grrr… se etter sjakker, slag og trusler før du setter planen i gang.",
-  "Du er mer enn ratingtallet ditt. Innsatsen din teller også, champ.",
-  "En vanskelig pusle er en liten boss. Ta deg tid og finn svakheten.",
-  "Det er lov å tenke lenge. Gode planer trenger litt plass i hodet.",
-  "Snøft… sjekk kongens sikkerhet. Selv en goblin trenger et trygt hjem!",
-  "Vi jakter ikke perfekte partier. Vi jakter én ting å lære av hvert parti.",
-  "Ta med deg én god idé fra treningen i dag. Det er verdifullt bytte!",
-  "Steinhard vilje betyr ikke å være hard mot seg selv. Heia deg, champ.",
-  "Grrr… før du flytter: Hva ville du gjort om du satt på den andre siden?",
-  "Når du står fast, ta en liten pause og se på brettet med friske øyne.",
-  "En liten plan er bedre enn et stort håp. Finn noe konkret å jobbe med.",
-  "Du trenger ikke være raskest. Gi tankene dine tid til å bli skarpe.",
-  "Champ, motstanderen får også gode ideer. Respekter dem og let etter ditt svar.",
-  "Grrr… feil er treningsspor, ikke merkelapper. Vi følger sporene og blir klokere.",
-  "Fem pusler og litt tålmodighet. Det høres ut som fint goblinarbeid!",
-  "Et rolig hode ser mer enn et sint hode. Pust før neste trekk, champ.",
-  "Hver gang du prøver igjen, viser du ekte mesterstyrke.",
-  "Snøft… ikke flytt bare fordi en brikke kan. Finn ut hvorfor den skal.",
-  "Du og jeg tar stigen ett trinn av gangen. Ingen trenger å hoppe helt til toppen.",
-  "Vær stolt av et godt forsøk, også når resultatet ikke ble som du håpet.",
-  "Grrr… en skarp hjerne trenger pauser også. En kort økt holder i dag.",
-  "Se etter brikker som trenger hjelp. Kanskje planen din begynner akkurat der.",
-  "Dagens mål: litt mer nysgjerrighet, litt mindre hastverk.",
-  "Du har lov til å ombestemme deg før du flytter. Sjekk ideen én gang til.",
-  "Når en pusle virker vrien, let etter motstanderens sterkeste svar.",
-  "Grrr… jeg heier på innsatsen din, ikke bare seirene. Kom, vi prøver!",
-  "Ta vare på gleden ved sjakk, champ. Den er verdt mer enn en blank pokal.",
-  "Et godt spørsmål kan være starten på et godt trekk. Spør hva stillingen trenger.",
-  "Du bygger din egen vei mot 2000. I dag legger vi en stein til.",
-  "Snøft… springeren er klar, brettet er klart, og jeg tror på deg. Vi kjører!",
-] as const;
+export type CoachVoice = "magnus" | "hikaru" | "neutral";
+
+/** Curated daily lines per profile voice; inspired by playing style, never quotes. */
+export const PEPTALKS: Record<CoachVoice, readonly string[]> = {
+  magnus: [
+    "Rolig i dag. Før hvert trekk: hvilken brikke din gjør minst? Gi den en bedre plass.",
+    "En liten fordel er nok. Gjør stillingen litt bedre, trekk for trekk.",
+    "Når dronningene er byttet: spør deg selv om kongen din kan bli mer aktiv.",
+    "Hva er motspillet til motstanderen? Finn det før du legger din egen plan.",
+    "Tålmodighet er en styrke. Du trenger ikke vinne på trekk 15.",
+    "Se på tårnene dine. Står de på en åpen linje, eller venter de bak bøndene?",
+    "Har noen en fribonde? Den bonden bestemmer ofte hele sluttspillet.",
+    "Et rolig trekk som forbedrer en brikke kan være sterkere enn et angrep.",
+    "Spør stillingen: hva trenger den? Ikke bare: hva kan jeg gjøre?",
+    "Gode sluttspill gir trygge partier. Litt øving i dag hjelper i neste parti.",
+    "Hvis du er usikker, gjør brikkene dine litt bedre og vent på sjansen.",
+    "Hvilken bonde er svak hos motstanderen? Kan du presse den rolig?",
+    "Du kan vinne ved å være litt bedre lenge. Det er helt greit å ta tiden.",
+    "Pust, se over hele brettet, og velg trekket som gjør stillingen sunnere.",
+  ],
+  hikaru: [
+    "Før hvert trekk: sjekk alle sjakker, slag og trusler – for begge sider.",
+    "Finn to–tre kandidattrekk før du velger. Det første er ikke alltid best.",
+    "Hva er motstanderens beste svar? Spør det før du flytter.",
+    "Skarpe øyne vinner partier. Se etter brikker som står uten beskyttelse.",
+    "Initiativ betyr å stille spørsmål motstanderen må svare på.",
+    "Hva truet motstanderens siste trekk? Svar på det først, så din plan.",
+    "Et offer må regnes ut. Tre trekk fram for begge sider – så bestemmer du.",
+    "Er kongen din trygg? Sjekk det før du går til angrep.",
+    "Tvingende trekk først: sjakk, slag, trusler. Så de rolige trekkene.",
+    "Du trenger ikke være raskest. Du trenger å se litt mer enn motstanderen.",
+    "Beregning er en muskel. Fem gode pusler i dag gjør den sterkere.",
+    "Før du slår: finnes det et mellomtrekk med sjakk?",
+    "Ta deg tid i de skarpe stillingene. Det er der partiet avgjøres.",
+    "Ett trekk som både utvikler og truer er ofte et godt trekk.",
+  ],
+  neutral: [
+    "Ti minutter med gjennomtenkte trekk er bedre enn en time med hastverk.",
+    "Små steg hver dag bygger sjakkstyrke. Du er i gang!",
+    "Et tap er et spor som viser hva vi kan trene på.",
+    "Se etter sjakker, slag og trusler før du legger planen.",
+    "Det er lov å tenke lenge. Gode planer trenger litt tid.",
+    "Velg en virtuell trener på trenersiden, så får du råd som passer stilen.",
+    "Feil er treningsspor, ikke merkelapper. Vi lærer av dem.",
+  ],
+};
 
 export const CHESS_FACTS = [
   "Judit Polgár ble stormester da hun var 15 år, i 1991.",
@@ -84,22 +88,60 @@ export function recentLadderWin(day: string): string | undefined {
   } catch { return undefined; }
 }
 
-export function dailyPeptalk(p: Progress, day: string, recentWinId?: string): Peptalk {
+const VOICE: Record<CoachVoice, { win: (w: string, n?: string) => string; puzzles: string; milestone: (d: number, m: number) => string; badge: (d: number, n: string) => string; streak7: (s: number) => string; streak3: (s: number) => string; back: string; first: string }> = {
+  magnus: {
+    win: (w, n) => n ? `Du slo ${w}. Godt spilt! Neste er ${n}: spill rolig og forbedre brikkene dine.` : `Du slo ${w}, og hele stigen er slått. Tålmodig og sterkt!`,
+    puzzles: "Alle fem puslene er ferdige. Rolig og grundig arbeid – nyt pausen.",
+    milestone: (d, m) => `${d} poeng til ${m} i appen. Ingen hast – gode trekk kommer av seg selv.`,
+    badge: (d, n) => `${d} løste pusler til merket «${n}». Én om gangen.`,
+    streak7: (s) => `${s} dager på rad. Jevn trening er akkurat sånn man blir bedre.`,
+    streak3: (s) => `${s} dager på rad. Fin vane – vi legger én rolig økt til.`,
+    back: "Velkommen tilbake. Start med fem pusler og se etter brikken som gjør minst.",
+    first: "Godt å se deg. Fem pusler i dag, så tar vi det rolig derfra.",
+  },
+  hikaru: {
+    win: (w, n) => n ? `Du slo ${w}! Neste er ${n} – sjekk sjakker, slag og trusler hele partiet.` : `Du slo ${w}, og hele stigen er slått. Skarpt spilt!`,
+    puzzles: "Alle fem puslene er ferdige! Skarpe øyne i dag. Godt jobbet.",
+    milestone: (d, m) => `${d} poeng til ${m} i appen! Fortsett å regne nøye – det betaler seg.`,
+    badge: (d, n) => `Bare ${d} løste pusler til merket «${n}». Finn kandidattrekkene!`,
+    streak7: (s) => `${s} dager på rad! Sånn trener man beregning – litt hver dag.`,
+    streak3: (s) => `${s} dager på rad! Fortsett – én skarp økt til.`,
+    back: "Velkommen tilbake! Fem pusler i dag – start med å sjekke alle sjakker.",
+    first: "Godt å se deg! Fem pusler i dag, og husk: sjakk, slag og trusler først.",
+  },
+  neutral: {
+    win: (w, n) => n ? `Du slo ${w}! ${n} står for tur.` : `Du slo ${w}, og hele stigen er slått. Sterkt!`,
+    puzzles: "Alle fem puslene er ferdige! Vær stolt av innsatsen.",
+    milestone: (d, m) => `Bare ${d} poeng til ${m} i appen. Tren rolig videre.`,
+    badge: (d, n) => `Bare ${d} løste pusler til merket «${n}»!`,
+    streak7: (s) => `${s} dager på rad! Du møter opp igjen og igjen.`,
+    streak3: (s) => `${s} dager på rad! Treningsvanen vokser.`,
+    back: "Velkommen tilbake! Fem pusler i dag, så er du i gang igjen.",
+    first: "Godt å se deg! Fem pusler i dag, så er du i gang.",
+  },
+};
+
+export function dailyPeptalk(p: Progress, day: string, recentWinId?: string, voice: CoachVoice = "neutral"): Peptalk {
+  const v = VOICE[voice]; const lines = PEPTALKS[voice];
   const next = OPPONENTS.find((o) => !p.beaten.includes(o.id));
   const goal = next ? `${next.name} · ${next.elo} i rating` : p.rating < 2000 ? "2000 i klubb/FIDE" : "Hold formen med dagens pusler";
   const result = (kind: Peptalk["kind"], text: string): Peptalk => ({ kind, text, goal });
   const won = OPPONENTS.find((o) => o.id === recentWinId && p.beaten.includes(o.id));
-  if (won) return result("win", next ? `Grrr, du slo ${won.name}! ${next.name} står for tur. Nyt seieren, champ – så tar vi neste trinn!` : `Grrr, du slo ${won.name}! Hele stigen er erobret. Steinhard innsats, champ!`);
-  if (p.daily?.day === day && p.daily.ids.length === 5 && p.daily.ids.every((id) => p.daily?.results[id])) {
-    return result("puzzles", "Alle fem puslene er ferdige! Grrr, det er godt goblinarbeid, champ. Vær stolt av innsatsen – og ta en velfortjent pust i bakken.");
-  }
+  if (won) return result("win", v.win(won.name, next?.name));
+  if (p.daily?.day === day && p.daily.ids.length === 5 && p.daily.ids.every((id) => p.daily?.results[id])) return result("puzzles", v.puzzles);
   const milestone = [1600, 1700, 1800, 1850, 1900, 2000].find((n) => n > p.rating && n - p.rating <= 25);
-  if (milestone) return result("milestone", `Bare ${milestone - p.rating} poeng til ${milestone}! Snøft… ingen hast, champ. Tren rolig og la de gode trekkene vise vei.`);
+  if (milestone) return result("milestone", v.milestone(milestone - p.rating, milestone));
   const puzzleBadge = [{ n: 10, id: "pusler-10", name: "Puslemester 10" }, { n: 50, id: "pusler-50", name: "Puslemester 50" }, { n: 100, id: "pusler-100", name: "Puslelegende" }].find((b) => !p.badges.includes(b.id) && b.n > p.puzzlesSolved && b.n - p.puzzlesSolved <= 3);
-  if (puzzleBadge) return result("badge", `Grrr, bare ${puzzleBadge.n - p.puzzlesSolved} løste pusler til merket «${puzzleBadge.name}»! Én om gangen, champ. Du nærmer deg!`);
+  if (puzzleBadge) return result("badge", v.badge(puzzleBadge.n - p.puzzlesSolved, puzzleBadge.name));
   const streak = liveStreak(p.lastDay, day, p.streak);
-  if (streak >= 7) return result("streak7", `${streak} dager på rad! Grrr, steinhard innsats, champ. Du møter opp igjen og igjen – det er verdt å være stolt av!`);
-  if (streak >= 3) return result("streak3", `${streak} dager på rad, champ! Mosen gror, og treningsvanen din vokser. La oss legge en god økt til rekka!`);
-  if (streak === 0) return result("return", p.lastDay ? "Grrr, jeg savnet deg i går! Fem pusler i dag, så er vi i gang igjen. Godt å ha deg tilbake, champ." : "Grrr… godt å se deg, champ! Fem pusler i dag, så er vi i gang. Vi tar ett lite steg om gangen.");
-  return result("daily", PEPTALKS[((dayNumber(day) % PEPTALKS.length) + PEPTALKS.length) % PEPTALKS.length] ?? PEPTALKS[0]);
+  if (streak >= 7) return result("streak7", v.streak7(streak));
+  if (streak >= 3) return result("streak3", v.streak3(streak));
+  if (streak === 0) return result("return", p.lastDay ? v.back : v.first);
+  return result("daily", lines[((dayNumber(day) % lines.length) + lines.length) % lines.length] ?? lines[0]!);
+}
+
+/** Short greeting per voice for the overview speech bubble. */
+export function dailyGreeting(day: string, voice: CoachVoice): string {
+  const l = PEPTALKS[voice];
+  return l[(((dayNumber(day) + 3) % l.length) + l.length) % l.length]!;
 }

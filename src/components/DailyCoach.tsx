@@ -1,19 +1,20 @@
 import { Lightbulb, Flag } from "lucide-react";
-import { CoachAvatar } from "./CoachAvatar";
-import { COACH_NAME } from "@/lib/coach-config";
+import { CoachAvatar, CoachLabel } from "./CoachAvatar";
+import { useTrainer } from "@/lib/trainer-store";
 import { dailyFact, dailyPeptalk } from "@/lib/daily-coach";
 import type { Progress } from "@/lib/progress";
 
 export function DailyCoach({ progress, day, recentWinId }: { progress: Progress; day: string; recentWinId: string | undefined }) {
-  const pep = dailyPeptalk(progress, day, recentWinId);
+  const coach = useTrainer().coach;
+  const pep = dailyPeptalk(progress, day, recentWinId, coach ?? "neutral");
   return (
     <section className="mt-6" aria-labelledby="peptalk-heading">
       <div className="grid gap-4 md:grid-cols-[1.5fr_1fr]">
         <div className="card-game min-w-0 p-5 sm:p-6">
           <div className="flex items-center gap-4 mb-4">
-            <CoachAvatar className="size-12" />
+            <CoachAvatar className="size-14" />
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">{COACH_NAME}</p>
+              <CoachLabel />
               <h2 id="peptalk-heading" className="section-title mt-1">Dagens peptalk</h2>
             </div>
           </div>

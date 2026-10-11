@@ -4,6 +4,8 @@ import { Compass, Zap, ExternalLink, CheckCircle2, Target, ChevronLeft, ChevronR
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { TrainerExercise } from "@/components/TrainerExercise";
+import { CoachAvatar } from "@/components/CoachAvatar";
+import { COACH_IDENTITY } from "@/lib/coach-identity";
 import { AdaptiveTrainer } from "@/components/AdaptiveTrainer";
 import { chooseCoach, useTrainer } from "@/lib/trainer-store";
 import { DISCLAIMER, PROFILES, dailyPlan, exercisesFor, type CoachId } from "@/lib/trainer";
@@ -60,7 +62,7 @@ function TrainerPage() {
         {(Object.keys(PROFILES) as CoachId[]).map((id) => {
           const prof = PROFILES[id]; const Icon = ICONS[id]; const on = active === id;
           return <div key={id} className={`card-game p-5 ${on ? "ring-2 ring-primary" : ""}`}>
-            <div className="flex items-center gap-3"><Icon className="size-6 text-primary" aria-hidden /><div><h2 className="section-title">{prof.label}</h2><p className="text-xs text-muted-foreground">{prof.player} · {prof.focus}</p></div></div>
+            <div className="flex items-center gap-4"><CoachAvatar coach={id} size="portrait" className="size-24 sm:size-28" /><div className="min-w-0"><h2 className="section-title flex items-center gap-2"><Icon className="size-5 text-primary" aria-hidden />{prof.label}</h2><p className="text-xs text-muted-foreground">{COACH_IDENTITY[id].label} · {prof.focus}</p></div></div>
             <ul className="mt-3 flex flex-wrap gap-2">{prof.themes.map((t) => <li key={t} className="chip">{t}</li>)}</ul>
             <Button className="mt-4 w-full" variant={on ? "outline" : "default"} aria-pressed={on} disabled={on} onClick={() => { chooseCoach(id); setIdx(0); }}>
               {on ? <><CheckCircle2 />Aktiv trener</> : active ? "Bytt trener" : "Velg trener"}
@@ -70,7 +72,7 @@ function TrainerPage() {
       </section>
       {active && day && (() => { const plan = dailyPlan(active, day); return (
         <section className="card-game mt-6 p-5 sm:p-6" aria-label="Dagens råd">
-          <p className="eyebrow mb-1">Dagens råd · {PROFILES[active].label}</p>
+          <div className="mb-2 flex items-center gap-3"><CoachAvatar className="size-10" /><p className="eyebrow">Dagens råd · {COACH_IDENTITY[active].label}</p></div>
           <p className="text-sm" data-testid="daily-advice">{plan.advice}</p>
           <p className="mt-3 flex gap-2 text-sm"><Target className="size-4 shrink-0 text-primary" /><span><span className="font-medium">Oppgave:</span> {plan.task}</span></p>
           <p className="mt-3 text-sm text-muted-foreground">{plan.motivation}</p>

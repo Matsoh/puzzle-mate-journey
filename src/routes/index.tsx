@@ -7,7 +7,8 @@ import { ArrowUpRight, Puzzle, Flame, Target, Swords, Crown, CheckCircle2, Arrow
 import type { LucideIcon } from "lucide-react";
 import { today, useProgress } from "@/lib/progress";
 import { levelFromXp, liveStreak } from "@/lib/rules";
-import { COACH_GREETINGS } from "@/lib/coach-config";
+import { dailyGreeting } from "@/lib/daily-coach";
+import { useTrainer } from "@/lib/trainer-store";
 import { OPPONENTS } from "@/lib/opponents";
 import { unlockAudio } from "@/lib/sound";
 import { DailyCoach } from "@/components/DailyCoach";
@@ -47,7 +48,8 @@ function Home() {
   const streak = t ? liveStreak(p.lastDay, t, p.streak) : 0;
   const dailyDone = p.daily && p.daily.day === t ? Object.keys(p.daily.results).length : 0;
   const nextOpp = OPPONENTS.find((o) => !p.beaten.includes(o.id));
-  const greeting = COACH_GREETINGS[(t.length ? Number(t.slice(-2)) : 0) % COACH_GREETINGS.length];
+  const coach = useTrainer().coach;
+  const greeting = t ? dailyGreeting(t, coach ?? "neutral") : "";
   const completed = dailyDone >= 5;
   return (
     <main className="page-layout" onPointerDown={unlockAudio}>
