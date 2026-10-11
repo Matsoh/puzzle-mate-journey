@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { COACH_NAME } from "@/lib/coach-config";
 
 export function CoachAvatar({ className }: { className?: string }) {
-  const [unavailable, setUnavailable] = useState(false);
+  const [available, setAvailable] = useState(false);
+  useEffect(() => {
+    const portrait = new Image();
+    portrait.onload = () => setAvailable(true);
+    portrait.onerror = () => setAvailable(false);
+    portrait.src = "/coach-champ.png";
+    return () => { portrait.onload = null; portrait.onerror = null; };
+  }, []);
   return (
     <div className={cn("coach-portrait relative shrink-0 overflow-hidden rounded-full", className)}>
       <GoblinAvatar className="size-full" />
-      {!unavailable && <img src="/coach-champ.png" alt={COACH_NAME} onError={() => setUnavailable(true)} className="absolute inset-0 size-full rounded-full object-cover" />}
+      {available && <img src="/coach-champ.png" alt={COACH_NAME} onError={() => setAvailable(false)} className="absolute inset-0 size-full rounded-full object-cover" />}
     </div>
   );
 }
