@@ -37,6 +37,7 @@ export function CoachReview({ mistakes, orientation }: { mistakes: Mistake[]; or
     return <CoachBubble>Wow! Jeg fant ingen store feil i dette partiet. Det var skikkelig solid spilt! 💪</CoachBubble>;
   }
   const f = frames[Math.min(step, frames.length - 1)];
+  if (!m || !f) return null;
 
   return (
     <div className="space-y-4">

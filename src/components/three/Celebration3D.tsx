@@ -24,7 +24,7 @@ function Confetti() {
     const m = ref.current;
     if (!m) return;
     const c = new THREE.Color();
-    for (let i = 0; i < COUNT; i++) m.setColorAt(i, c.set(COLORS[i % COLORS.length]));
+    for (let i = 0; i < COUNT; i++) m.setColorAt(i, c.set(COLORS[i % COLORS.length]!));
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, []);
   useFrame(({ clock }, raw) => {

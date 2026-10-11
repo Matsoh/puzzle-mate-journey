@@ -15,7 +15,7 @@ import { K_GAME, levelFromXp, newRating, XP } from "@/lib/rules";
 import { applyBadges, type Badge } from "@/lib/badges";
 import { play, unlockAudio } from "@/lib/sound";
 
-type Search = { opp?: string; elo?: number; tc: TimeControl; color: ColorChoice };
+type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeControl; color: ColorChoice };
 
 export const Route = createFileRoute("/parti")({
   ssr: false,

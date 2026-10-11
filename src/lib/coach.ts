@@ -13,10 +13,10 @@ export type MistakeFacts = {
   severity: "tabbe" | "feil" | "unøyaktighet";
   missedMateIn?: number;
   allowedMateIn?: number;
-  replySan?: string; // opponent's best reply after the played move
-  replyCaptures?: string; // piece name captured by that reply
+  replySan?: string | undefined; // opponent's best reply after the played move
+  replyCaptures?: string | undefined; // piece name captured by that reply
   replyCapturesMovedPiece?: boolean;
-  bestCaptures?: string;
+  bestCaptures?: string | undefined;
   pvSan: string[];
 };
 
@@ -103,14 +103,15 @@ export async function analyseGame(
   const results: (AnalysisResult | null)[] = [];
   const evals: number[] = [];
   for (let i = 0; i < fens.length; i++) {
-    const c = new Chess(fens[i]);
+    const fi = fens[i]!;
+    const c = new Chess(fi);
     if (c.isGameOver()) {
       results.push(null);
       evals.push(c.isCheckmate() ? (c.turn() === "w" ? -MATE : MATE) : 0);
     } else {
-      const r = await engine.analyse(fens[i], depth);
+      const r = await engine.analyse(fi, depth);
       results.push(r);
-      evals.push(toWhiteCp(r, fens[i]));
+      evals.push(toWhiteCp(r, fi));
     }
     onProgress?.(i + 1, fens.length);
   }
@@ -121,14 +122,14 @@ export async function analyseGame(
     if (m.color !== player) return;
     const before = results[i];
     if (!before || before.bestMove === m.uci) return;
-    const pBefore = sign * evals[i];
-    const pAfter = sign * evals[i + 1];
+    const pBefore = sign * evals[i]!;
+    const pAfter = sign * evals[i + 1]!;
     const lossPct = winPct(pBefore) - winPct(pAfter);
     if (lossPct < 7) return;
     const best = uciToMove(m.fenBefore, before.bestMove);
     if (!best) return;
     const after = results[i + 1];
-    const reply = after ? uciToMove(fens[i + 1], after.bestMove) : null;
+    const reply = after ? uciToMove(fens[i + 1]!, after.bestMove) : null;
     const facts: MistakeFacts = {
       playedSan: m.san,
       bestSan: best.san,

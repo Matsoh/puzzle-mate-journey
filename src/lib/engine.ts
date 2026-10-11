@@ -81,7 +81,7 @@ export class StockfishEngine {
       this.send(`position fen ${fen}`);
       this.send(`go movetime ${Math.round(movetimeMs)}`);
       const line = await p;
-      return line.split(" ")[1];
+      return line.split(" ")[1] ?? "";
     });
   }
 
@@ -113,7 +113,7 @@ export class StockfishEngine {
       this.send(`position fen ${fen}`);
       this.send(`go depth ${depth}`);
       const line = await p;
-      return { cp, mate, pv, bestMove: line.split(" ")[1] };
+      return { cp, mate, pv, bestMove: line.split(" ")[1] ?? "" };
     });
   }
 
