@@ -38,3 +38,7 @@
 - [x] Ferdighetsmodell per trener+tema, nivåvalg, nivåtest, repetisjon, ærlig utbrukt-melding.
 - [x] Dagens økt bruker samme motor, fast per dato/profil; lagring v2 med migrering; ingen XP for oppgaver.
 - [x] Tester + nettlesersjekk (mobil/desktop).
+
+# Browser QA: DOM nesting fix
+- [x] Wrap the daily-session label in a div and make the coach/player avatar root an inline-flex span.
+- [x] Reproduce the old warning, then verify no nesting or hydration errors on any route, desktop and mobile.
