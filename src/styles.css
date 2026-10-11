@@ -39,18 +39,18 @@
 
 :root {
   --radius: 1.125rem;
-  --background: oklch(0.1749 0.012 163.44);
-  --foreground: oklch(0.956 0.011 132.8);
-  --card: oklch(0.225 0.016 154.4);
+  --background: oklch(0.1750275 0.0101934 172.76347);
+  --foreground: oklch(0.9581525 0.0118312 133.37753);
+  --card: oklch(0.2242552 0.0162737 160.42395);
   --card-foreground: var(--foreground);
   --popover: var(--card);
   --popover-foreground: var(--foreground);
-  --primary: oklch(0.901 0.134 126.2);
+  --primary: oklch(0.8949010 0.1372597 126.38443);
   --primary-foreground: var(--background);
   --secondary: oklch(0.28 0.019 154);
   --secondary-foreground: var(--foreground);
   --muted: oklch(0.255 0.016 154);
-  --muted-foreground: oklch(0.760 0.022 153);
+  --muted-foreground: oklch(0.7624302 0.0209666 154.77071);
   --accent: oklch(0.72 0.073 177);
   --accent-foreground: var(--background);
   --gold: oklch(0.8 0.12 85);
@@ -58,7 +58,7 @@
   --success: var(--primary);
   --destructive: oklch(0.72 0.16 25);
   --destructive-foreground: var(--background);
-  --border: oklch(0.315 0.026 151);
+  --border: oklch(0.3160084 0.0266699 155.40666);
   --input: var(--border);
   --ring: var(--primary);
   --board-shadow: none;
