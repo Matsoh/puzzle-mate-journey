@@ -124,3 +124,11 @@ describe("migration", () => {
   });
   it("ignores garbage", () => expect(migrate("x").coach).toBeNull());
 });
+
+describe("reflection drafts", () => {
+  it("survive migration and default to empty", () => {
+    expect(migrate({ version: 2, coach: "hikaru", drafts: { "2026-10-11:hikaru": "hei" } }).drafts["2026-10-11:hikaru"]).toBe("hei");
+    expect(migrate({ version: 1, coach: "hikaru" }).drafts).toEqual({});
+    expect(migrate({ version: 2, drafts: "bad" }).drafts).toEqual({});
+  });
+});
