@@ -73,7 +73,6 @@ function ProgressPage() {
           <p className="mt-2 text-sm text-muted-foreground">Ratingen her i appen måler treningen din. Den viser om treningen går framover, men er ikke en klubb- eller FIDE-rating.</p>
         </section>
 
-
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {stats.map((s) => (
             <div key={s.l} className="card-game p-4">
