@@ -83,8 +83,7 @@ export function advance(coach: CoachId, day: string, skip: boolean): { exhausted
   let exhausted = false;
   setCoachState(coach, (cs0) => {
     const cs = skip && cs0.current ? markSeen(cs0, cs0.current, day) : cs0;
-    const avoid = Object.values(get().daily).filter((_, i, a) => a.length > 0 && false);
-    const p = pickNext(cs, coach, day, avoid);
+    const p = pickNext(cs, coach, day);
     if ("exhausted" in p) { exhausted = true; return cs; }
     return { ...cs, current: p.id, currentReview: p.review, trail: cs.current ? [...cs.trail, cs.current].slice(-30) : cs.trail };
   });
