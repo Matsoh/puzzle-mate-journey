@@ -45,7 +45,7 @@ export function dayKey(d: Date): string {
 
 export function previousDay(key: string): string {
   const [y, m, d] = key.split("-").map(Number);
-  return dayKey(new Date(y, m - 1, d - 1));
+  return dayKey(new Date(y!, m! - 1, d! - 1));
 }
 
 /** Streak after being active on `today`. */

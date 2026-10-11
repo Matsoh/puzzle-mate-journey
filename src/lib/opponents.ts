@@ -27,7 +27,7 @@ export function getOpponent(id: string | undefined): Opponent | undefined {
 }
 
 export function isUnlocked(index: number, beaten: string[]): boolean {
-  return index === 0 || beaten.includes(OPPONENTS[index - 1].id);
+  return index === 0 || beaten.includes(OPPONENTS[index - 1]?.id ?? "");
 }
 
 /** Stockfish's UCI_Elo scale differs from human ratings; tune here if opponents feel too strong/weak. */

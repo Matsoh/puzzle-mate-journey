@@ -8,7 +8,7 @@ export type Puzzle = {
   moves: string; // space-separated UCI
   rating: number;
   themes: string[];
-  gameUrl?: string;
+  gameUrl?: string | undefined;
 };
 
 export const PUZZLES: Puzzle[] = seed as Puzzle[];
@@ -27,7 +27,7 @@ export function parseLichessCsv(text: string): Puzzle[] {
     if (c.length < 8) continue;
     const rating = Number(c[3]);
     if (!c[0] || !c[1] || !c[2] || !Number.isFinite(rating)) continue;
-    out.push({ id: c[0], fen: c[1], moves: c[2], rating, themes: c[7].split(" ").filter(Boolean), gameUrl: c[8] || undefined });
+    out.push({ id: c[0], fen: c[1], moves: c[2], rating, themes: (c[7] ?? "").split(" ").filter(Boolean), gameUrl: c[8] || undefined });
   }
   return out;
 }
@@ -78,7 +78,7 @@ export function themeLabels(p: Puzzle, max = 2): string[] {
     const ib = PRIORITY.indexOf(b);
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
   });
-  return sorted.filter((t) => THEME_LABELS[t]).slice(0, max).map((t) => THEME_LABELS[t]);
+  return sorted.filter((t) => THEME_LABELS[t]).slice(0, max).map((t) => THEME_LABELS[t]!);
 }
 
 function hash(s: string): number {

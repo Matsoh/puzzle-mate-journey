@@ -25,10 +25,10 @@ describe("rules", () => {
   });
   it("ladder has 10 opponents from 1500 to 2000+, unlocking in order", () => {
     expect(OPPONENTS).toHaveLength(10);
-    expect(OPPONENTS[0].elo).toBe(1500);
-    expect(OPPONENTS[9].elo).toBeGreaterThanOrEqual(2000);
+    expect(OPPONENTS[0]!.elo).toBe(1500);
+    expect(OPPONENTS[9]!.elo).toBeGreaterThanOrEqual(2000);
     expect(isUnlocked(1, [])).toBe(false);
-    expect(isUnlocked(1, [OPPONENTS[0].id])).toBe(true);
+    expect(isUnlocked(1, [OPPONENTS[0]!.id])).toBe(true);
   });
   it("picks 5 daily puzzles, ~60 seeded", () => {
     expect(PUZZLES.length).toBeGreaterThanOrEqual(60);

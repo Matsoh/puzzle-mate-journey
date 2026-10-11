@@ -20,10 +20,10 @@ type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeCont
 export const Route = createFileRoute("/parti")({
   ssr: false,
   validateSearch: (s: Record<string, unknown>): Search => ({
-    opp: typeof s.opp === "string" ? s.opp : undefined,
-    elo: s.elo !== undefined && Number.isFinite(Number(s.elo)) ? Number(s.elo) : undefined,
-    tc: s.tc === "10+0" || s.tc === "none" ? s.tc : "15+10",
-    color: s.color === "b" || s.color === "r" ? s.color : "w",
+    opp: typeof s["opp"] === "string" ? s["opp"] : undefined,
+    elo: s["elo"] !== undefined && Number.isFinite(Number(s["elo"])) ? Number(s["elo"]) : undefined,
+    tc: s["tc"] === "10+0" || s["tc"] === "none" ? s["tc"] : "15+10",
+    color: s["color"] === "b" || s["color"] === "r" ? s["color"] : "w",
   }),
   head: () => ({
     meta: [

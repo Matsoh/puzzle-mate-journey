@@ -1,6 +1,6 @@
 // Stockfish (WASM, lite single-threaded) running in a Web Worker. Browser only.
 
-export type AnalysisResult = { cp?: number; mate?: number; bestMove: string; pv: string[] };
+export type AnalysisResult = { cp?: number | undefined; mate?: number | undefined; bestMove: string; pv: string[] };
 
 type Listener = (line: string) => void;
 
