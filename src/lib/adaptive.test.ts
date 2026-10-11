@@ -43,7 +43,8 @@ describe("solving", () => {
 const run = (cs: CoachState, theme: string, outs: ("good" | "helped" | "fail")[], level?: number) => {
   for (const o of outs) {
     const lvl = level ?? cs.levels[theme];
-    const item = BANK.find((b) => b.coach === "hikaru" && b.theme === theme && b.level === lvl && !cs.items[b.id])!;
+    const pool = BANK.filter((b) => b.coach === "hikaru" && b.theme === theme && !cs.items[b.id]);
+    const item = pool.find((b) => b.level === lvl) ?? pool.find((b) => b.level >= lvl!) ?? pool[0]!;
     cs = recordOutcome(cs, item, o, 0, D);
   }
   return cs;
