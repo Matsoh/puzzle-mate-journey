@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Link to="/" className="mb-10 flex items-center gap-3 px-3 text-lg font-semibold"><ChessKnight className="size-6 text-primary" />Goblin Chess</Link>
       <nav aria-label="Hovednavigasjon" className="space-y-2">{navigation.map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`nav-link${path === n.to ? " is-active" : ""}`}><n.icon className="size-5 shrink-0" />{n.label}</Link>)}</nav>
       <div className="mt-auto border-t border-border pt-5">
-        <div className="flex items-center gap-3 px-2"><CoachAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din trener</p><p className="text-xs font-medium">{COACH_NAME}</p></div></div>
+        <div className="flex items-center gap-3 px-2"><CoachAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-xs font-medium">{COACH_NAME}</p></div></div>
         <div className="mt-5 flex items-center justify-between px-2"><span className="text-xs text-muted-foreground">Spilllyd</span><MuteToggle /></div>
       </div>
     </aside>
