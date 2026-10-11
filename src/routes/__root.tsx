@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Goblin Chess – veien til 2000" },
       { name: "description", content: "Daglig sjakktrening med pusler, motstandere og en egen trener." },
-      { name: "theme-color", content: "#14102b" },
+      { name: "theme-color", content: "#10170d" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },

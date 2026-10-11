@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/stigen")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Opponentstigen – Goblin Chess" },
       { name: "description", content: "Slå 10 motstandere fra 1500 til 2000+ og bli Stormkongen." },
       { property: "og:title", content: "Opponentstigen – Goblin Chess" },

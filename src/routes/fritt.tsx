@@ -7,6 +7,8 @@ import { CoachBubble } from "@/components/CoachAvatar";
 export const Route = createFileRoute("/fritt")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Fritt parti – Goblin Chess" },
       { name: "description", content: "Spill et fritt parti mot Stockfish på valgfri styrke." },
       { property: "og:title", content: "Fritt parti – Goblin Chess" },

@@ -39,46 +39,59 @@
 
 :root {
   --radius: 1rem;
-  --background: oklch(0.16 0.06 280);
-  --foreground: oklch(0.97 0.01 280);
-  --card: oklch(0.22 0.08 282);
-  --card-foreground: oklch(0.97 0.01 280);
-  --popover: oklch(0.22 0.08 282);
-  --popover-foreground: oklch(0.97 0.01 280);
-  --primary: oklch(0.85 0.15 205);
-  --primary-foreground: oklch(0.18 0.06 280);
-  --secondary: oklch(0.68 0.26 345);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.28 0.07 282);
-  --muted-foreground: oklch(0.75 0.05 280);
-  --accent: oklch(0.88 0.2 135);
-  --accent-foreground: oklch(0.18 0.06 280);
-  --gold: oklch(0.86 0.17 85);
+  --background: oklch(0.17 0.025 135);
+  --foreground: oklch(0.95 0.018 105);
+  --card: oklch(0.25 0.04 128);
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.88 0.22 126);
+  --primary-foreground: oklch(0.19 0.04 135);
+  --secondary: oklch(0.81 0.14 83);
+  --secondary-foreground: oklch(0.22 0.045 82);
+  --muted: oklch(0.31 0.045 128);
+  --muted-foreground: oklch(0.77 0.04 110);
+  --accent: oklch(0.84 0.18 126);
+  --accent-foreground: var(--primary-foreground);
+  --gold: oklch(0.84 0.15 85);
   --gold-foreground: oklch(0.2 0.05 60);
   --success: oklch(0.8 0.2 150);
   --destructive: oklch(0.65 0.23 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.38 0.09 282);
-  --input: oklch(0.32 0.08 282);
-  --ring: oklch(0.85 0.15 205);
+  --border: oklch(0.4 0.055 125);
+  --input: oklch(0.33 0.045 128);
+  --ring: var(--primary);
 
-  --board-light: oklch(0.88 0.04 270);
-  --board-dark: oklch(0.55 0.13 285);
+  --board-light: oklch(0.84 0.07 115);
+  --board-dark: oklch(0.46 0.075 132);
   --board-highlight: oklch(0.88 0.18 110 / 0.55);
-  --board-select: oklch(0.85 0.15 205 / 0.6);
-  --board-dot: oklch(0.25 0.08 282 / 0.45);
+  --board-select: oklch(0.88 0.22 126 / 0.6);
+  --board-dot: oklch(0.22 0.04 135 / 0.5);
   --board-check: oklch(0.65 0.25 25 / 0.75);
   --arrow-good: oklch(0.8 0.2 150 / 0.85);
   --arrow-bad: oklch(0.65 0.23 25 / 0.85);
 
-  --gradient-hero: radial-gradient(120% 80% at 50% 0%, oklch(0.32 0.16 290) 0%, oklch(0.16 0.06 280) 60%);
-  --gradient-primary: linear-gradient(135deg, oklch(0.85 0.15 205), oklch(0.7 0.2 260));
-  --gradient-secondary: linear-gradient(135deg, oklch(0.7 0.26 345), oklch(0.6 0.25 300));
-  --gradient-accent: linear-gradient(135deg, oklch(0.9 0.2 135), oklch(0.8 0.18 175));
-  --gradient-gold: linear-gradient(135deg, oklch(0.9 0.16 95), oklch(0.75 0.18 55));
-  --glow-primary: 0 0 24px oklch(0.85 0.15 205 / 0.55);
-  --glow-secondary: 0 0 24px oklch(0.68 0.26 345 / 0.55);
-  --shadow-card: 0 10px 30px -12px oklch(0.05 0.05 280 / 0.8);
+  --gradient-hero: linear-gradient(180deg, oklch(0.21 0.04 132), var(--background) 70%);
+  --gradient-primary: linear-gradient(135deg, oklch(0.88 0.22 126), oklch(0.73 0.17 128));
+  --gradient-secondary: linear-gradient(135deg, oklch(0.86 0.14 88), oklch(0.72 0.13 77));
+  --gradient-accent: var(--gradient-primary);
+  --gradient-gold: var(--gradient-secondary);
+  --glow-primary: 0 0 18px oklch(0.84 0.2 126 / 0.2);
+  --glow-secondary: 0 0 18px oklch(0.81 0.14 83 / 0.15);
+  --shadow-card: 0 10px 30px -12px oklch(0.08 0.03 135 / 0.8);
+
+  /* sRGB scene tokens: Three.js consumes these directly (not CSS oklch). */
+  --stone: #5e7a3a;
+  --stone-dark: #4a6430;
+  --stone-light: #7f9a52;
+  --stone-ink: #1b2410;
+  --stone-highlight: #9cb46a;
+  --moss: #59732c;
+  --toxic-glow: #c5ed4c;
+  --aged-gold: #bd9849;
+  --forest-fog: #10170d;
+  --moonlight: #d3e0d7;
+  --mushroom: #ae8552;
 }
 
 @layer base {
@@ -104,7 +117,7 @@
   h3,
   .font-display {
     font-family: var(--font-display);
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
   }
 }
 
@@ -114,7 +127,6 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-card);
-    backdrop-filter: blur(8px);
   }
   .btn-game {
     display: inline-flex;
@@ -149,12 +161,12 @@
   .btn-accent {
     background: var(--gradient-accent);
     color: var(--accent-foreground);
-    box-shadow: 0 0 24px oklch(0.88 0.2 135 / 0.45), inset 0 -4px 0 oklch(0 0 0 / 0.2);
+    box-shadow: var(--glow-primary), inset 0 -4px 0 oklch(0 0 0 / 0.2);
   }
   .btn-gold {
     background: var(--gradient-gold);
     color: var(--gold-foreground);
-    box-shadow: 0 0 24px oklch(0.86 0.17 85 / 0.5), inset 0 -4px 0 oklch(0 0 0 / 0.2);
+    box-shadow: var(--glow-secondary), inset 0 -4px 0 oklch(0 0 0 / 0.2);
   }
   .btn-ghost {
     background: var(--muted);
@@ -186,13 +198,15 @@
     transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .opp-avatar {
-    background: radial-gradient(circle at 30% 30%, oklch(0.8 0.18 var(--opp-hue)), oklch(0.4 0.2 var(--opp-hue)));
-    box-shadow: 0 0 20px oklch(0.7 0.2 var(--opp-hue) / 0.5);
+    background: linear-gradient(135deg, var(--muted), var(--card));
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
   }
   .speech {
     position: relative;
-    background: var(--foreground);
-    color: var(--primary-foreground);
+    background: var(--muted);
+    color: var(--foreground);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     padding: 0.9rem 1rem;
     font-weight: 700;
@@ -203,7 +217,7 @@
     left: -10px;
     top: 18px;
     border: 10px solid transparent;
-    border-right-color: var(--foreground);
+    border-right-color: var(--border);
     border-left: 0;
   }
   .neon-text {
@@ -243,4 +257,8 @@
 }
 @utility animate-float {
   animation: float-y 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

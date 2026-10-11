@@ -15,6 +15,8 @@ export const Route = createFileRoute("/pusler")({
   ssr: false,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Dagens pusler – Goblin Chess" },
       { name: "description", content: "5 nye taktikkpusler hver dag tilpasset din puslerating." },
       { property: "og:title", content: "Dagens pusler – Goblin Chess" },

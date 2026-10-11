@@ -12,6 +12,8 @@ import { unlockAudio } from "@/lib/sound";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Hovedkvarter – Goblin Chess" },
       { name: "description", content: "Ditt sjakkhovedkvarter: rating, streak, XP og dagens trening på vei mot 2000." },
       { property: "og:title", content: "Hovedkvarter – Goblin Chess" },
@@ -42,13 +44,13 @@ function Home() {
         <MuteToggle />
       </header>
 
-      <div className="grid gap-5 md:grid-cols-2 md:items-center mt-2">
-        <section className="relative h-[40vh] min-h-64 md:h-[460px]">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:items-center mt-2">
+        <section className="relative min-w-0 h-[40vh] min-h-64 md:h-[460px]">
           <HeroScene />
-          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 chip">🌩️ {COACH_NAME}</span>
+          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 chip whitespace-nowrap">♞ {COACH_NAME}</span>
         </section>
 
-        <section className="space-y-4">
+        <section className="min-w-0 space-y-4">
           <CoachBubble>{greeting}</CoachBubble>
 
           <div className="grid grid-cols-3 gap-3">

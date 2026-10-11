@@ -16,3 +16,4 @@
 - Puzzles use the Lichess puzzle CSV format; import larger sets with `parseLichessCsv` into `src/data/puzzles.json` — one data format end to end.
 - 3D (react-three-fiber) is only used for home hero, boss intro and celebration, lazy-loaded behind ClientOnly (`src/components/three/Lazy3D.tsx`); the board stays 2D — SSR-safe and fast.
 - Pure game rules (Elo, XP, levels, streak) live in `src/lib/rules.ts` with tests in `src/lib/rules.test.ts`.
+- All decorative scenes share procedural geometry and stone textures through `stone.tsx`, `GoblinKnight.tsx` and `shared.tsx`; merged static geometry and CSS-derived scene tokens keep mobile draw calls low and the visual identity consistent.

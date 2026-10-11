@@ -27,6 +27,8 @@ export const Route = createFileRoute("/parti")({
   }),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Parti – Goblin Chess" },
       { name: "description", content: "Spill sjakk mot en motstander og få analyse fra treneren." },
       { property: "og:title", content: "Parti – Goblin Chess" },
