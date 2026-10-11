@@ -7,9 +7,9 @@ import { CoachBubble } from "@/components/CoachAvatar";
 export const Route = createFileRoute("/fritt")({
   head: () => ({
     meta: [
-      { title: "Fritt parti – SjakkStorm" },
+      { title: "Fritt parti – Tobias Sjakktrener" },
       { name: "description", content: "Spill et fritt parti mot Stockfish på valgfri styrke." },
-      { property: "og:title", content: "Fritt parti – SjakkStorm" },
+      { property: "og:title", content: "Fritt parti – Tobias Sjakktrener" },
       { property: "og:description", content: "Velg styrke, farge og tid – og spill!" },
     ],
   }),

@@ -15,9 +15,9 @@ export const Route = createFileRoute("/pusler")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Dagens pusler – SjakkStorm" },
+      { title: "Dagens pusler – Tobias Sjakktrener" },
       { name: "description", content: "5 nye taktikkpusler hver dag tilpasset din puslerating." },
-      { property: "og:title", content: "Dagens pusler – SjakkStorm" },
+      { property: "og:title", content: "Dagens pusler – Tobias Sjakktrener" },
       { property: "og:description", content: "Gafler, bindinger, spyd og matt – 5 pusler hver dag." },
     ],
   }),
