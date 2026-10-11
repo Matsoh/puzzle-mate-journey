@@ -17,7 +17,7 @@
 - Home and win scenes use the reusable CSS/image ChampAvatarScene; load the procedural Hero3D only after an image fails, behind ClientOnly, and retain lazy 3D boss intros — keeps the normal home free of Three.js and the board 2D.
 - Pure game rules (Elo, XP, levels, streak) live in `src/lib/rules.ts` with tests in `src/lib/rules.test.ts`.
 - All decorative scenes share procedural geometry and stone textures through `stone.tsx`, `GoblinKnight.tsx` and `shared.tsx`; merged static geometry and CSS-derived scene tokens keep mobile draw calls low and the visual identity consistent.
-- Shared CoachAvatar loads the optional public portrait with an image-error SVG fallback so every speech bubble uses the same portrait behavior.
+- Coach voice uses the selected Magnus/Hikaru profile via shared CoachAvatar/CoachBubble (head-cropped portraits, neutral fallback); PlayerAvatar is the player's own hero image. Post-game CoachDebrief only judges the engine PV move vs. the game move (pure `src/lib/debrief.ts`) — keeps feedback truthful.
 - All content routes render inside a shared AppShell with desktop sidebar and mobile bottom navigation; global semantic tokens and shared Button variants keep presentation consistent without coupling game logic to layout.
 - Daily coach selection and approved facts live in a browser-safe pure module with rule tests; a same-day session-only ladder-win notification supports contextual praise without changing saved progress.
 - Virtual trainer profiles, curated advice and chess.js-verified exercises live in pure `src/lib/trainer.ts` (tests alongside); choice and per-day sessions persist in a separate versioned key via `trainer-store.ts` — keeps main progress untouched.
