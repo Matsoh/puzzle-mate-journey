@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
 import { Environment, Lightformer } from "@react-three/drei";
 
@@ -20,7 +21,7 @@ function lathe(pts: [number, number][]) {
   return new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), 32);
 }
 
-export function Pawn(props: { color: string; emissive?: string } & JSX.IntrinsicElements["group"]) {
+export function Pawn(props: { color: string; emissive?: string } & ThreeElements["group"]) {
   const { color, emissive, ...rest } = props;
   const geo = useMemo(() => lathe(PAWN), []);
   return (
@@ -32,7 +33,7 @@ export function Pawn(props: { color: string; emissive?: string } & JSX.Intrinsic
   );
 }
 
-export function King(props: { color: string; emissive?: string } & JSX.IntrinsicElements["group"]) {
+export function King(props: { color: string; emissive?: string } & ThreeElements["group"]) {
   const { color, emissive, ...rest } = props;
   const geo = useMemo(() => lathe(KING), []);
   const mat = <meshStandardMaterial color={color} emissive={emissive ?? color} emissiveIntensity={0.3} metalness={0.5} roughness={0.25} />;
@@ -51,7 +52,7 @@ export function King(props: { color: string; emissive?: string } & JSX.Intrinsic
   );
 }
 
-export function Trophy(props: JSX.IntrinsicElements["group"]) {
+export function Trophy(props: ThreeElements["group"]) {
   const geo = useMemo(() => lathe(CUP), []);
   return (
     <group {...props}>
@@ -79,5 +80,3 @@ export function useCheckerTexture() {
   }, []);
 }
 
-type JSXGroup = { group: JSX.IntrinsicElements["group"] };
-export type { JSXGroup };
