@@ -12,7 +12,7 @@
 - [x] Test daily rules and verify portrait fallback and mobile/desktop home.
 
 # Animated champion scene
-- [ ] Add reusable image-based avatar scene with tilt, particles and replayable celebration.
-- [ ] Replace home and win scenes; update round portrait and offline cache.
-- [ ] Verify image scene, fallback and celebration on desktop/mobile.
+- [x] Add reusable image-based avatar scene with tilt, particles and replayable celebration.
+- [x] Replace home and win scenes; update round portrait and offline cache.
+- [x] Verify real missing-image fallback and replay; verify desktop/mobile image layout with temporary browser fixtures, pending final uploads.
 - [ ] Add the two new images when uploaded (waiting for user uploads).
