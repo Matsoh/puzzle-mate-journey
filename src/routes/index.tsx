@@ -8,6 +8,8 @@ import { levelFromXp, liveStreak } from "@/lib/rules";
 import { COACH_GREETINGS, COACH_NAME } from "@/lib/coach-config";
 import { OPPONENTS } from "@/lib/opponents";
 import { unlockAudio } from "@/lib/sound";
+import { DailyCoach } from "@/components/DailyCoach";
+import { recentLadderWin } from "@/lib/daily-coach";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,7 +29,18 @@ function Home() {
   const p = useProgress();
   const lvl = levelFromXp(p.xp);
   const [t, setT] = useState("");
-  useEffect(() => setT(today()), []);
+  const [recentWin, setRecentWin] = useState<string | undefined>();
+  useEffect(() => {
+    const refresh = () => {
+      const day = today();
+      setT(day);
+      setRecentWin(recentLadderWin(day));
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 60_000);
+    window.addEventListener("focus", refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", refresh); };
+  }, []);
   const streak = t ? liveStreak(p.lastDay, t, p.streak) : 0;
   const dailyDone = p.daily && p.daily.day === t ? Object.keys(p.daily.results).length : 0;
   const nextOpp = OPPONENTS.find((o) => !p.beaten.includes(o.id));
@@ -90,6 +103,7 @@ function Home() {
           </div>
         </section>
       </div>
+      {t && <DailyCoach progress={p} day={t} recentWinId={recentWin} />}
     </main>
   );
 }
