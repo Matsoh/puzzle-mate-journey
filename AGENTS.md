@@ -20,3 +20,4 @@
 - Shared CoachAvatar loads the optional public portrait with an image-error SVG fallback so every speech bubble uses the same portrait behavior.
 - All content routes render inside a shared AppShell with desktop sidebar and mobile bottom navigation; global semantic tokens and shared Button variants keep presentation consistent without coupling game logic to layout.
 - Daily coach selection and approved facts live in a browser-safe pure module with rule tests; a same-day session-only ladder-win notification supports contextual praise without changing saved progress.
+- Virtual trainer profiles, curated advice and chess.js-verified exercises live in pure `src/lib/trainer.ts` (tests alongside); choice and per-day sessions persist in a separate versioned key via `trainer-store.ts` — keeps main progress untouched.

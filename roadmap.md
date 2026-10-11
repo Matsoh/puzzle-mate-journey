@@ -22,3 +22,7 @@
 - [x] Replace home and win scenes; update round portrait and offline cache.
 - [x] Verify real missing-image fallback and replay; verify desktop/mobile image layout.
 - [x] Connect the uploaded PNG background and transparent avatar; verify the actual home scene on desktop and mobile.
+# Virtuell trener (fase 1)
+- [x] /trener med Magnus-/Hikaru-inspirert profil, lagret valg, råd, øvelser og kilder.
+- [x] Dagens økt på oversikten med pusler, øvelse, refleksjon og kort økt; XP én gang.
+- [x] Verifiser øvelser med chess.js, tester og preview mobil/desktop.
