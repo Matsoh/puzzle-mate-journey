@@ -3,8 +3,11 @@ import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { GameSetup } from "@/components/GameSetup";
 import { CoachBubble } from "@/components/CoachAvatar";
+import { parseTimeControl } from "@/lib/tournament";
+import type { TimeControl } from "@/components/GameSetup";
 
 export const Route = createFileRoute("/fritt")({
+  validateSearch: (s: Record<string, unknown>): { tc?: TimeControl } => (s["tc"] !== undefined ? { tc: parseTimeControl(s["tc"]) } : {}),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -20,6 +23,7 @@ export const Route = createFileRoute("/fritt")({
 
 function Free() {
   const [elo, setElo] = useState(1600);
+  const { tc } = Route.useSearch();
   return (
     <main className="page-layout page-narrow">
       <AppHeader title="Fritt parti" />
@@ -33,7 +37,7 @@ function Free() {
             </div>
             <input type="range" min={1350} max={2400} step={50} value={elo} onChange={(e) => setElo(Number(e.target.value))} className="mt-3 w-full h-10 accent-primary" aria-label="Motstanderstyrke" />
           </div>
-          <GameSetup elo={elo} />
+          <GameSetup elo={elo} initialTc={tc} key={tc ?? "default"} />
         </div>
       </div>
     </main>

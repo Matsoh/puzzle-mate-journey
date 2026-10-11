@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap } from "lucide-react";
+import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { MuteToggle } from "./AppHeader";
 import { ThemeToggle } from "./ThemeToggle";
@@ -10,8 +10,9 @@ const navigation = [
   { to: "/", label: "Oversikt", mobile: "Oversikt", icon: House },
   { to: "/pusler", label: "Dagens pusler", mobile: "Pusler", icon: Puzzle },
   { to: "/stigen", label: "Motstanderstigen", mobile: "Stigen", icon: Crown },
-  { to: "/trener", label: "Trener", mobile: "Trener", icon: GraduationCap },
-  { to: "/fritt", label: "Fritt parti", mobile: "Fritt parti", icon: Swords },
+  { to: "/trener", label: "Trener", mobile: "Trener", icon: GraduationCap, Trophy },
+  { to: "/turnering", label: "Turneringsdagen", mobile: "Turnering", icon: Trophy },
+  { to: "/fritt", label: "Fritt parti", mobile: "Fritt", icon: Swords },
   { to: "/fremgang", label: "Fremgang", mobile: "Fremgang", icon: ChartNoAxesCombined, desktopOnly: true },
 ] as const;
 
@@ -29,6 +30,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     </aside>
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center border-b border-border bg-background px-4 pb-3 pt-[max(12px,env(safe-area-inset-top))] min-[1100px]:hidden"><Link to="/" className="flex min-w-0 items-center gap-2 font-semibold"><ChessKnight className="size-5 shrink-0 text-primary" /><span className="truncate">Goblin Chess</span></Link><div className="flex items-center gap-2"><ThemeToggle compact /><MuteToggle /></div></header>
     <div className="app-content">{children}</div>
-    <nav aria-label="Mobilnavigasjon" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-background/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg min-[1100px]:hidden">{navigation.filter(n => !("desktopOnly" in n)).map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors ${path === n.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}><n.icon className="size-5 shrink-0" /><span className="truncate max-w-full">{n.mobile}</span></Link>)}</nav>
+    <nav aria-label="Mobilnavigasjon" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-border bg-background/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg min-[1100px]:hidden">{navigation.filter(n => !("desktopOnly" in n)).map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors ${path === n.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}><n.icon className="size-5 shrink-0" /><span className="truncate max-w-full">{n.mobile}</span></Link>)}</nav>
   </>;
 }

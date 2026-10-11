@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ChessKing, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type TimeControl = "10+0" | "15+10" | "none";
+export type TimeControl = `${number}+${number}` | "none";
 export type ColorChoice = "w" | "b" | "r";
 
 const TCS: { id: TimeControl; label: string; sub: string }[] = [
@@ -18,16 +18,17 @@ const COLORS: { id: ColorChoice; label: string }[] = [
   { id: "b", label: "Svart" },
 ];
 
-export function GameSetup({ opp, elo, cta = "Start parti" }: { opp?: string; elo?: number; cta?: string }) {
-  const [tc, setTc] = useState<TimeControl>("15+10");
+export function GameSetup({ opp, elo, cta = "Start parti", initialTc }: { opp?: string; elo?: number; cta?: string; initialTc?: TimeControl | undefined }) {
+  const [tc, setTc] = useState<TimeControl>(initialTc ?? "15+10");
+  const options = initialTc && !TCS.some((t) => t.id === initialTc) ? [...TCS, { id: initialTc, label: initialTc, sub: "Turnering" }] : TCS;
   const [color, setColor] = useState<ColorChoice>("w");
   const navigate = useNavigate();
   return (
     <div className="space-y-4">
       <div>
         <p className="text-sm font-medium mb-2">Tidskontroll</p>
-        <div className="grid grid-cols-3 gap-2">
-          {TCS.map((t) => (
+        <div className={cn("grid gap-2", options.length > 3 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3")}>
+          {options.map((t) => (
             <Button variant="outline" aria-pressed={tc === t.id} key={t.id} onClick={() => setTc(t.id)} className={cn("h-16 flex-col gap-0", tc === t.id && "border-primary bg-primary/10")}>
               {t.label}
               <span className="font-sans text-xs font-normal text-muted-foreground">{t.sub}</span>
