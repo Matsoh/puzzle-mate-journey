@@ -198,8 +198,9 @@
     transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   .opp-avatar {
-    background: radial-gradient(circle at 30% 30%, oklch(0.8 0.18 var(--opp-hue)), oklch(0.4 0.2 var(--opp-hue)));
-    box-shadow: 0 0 20px oklch(0.7 0.2 var(--opp-hue) / 0.5);
+    background: linear-gradient(135deg, var(--muted), var(--card));
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
   }
   .speech {
     position: relative;
