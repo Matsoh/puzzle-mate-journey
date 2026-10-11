@@ -1,12 +1,12 @@
 // Rename the coach here — used everywhere in the app.
-export const COACH_NAME = "Stormester Storm";
-export const COACH_SHORT = "Storm";
+export const COACH_NAME = "Tobias Future Champ";
+export const COACH_SHORT = "Tobias";
 
 export const COACH_GREETINGS = [
-  "Hei, mester! Klar for dagens økt? Ti minutter om dagen = stormende fremgang! ⚡",
-  "Husk: sjekk alltid sjakker, slag og trusler før du flytter!",
-  "Hver pusle gjør hjernen din sterkere. Vi går for 2000!",
-  "Stormkongen venter på toppen av stigen… er du klar?",
-  "Tips: Spør deg selv – hva vil motstanderen gjøre nå?",
-  "En liten økt i dag slår en lang økt neste uke. Kjør på!",
+  "Grrr… klar for dagens trening, champ? Ti minutter. Skarpe trekk. Vi kjører!",
+  "Ikke flytt i blinde, champ. Sjekk sjakker, slag og trusler først!",
+  "Steinhard vilje, skarp hjerne. Én pusle om gangen – vi går for 2000!",
+  "Stormkongen venter på toppen. La oss gi ham noe å grue seg til!",
+  "Snøft… hva pønsker motstanderen på? Finn planen før du flytter!",
+  "Litt trening i dag, sterkere i morgen. Du har det i deg, champ!",
 ];
