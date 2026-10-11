@@ -5,7 +5,7 @@ import { migrate } from "./trainer-store";
 import { EXERCISES } from "./trainer";
 
 const D = "2026-10-11";
-const uci = (u: string) => ({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] });
+const uci = (u: string) => u;
 
 describe("bank", () => {
   it("has ≥36 unique positions across 2 profiles, 8 themes, 3 levels", () => {
@@ -51,17 +51,17 @@ const run = (cs: CoachState, theme: string, outs: ("good" | "helped" | "fail")[]
 };
 
 describe("skill model", () => {
-  it("starts at Utfordring", () => expect(emptyCoach("hikaru").levels.fork).toBe(1));
+  it("starts at Utfordring", () => expect(emptyCoach("hikaru").levels["fork"]).toBe(1));
   it("3 of last 4 good raises one level", () => {
     const cs = run(emptyCoach("hikaru"), "fork", ["good", "helped", "good", "good"]);
-    expect(cs.levels.fork).toBe(2);
-    expect(cs.levels.pin).toBe(1);
+    expect(cs.levels["fork"]).toBe(2);
+    expect(cs.levels["pin"]).toBe(1);
   });
   it("one mistake does not lower; persistent trouble lowers one", () => {
     let cs = run(emptyCoach("hikaru"), "pin", ["fail"]);
-    expect(cs.levels.pin).toBe(1);
+    expect(cs.levels["pin"]).toBe(1);
     cs = run(cs, "pin", ["helped", "fail", "good"]);
-    expect(cs.levels.pin).toBe(0);
+    expect(cs.levels["pin"]).toBe(0);
   });
   it("skip records nothing", () => {
     const cs = markSeen(emptyCoach("hikaru"), BANK.find((b) => b.coach === "hikaru")!.id, D);
@@ -120,7 +120,7 @@ describe("migration", () => {
     expect(s.version).toBe(2);
     expect(s.coach).toBe("magnus");
     expect(s.sessions["2026-10-10:magnus"]!.xpGiven).toBe(true);
-    expect(s.coaches.hikaru.levels.fork).toBe(1);
+    expect(s.coaches.hikaru.levels["fork"]).toBe(1);
   });
   it("ignores garbage", () => expect(migrate("x").coach).toBeNull());
 });

@@ -44,7 +44,7 @@ export function playerColor(item: TrainingItem): "white" | "black" {
   return item.fen.split(" ")[1] === "w" ? "black" : "white";
 }
 
-const uciObj = (u: string) => ({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] });
+const uciObj = (u: string) => (u[4] ? { from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] } : { from: u.slice(0, 2), to: u.slice(2, 4) });
 
 /** FEN after the first `n` moves of the line. */
 export function fenAfter(item: TrainingItem, n: number): string {
