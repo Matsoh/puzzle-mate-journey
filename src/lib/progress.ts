@@ -48,6 +48,7 @@ export const DEFAULT_PROGRESS: Progress = {
   muted: false,
 };
 
+// Key intentionally unchanged after renaming the app to "Tobias Sjakktrener" — do not bump, or saved progress is lost.
 const KEY = "sjakkstorm.progress.v1";
 let state: Progress = DEFAULT_PROGRESS;
 let loaded = false;
