@@ -1,7 +1,7 @@
 // Goblin Chess service worker: offline-capable shell + cached chess engine.
-const CACHE = "goblin-chess-v3-champ";
+const CACHE = "goblin-chess-v4-champ-png";
 const PRECACHE = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/stockfish/stockfish-19-lite-single.js", "/stockfish/stockfish-19-lite-single.wasm"];
-const PORTRAIT_PRECACHE = ["/coach-stage.webp", "/coach-champ.webp"];
+const PORTRAIT_PRECACHE = ["/coach-stage.png", "/coach-hero.png", "/coach-champ.webp"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then(async (c) => {
