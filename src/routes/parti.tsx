@@ -11,6 +11,7 @@ import { BossScene } from "@/components/three/Lazy3D";
 import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import type { ColorChoice, TimeControl } from "@/components/GameSetup";
 import { getEngine } from "@/lib/engine";
+import { OPPONENT_TEMPO, remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib/think-time";
 import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
 import { ENGINE_ELO_OFFSET, getOpponent, OPPONENTS } from "@/lib/opponents";
 import { markActive, updateProgress, withHistoryPoint } from "@/lib/progress";
@@ -67,6 +68,7 @@ function Game() {
   const [result, setResult] = useState<{ outcome: Outcome; reason: string } | null>(null);
   const [reward, setReward] = useState<Reward | null>(null);
   const [thinking, setThinking] = useState(false);
+  const turnSession = useRef(0);
   const [mistakes, setMistakes] = useState<Mistake[]>([]);
   const [analysisPct, setAnalysisPct] = useState(0);
   const [engineError, setEngineError] = useState(false);
@@ -154,31 +156,53 @@ function Game() {
     [checkEnd, tcCfg],
   );
 
-  // Engine's turn
+  // Engine's turn: one cancellable job; total turn length follows the think-time model.
   useEffect(() => {
     if (phase !== "playing" || game.current.turn() === player || game.current.isGameOver()) return;
+    const session = ++turnSession.current;
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const alive = () => !cancelled && turnSession.current === session;
     setThinking(true);
-    const remaining = tcCfg ? clockRef.current[player === "w" ? 1 : 0] : 0;
-    const movetime = tcCfg ? Math.max(250, Math.min(1500, remaining / 40)) : 1000;
-    const fenNow = game.current.fen();
+    const started = performance.now();
+    const g = game.current;
+    const fenNow = g.fen();
+    const legal = g.moves({ verbose: true });
+    const remaining = tcCfg ? clockRef.current[player === "w" ? 1 : 0] : null;
+    const target = thinkTimeMs({
+      elo: engineElo,
+      tempo: opponent ? OPPONENT_TEMPO[opponent.id] : undefined,
+      ply: g.history().length,
+      legalMoves: legal.length,
+      inCheck: g.inCheck(),
+      captures: legal.filter((m) => m.captured).length,
+      promotions: legal.filter((m) => m.promotion).length,
+      pieces: fenNow.split(" ")[0]!.replace(/[^a-zA-Z]/g, "").length,
+      remainingMs: remaining,
+      initialMs: tcCfg ? tcCfg[0] : null,
+      incrementMs: tcCfg ? tcCfg[1] : 0,
+    });
     getEngine()
-      .bestMove(fenNow, movetime)
+      .bestMove(fenNow, searchTimeMs(remaining, target))
       .then((uci) => {
-        if (cancelled || game.current.fen() !== fenNow || !uci || uci === "(none)") return;
-        setTimeout(() => {
-          if (!cancelled) applyMove(uci.slice(0, 2), uci.slice(2, 4), uci[4] || "q");
+        if (!alive() || game.current.fen() !== fenNow || !uci || uci === "(none)") return;
+        timer = setTimeout(() => {
+          if (!alive() || game.current.fen() !== fenNow || game.current.turn() === player) return;
+          applyMove(uci.slice(0, 2), uci.slice(2, 4), uci[4] || "q");
           setThinking(false);
-        }, 250);
+        }, remainingDelay(target, performance.now() - started));
       })
       .catch(() => {
+        if (!alive()) return;
         setEngineError(true);
         setThinking(false);
       });
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
+      setThinking(false);
     };
-  }, [fen, phase, player, applyMove, tcCfg]);
+  }, [fen, phase, player, applyMove, tcCfg, engineElo, opponent]);
 
   // Clock
   useEffect(() => {
@@ -262,7 +286,7 @@ function Game() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         {phase !== "review" && phase !== "analysing" && (
           <section className="space-y-3">
-            <PlayerBar name={opponent ? opponent.name : "Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking ? "tenker…" : undefined} />
+            <PlayerBar name={opponent ? opponent.name : "Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking && phase === "playing" ? "Tenker…" : undefined} />
             <div className="mx-auto w-full max-w-[min(94vw,68vh)]">
               <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player} lastMove={lastMove} />
             </div>
