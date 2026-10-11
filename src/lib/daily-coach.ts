@@ -86,7 +86,7 @@ export function recentLadderWin(day: string): string | undefined {
 
 export function dailyPeptalk(p: Progress, day: string, recentWinId?: string): Peptalk {
   const next = OPPONENTS.find((o) => !p.beaten.includes(o.id));
-  const goal = next ? `${next.name} · ${next.elo} i rating` : p.rating < 2000 ? `${2000 - p.rating} poeng til 2000` : "Hold formen med dagens pusler";
+  const goal = next ? `${next.name} · ${next.elo} i rating` : p.rating < 2000 ? "2000 i klubb/FIDE" : "Hold formen med dagens pusler";
   const result = (kind: Peptalk["kind"], text: string): Peptalk => ({ kind, text, goal });
   const won = OPPONENTS.find((o) => o.id === recentWinId && p.beaten.includes(o.id));
   if (won) return result("win", next ? `Grrr, du slo ${won.name}! ${next.name} står for tur. Nyt seieren, champ – så tar vi neste trinn!` : `Grrr, du slo ${won.name}! Hele stigen er erobret. Steinhard innsats, champ!`);

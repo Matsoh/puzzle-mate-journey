@@ -33,7 +33,7 @@ function Graph({ points, start }: { points: RatingPoint[]; start: { game: number
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-56" preserveAspectRatio="none">
       <line x1={0} x2={W} y1={y(2000)} y2={y(2000)} stroke="var(--border)" strokeDasharray="8 6" strokeWidth={2} />
-      <text x={6} y={y(2000) - 6} fill="var(--muted-foreground)" fontSize="16" fontWeight="500">MÅL 2000</text>
+      <text x={6} y={y(2000) - 6} fill="var(--muted-foreground)" fontSize="16" fontWeight="500">2000</text>
       <polyline points={line("puzzle")} fill="none" stroke="var(--accent)" strokeWidth={3} vectorEffect="non-scaling-stroke" />
       <polyline points={line("game")} fill="none" stroke="var(--primary)" strokeWidth={4} vectorEffect="non-scaling-stroke" />
     </svg>
@@ -65,6 +65,12 @@ function ProgressPage() {
           ) : (
             <Graph points={p.history} start={{ game: 1550, puzzle: 1550 }} />
           )}
+        </section>
+
+        <section className="card-game p-5 sm:p-6" aria-label="Mål">
+          <p className="eyebrow mb-1">Målet ditt</p>
+          <h2 className="section-title">2000 i klubb/FIDE</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Ratingen her i appen måler treningen din. Den viser om treningen går framover, men er ikke en klubb- eller FIDE-rating.</p>
         </section>
 
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

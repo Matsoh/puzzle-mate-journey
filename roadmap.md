@@ -26,3 +26,9 @@
 - [x] /trener med Magnus-/Hikaru-inspirert profil, lagret valg, råd, øvelser og kilder.
 - [x] Dagens økt på oversikten med pusler, øvelse, refleksjon og kort økt; XP én gang.
 - [x] Verifiser øvelser med chess.js, tester og preview mobil/desktop.
+
+# Mål-tekst og avatar-etikett
+- [x] Fjern beregnet "X ratingpoeng til målet på 2000" på hjem og erstatt med "Målet ditt: 2000 i klubb/FIDE" + kort forklaring.
+- [x] Samme rammeverk på Fremgang: målkort og graflinje merket "2000" i stedet for "MÅL 2000"; peptalkens neste-mål ikke lenger poengregning.
+- [x] Sidebar: "Din trener" → "Din avatar".
+- [x] Tester og preview verifisert desktop/mobil; lagret fremgang urørt, ikke publisert.

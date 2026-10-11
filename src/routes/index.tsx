@@ -48,7 +48,6 @@ function Home() {
   const dailyDone = p.daily && p.daily.day === t ? Object.keys(p.daily.results).length : 0;
   const nextOpp = OPPONENTS.find((o) => !p.beaten.includes(o.id));
   const greeting = COACH_GREETINGS[(t.length ? Number(t.slice(-2)) : 0) % COACH_GREETINGS.length];
-  const toGoal = Math.max(0, 2000 - p.rating);
   const completed = dailyDone >= 5;
   return (
     <main className="page-layout" onPointerDown={unlockAudio}>
@@ -74,7 +73,8 @@ function Home() {
           <div className="border-y border-border py-4">
             <div className="mb-2 grid grid-cols-[minmax(0,1fr)_auto] gap-2 text-xs"><span className="font-medium">Nivå {lvl.level}</span><span className="text-muted-foreground">{lvl.into} / {lvl.needed} XP</span></div>
             <div className="xp-track"><div className="xp-fill" style={{ width: `${(lvl.into / lvl.needed) * 100}%` }} /></div>
-            <p className="mt-2 text-xs text-muted-foreground">{toGoal > 0 ? `${toGoal} ratingpoeng til målet på 2000` : "Du har nådd målet på 2000!"}</p>
+            <p className="mt-3 text-xs font-medium">Målet ditt: 2000 i klubb/FIDE</p>
+            <p className="mt-1 text-xs text-muted-foreground">Ratingen her i appen måler treningen din. Den viser framgang i partier og pusler, men er ikke en klubb- eller FIDE-rating.</p>
           </div>
           <CoachBubble>{greeting}</CoachBubble>
         </section>
