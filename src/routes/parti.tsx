@@ -11,6 +11,7 @@ import { CoachDebrief } from "@/components/CoachDebrief";
 import { BossScene } from "@/components/three/Lazy3D";
 import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import type { ColorChoice, TimeControl } from "@/components/GameSetup";
+import { parseTimeControl, tcToMs } from "@/lib/tournament";
 import { getEngine } from "@/lib/engine";
 import { OPPONENT_TEMPO, remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib/think-time";
 import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/parti")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     opp: typeof s["opp"] === "string" ? s["opp"] : undefined,
     elo: s["elo"] !== undefined && Number.isFinite(Number(s["elo"])) ? Number(s["elo"]) : undefined,
-    tc: s["tc"] === "10+0" || s["tc"] === "none" ? s["tc"] : "15+10",
+    tc: parseTimeControl(s["tc"]),
     color: s["color"] === "b" || s["color"] === "r" ? s["color"] : "w",
   }),
   head: () => ({
@@ -48,7 +49,6 @@ export const Route = createFileRoute("/parti")({
 type Outcome = "win" | "loss" | "draw";
 type Reward = { xp: number; ratingBefore: number; ratingAfter: number; badges: Badge[]; levelUp: boolean };
 
-const TC_MS: Record<TimeControl, [number, number] | null> = { "10+0": [600_000, 0], "15+10": [900_000, 10_000], none: null };
 
 function fmtClock(ms: number) {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -74,7 +74,7 @@ function Game() {
   const [analysisPct, setAnalysisPct] = useState(0);
   const [engineError, setEngineError] = useState(false);
 
-  const tcCfg = TC_MS[tc];
+  const tcCfg = tcToMs(tc);
   const [clock, setClock] = useState<[number, number]>(tcCfg ? [tcCfg[0], tcCfg[0]] : [0, 0]);
   const clockRef = useRef(clock);
   clockRef.current = clock;
