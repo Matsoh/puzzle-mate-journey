@@ -57,7 +57,7 @@ export function Board({ fen, orientation, onMove, canMove = true, lastMove, arro
   };
 
   return (
-    <div className={shake ? "animate-shake" : undefined}>
+    <div className={shake ? "board-frame animate-shake" : "board-frame"}>
       <Chessboard
         options={{
           position: fen,
@@ -69,7 +69,7 @@ export function Board({ fen, orientation, onMove, canMove = true, lastMove, arro
           allowDrawingArrows: false,
           lightSquareStyle: { backgroundColor: "var(--board-light)" },
           darkSquareStyle: { backgroundColor: "var(--board-dark)" },
-          boardStyle: { borderRadius: "14px", overflow: "hidden", boxShadow: "var(--glow-primary)" },
+          boardStyle: { borderRadius: "var(--board-radius)", overflow: "hidden", boxShadow: "var(--board-shadow)" },
           canDragPiece: ({ piece }) => canMove && piece.pieceType[0] === myColor,
           onPieceDrop: ({ sourceSquare, targetSquare }) => (targetSquare ? tryMove(sourceSquare, targetSquare) : false),
           onSquareClick: ({ square, piece }) => {

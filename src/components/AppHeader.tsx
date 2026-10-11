@@ -2,17 +2,18 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Volume2, VolumeX } from "lucide-react";
 import { updateProgress, useProgress } from "@/lib/progress";
 import { levelFromXp } from "@/lib/rules";
+import { Button } from "@/components/ui/button";
 
 export function MuteToggle() {
   const p = useProgress();
   return (
-    <button
+    <Button variant="ghost" size="icon" title={p.muted ? "Slå på lyd" : "Slå av lyd"}
       aria-label={p.muted ? "Slå på lyd" : "Slå av lyd"}
       onClick={() => updateProgress((s) => ({ ...s, muted: !s.muted }))}
-      className="grid size-12 place-items-center rounded-full bg-muted border border-border active:scale-95 transition"
+      className="size-10 shrink-0 rounded-lg border border-border text-muted-foreground"
     >
-      {p.muted ? <VolumeX className="size-6" /> : <Volume2 className="size-6 text-primary" />}
-    </button>
+      {p.muted ? <VolumeX /> : <Volume2 className="text-primary" />}
+    </Button>
   );
 }
 
@@ -20,15 +21,15 @@ export function AppHeader({ title, back = true }: { title: string; back?: boolea
   const p = useProgress();
   const lvl = levelFromXp(p.xp);
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 bg-background/80 backdrop-blur-md">
+    <header className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+      <div className="min-w-0"><p className="eyebrow mb-2">Goblin Chess</p><div className="flex min-w-0 items-center gap-3">
       {back && (
-        <Link to="/" aria-label="Tilbake til Hovedkvarter" className="grid size-12 place-items-center rounded-full bg-muted border border-border active:scale-95 transition">
-          <ArrowLeft className="size-6" />
+        <Link to="/" aria-label="Tilbake til oversikten" className="grid size-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="size-4" />
         </Link>
       )}
-      <h1 className="flex-1 truncate text-2xl sm:text-3xl">{title}</h1>
-      <span className="chip">⚡ Nivå {lvl.level}</span>
-      <MuteToggle />
+      <h1 className="page-title truncate">{title}</h1></div></div>
+      <span className="chip shrink-0">Nivå {lvl.level}</span>
     </header>
   );
 }
