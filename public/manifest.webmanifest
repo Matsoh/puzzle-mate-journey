@@ -1,6 +1,6 @@
 {
-  "name": "Tobias Sjakktrener – veien til 2000",
-  "short_name": "Tobias Sjakk",
+  "name": "Goblin Chess",
+  "short_name": "Goblin Chess",
   "description": "Daglig sjakktrening: pusler, motstandere og trener.",
   "start_url": "/",
   "display": "standalone",
