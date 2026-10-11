@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Compass, Zap, ExternalLink, CheckCircle2, Target } from "lucide-react";
+import { Compass, Zap, ExternalLink, CheckCircle2, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { TrainerExercise } from "@/components/TrainerExercise";
@@ -74,10 +74,20 @@ function TrainerPage() {
           <p className="mt-3 flex gap-2 text-sm"><Target className="size-4 shrink-0 text-primary" /><span><span className="font-medium">Oppgave:</span> {plan.task}</span></p>
           <p className="mt-3 text-sm text-muted-foreground">{plan.motivation}</p>
         </section>); })()}
-      {active && ex && <section className="mt-6" aria-label="Øvelser">
-        <h2 className="section-title mb-3">Øvelser ({(idx % list.length) + 1}/{list.length})</h2>
-        <div className="card-game p-5"><TrainerExercise exercise={ex} onNext={() => setIdx((i) => i + 1)} /></div>
-      </section>}
+      {active && ex && (() => { const cur = idx % list.length; const last = cur === list.length - 1; return <section className="mt-6" aria-label="Øvelser">
+        <h2 className="section-title mb-3">Øvelser ({cur + 1}/{list.length})</h2>
+        <nav aria-label="Øvelsesnavigasjon" className="card-game mb-3 space-y-3 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Button variant="outline" className="min-h-11" disabled={cur === 0} onClick={() => setIdx(cur - 1)}><ChevronLeft />Forrige</Button>
+            <p className="text-sm font-medium" aria-live="polite" data-testid="exercise-position">Øvelse {cur + 1} av {list.length}{last && <span className="chip ml-2">Siste øvelse</span>}</p>
+            <Button className="min-h-11" disabled={last} onClick={() => setIdx(cur + 1)}>Neste øvelse<ChevronRight /></Button>
+          </div>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Velg øvelse">
+            {list.map((e, i) => <Button key={e.id} size="sm" variant={i === cur ? "default" : "outline"} className="min-h-11" aria-current={i === cur ? "step" : undefined} aria-label={`Øvelse ${i + 1}: ${e.title}`} onClick={() => setIdx(i)}>{i + 1}. {e.title}</Button>)}
+          </div>
+        </nav>
+        <div className="card-game p-5"><TrainerExercise key={ex.id} exercise={ex} /></div>
+      </section>; })()}
       {active && <section className="card-game mt-6 p-5 sm:p-6" aria-label="Studiekilde">
         <p className="eyebrow mb-1">Studiekilde</p>
         <h2 className="section-title">{SOURCES[active].title}</h2>
