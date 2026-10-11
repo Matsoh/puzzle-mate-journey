@@ -75,7 +75,6 @@ function Home() {
             <div className="xp-track"><div className="xp-fill" style={{ width: `${(lvl.into / lvl.needed) * 100}%` }} /></div>
             <p className="mt-3 text-xs font-medium">Målet ditt: 2000 i klubb/FIDE</p>
             <p className="mt-1 text-xs text-muted-foreground">Ratingen her i appen måler treningen din. Den viser framgang i partier og pusler, men er ikke en klubb- eller FIDE-rating.</p>
-
           </div>
           <CoachBubble>{greeting}</CoachBubble>
         </section>
