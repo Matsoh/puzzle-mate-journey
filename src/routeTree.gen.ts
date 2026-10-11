@@ -15,6 +15,7 @@ import { Route as FrittRouteImport } from './routes/fritt'
 import { Route as PartiRouteImport } from './routes/parti'
 import { Route as PuslerRouteImport } from './routes/pusler'
 import { Route as StigenRouteImport } from './routes/stigen'
+import { Route as TrenerRouteImport } from './routes/trener'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const StigenRoute = StigenRouteImport.update({
   path: '/stigen',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrenerRoute = TrenerRouteImport.update({
+  id: '/trener',
+  path: '/trener',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
+  '/trener': typeof TrenerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
+  '/trener': typeof TrenerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,14 +79,24 @@ export interface FileRoutesById {
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
+  '/trener': typeof TrenerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/fremgang' | '/fritt' | '/parti' | '/pusler' | '/stigen'
+  fullPaths:
+    '/' | '/fremgang' | '/fritt' | '/parti' | '/pusler' | '/stigen' | '/trener'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/fremgang' | '/fritt' | '/parti' | '/pusler' | '/stigen'
+  to:
+    '/' | '/fremgang' | '/fritt' | '/parti' | '/pusler' | '/stigen' | '/trener'
   id:
-    '__root__' | '/' | '/fremgang' | '/fritt' | '/parti' | '/pusler' | '/stigen'
+    | '__root__'
+    | '/'
+    | '/fremgang'
+    | '/fritt'
+    | '/parti'
+    | '/pusler'
+    | '/stigen'
+    | '/trener'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +106,7 @@ export interface RootRouteChildren {
   PartiRoute: typeof PartiRoute
   PuslerRoute: typeof PuslerRoute
   StigenRoute: typeof StigenRoute
+  TrenerRoute: typeof TrenerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -134,6 +153,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StigenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/trener': {
+      id: '/trener'
+      path: '/trener'
+      fullPath: '/trener'
+      preLoaderRoute: typeof TrenerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -144,6 +170,7 @@ const rootRouteChildren: RootRouteChildren = {
   PartiRoute: PartiRoute,
   PuslerRoute: PuslerRoute,
   StigenRoute: StigenRoute,
+  TrenerRoute: TrenerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

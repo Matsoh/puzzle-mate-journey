@@ -88,7 +88,7 @@ function TrainerPage() {
       </section>}
       <section className="card-game mt-6 p-5 sm:p-6" aria-label="Mål">
         <h2 className="section-title">Ambisjon: klubb/FIDE 2000</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Spillratingen ({p.rating}) og puslelratingen ({p.puzzleRating}) i appen er treningsmålinger, ikke offisiell FIDE-rating. De viser om treningen går framover.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Spillratingen ({p.rating}) og puslerating ({p.puzzleRating}) i appen er treningsmålinger, ikke offisiell FIDE-rating. De viser om treningen går framover.</p>
       </section>
     </main>
   );
