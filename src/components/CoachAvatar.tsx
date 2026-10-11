@@ -1,52 +1,55 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COACH_NAME } from "@/lib/coach-config";
+import { COACH_IDENTITY } from "@/lib/coach-identity";
+import { useTrainer } from "@/lib/trainer-store";
+import type { CoachId } from "@/lib/trainer";
 
-export function CoachAvatar({ className }: { className?: string }) {
-  const [available, setAvailable] = useState(false);
-  useEffect(() => {
-    const portrait = new Image();
-    portrait.onload = () => setAvailable(true);
-    portrait.onerror = () => setAvailable(false);
-    portrait.src = "/coach-hero.png";
-    return () => { portrait.onload = null; portrait.onerror = null; };
-  }, []);
+/** Selected virtual trainer portrait, head-cropped so the face reads in small circles. */
+export function CoachAvatar({ className, coach: forced, size = "head" }: { className?: string; coach?: CoachId | null; size?: "head" | "portrait" }) {
+  const tr = useTrainer();
+  const coach = forced === undefined ? tr.coach : forced;
+  const [failed, setFailed] = useState<string | null>(null);
+  const id = coach ? COACH_IDENTITY[coach] : null;
   return (
-    <div className={cn("coach-portrait relative shrink-0 overflow-hidden rounded-full", className)}>
-      {!available && <GoblinAvatar className="size-full" />}
-      {available && <img src="/coach-hero.png" alt={COACH_NAME} onError={() => setAvailable(false)} className="absolute inset-0 size-full rounded-full object-cover object-[50%_22%]" />}
+    <div className={cn("coach-portrait relative shrink-0 overflow-hidden rounded-full bg-muted", className)} data-coach={coach ?? "none"}>
+      {id && failed !== id.src ? (
+        <img src={id.src} alt={id.label} onError={() => setFailed(id.src)} draggable={false}
+          className={cn("absolute max-w-none select-none", size === "head" ? "left-[-45%] top-[-12%] w-[190%]" : "inset-0 size-full object-cover object-[50%_20%]")} />
+      ) : (
+        <span className="absolute inset-0 flex items-center justify-center text-muted-foreground" aria-label={id?.label ?? "Ingen trener valgt"} role="img"><GraduationCap className="size-1/2" /></span>
+      )}
     </div>
   );
 }
 
-/** Stone-knight fallback while the fictional coach portrait is unavailable. */
-function GoblinAvatar({ className }: { className?: string }) {
+/** The player's own avatar (straw-hat boy) – never used as the coach voice. */
+export function PlayerAvatar({ className }: { className?: string }) {
+  const [ok, setOk] = useState(true);
   return (
-    <svg viewBox="0 0 100 100" className={cn("shrink-0", className)} aria-hidden>
-      <circle cx="50" cy="50" r="48" fill="var(--background)" stroke="var(--border)" strokeWidth="2" />
-      <g stroke="var(--stone-ink)" strokeWidth="3" strokeLinejoin="round">
-        <path d="M67 18 L77 23 L82 37 L87 46 L87 62 L83 77 L63 81 L53 65 L56 40 Z" fill="var(--stone-dark)" />
-        <path d="M31 83 Q56 63 43 53 L28 59 L17 55 L18 44 L32 34 L40 21 L44 10 L56 24 L68 12 L68 30 Q80 53 71 83 Z" fill="var(--stone)" />
-        <path d="M19 49 L33 46 L39 51 L29 55 Z" fill="var(--stone-ink)" strokeWidth="1" />
-        <path d="M30 49 L33 54 L36 48" fill="var(--stone-highlight)" strokeWidth="1" />
-        <path d="M37 35 L52 30 L48 40 L39 41 Z" fill="var(--toxic-glow)" strokeWidth="2" />
-        <path d="M35 34 L54 28 L56 34 L37 39 Z" fill="var(--stone-light)" />
-        <ellipse cx="24" cy="44" rx="3" ry="4" fill="var(--stone-ink)" strokeWidth="1" />
-        <path d="M29 56 L29 65 L33 57 M42 55 L41 68 L45 56" fill="var(--moss)" strokeWidth="1" />
-        <path d="M57 42 L61 51 L55 59 M67 64 L61 69 L64 79 M44 18 L48 26" fill="none" strokeWidth="1.5" />
-        <path d="M25 82 L76 82 L80 88 L20 88 Z M20 88 L80 88 L84 94 L16 94 Z" fill="var(--stone-dark)" />
-      </g>
-      <path d="M73 87 Q51 74 33 91 M71 81 L75 73 M22 90 L19 82" fill="none" stroke="var(--moss)" strokeWidth="3" />
-      <g fill="var(--stone-ink)"><circle cx="64" cy="56" r="2" /><circle cx="57" cy="70" r="1.5" /><circle cx="49" cy="45" r="1" /></g>
-    </svg>
+    <div className={cn("coach-portrait relative shrink-0 overflow-hidden rounded-full bg-muted", className)}>
+      {ok ? <img src="/coach-hero.png" alt={COACH_NAME} onError={() => setOk(false)} className="absolute inset-0 size-full object-cover object-[50%_22%]" />
+        : <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold">T</span>}
+    </div>
   );
+}
+
+export function CoachLabel({ className }: { className?: string }) {
+  const tr = useTrainer();
+  if (!tr.coach) return <Link to="/trener" className={cn("text-xs font-medium text-primary underline-offset-2 hover:underline", className)}>Velg trener</Link>;
+  return <span className={cn("text-xs font-medium text-muted-foreground", className)}>{COACH_IDENTITY[tr.coach].label}</span>;
 }
 
 export function CoachBubble({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("flex items-start gap-3", className)}>
       <CoachAvatar className="size-10" />
-      <div className="speech min-w-0 flex-1 text-sm leading-relaxed">{children}</div>
+      <div className="speech min-w-0 flex-1 text-sm leading-relaxed">
+        <CoachLabel className="mb-0.5 block" />
+        {children}
+      </div>
     </div>
   );
 }
