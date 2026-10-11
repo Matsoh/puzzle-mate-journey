@@ -31,7 +31,7 @@ export const THEMES: Record<CoachId, { id: string; label: string; goal: string; 
 
 export type TrainingItem = BankRow & { line: string[]; themeLabel: string };
 
-export const BANK: TrainingItem[] = (bank as BankRow[]).map((r) => ({
+export const BANK: TrainingItem[] = (bank as unknown as BankRow[]).map((r) => ({
   ...r,
   line: r.moves.split(" "),
   themeLabel: THEMES[r.coach].find((t) => t.id === r.theme)?.label ?? r.theme,

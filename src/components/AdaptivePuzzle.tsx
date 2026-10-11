@@ -8,7 +8,7 @@ import { play } from "@/lib/sound";
 type Props = {
   item: TrainingItem;
   /** Called once per presentation when the task ends (solved or solution shown). */
-  onResult?: (o: Outcome, hints: number) => void;
+  onResult?: ((o: Outcome, hints: number) => void) | undefined;
   /** Called every time the full line is actually played (also after a reset). */
   onSolve?: () => void;
 };
