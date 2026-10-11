@@ -118,6 +118,32 @@
   --chess-avatar-shadow: 0 28px 90px #0009;
 }
 
+/* Light mode: warm off-white, deep forest text, clear green accents. Dark (:root) stays default. */
+:root.light {
+  --background: oklch(0.972 0.012 92);
+  --foreground: oklch(0.255 0.045 152);
+  --card: oklch(0.993 0.006 95);
+  --secondary: oklch(0.935 0.018 110);
+  --muted: oklch(0.945 0.016 100);
+  --muted-foreground: oklch(0.45 0.035 150);
+  --primary: oklch(0.48 0.13 142);
+  --primary-foreground: oklch(0.99 0.008 95);
+  --accent: oklch(0.5 0.08 185);
+  --accent-foreground: oklch(0.99 0.008 95);
+  --gold: oklch(0.58 0.12 75);
+  --gold-foreground: oklch(0.99 0.008 95);
+  --destructive: oklch(0.53 0.19 27);
+  --destructive-foreground: oklch(0.99 0.008 95);
+  --border: oklch(0.86 0.025 120);
+  --board-dot: oklch(0.22 0.04 135 / 0.45);
+  --chess-avatar-border: oklch(0.86 0.025 120);
+  --chess-avatar-shadow: 0 20px 60px #2a3a2033;
+}
+.theme-toggle { display:inline-flex; padding:3px; gap:2px; border-radius:var(--control-radius); background:var(--muted); border:1px solid var(--border); }
+.theme-toggle__btn { display:inline-flex; align-items:center; gap:6px; min-height:36px; min-width:40px; justify-content:center; padding:0 10px; border-radius:8px; font-size:12px; font-weight:600; color:var(--muted-foreground); transition:background .15s,color .15s; }
+.theme-toggle__btn:hover { color:var(--foreground); }
+.theme-toggle__btn[aria-pressed="true"] { background:var(--card); color:var(--primary); box-shadow:0 1px 2px color-mix(in oklab,var(--foreground) 15%,transparent); }
+
 @layer base {
   * {
     border-color: var(--color-border);
