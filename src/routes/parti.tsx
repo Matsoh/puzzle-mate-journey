@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight, RotateCcw, Flag, Search, Lightbulb, Swords, House, Award, TrendingUp, Puzzle, LockKeyholeOpen } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
@@ -230,7 +232,7 @@ function Game() {
   const moveListSan = useMemo(() => moves.map((m) => m.san), [moves]);
 
   return (
-    <main className="mx-auto max-w-5xl pb-8 safe-bottom" onPointerDown={unlockAudio}>
+    <main className="page-layout" onPointerDown={unlockAudio}>
       <AppHeader title={title} />
 
       {phase === "intro" && opponent && (
@@ -239,32 +241,32 @@ function Game() {
             <BossScene hue={opponent.hue} />
           </div>
           <div className="p-6 text-center space-y-3 safe-bottom animate-pop">
-            <p className="font-display text-5xl text-gradient-gold">BOSSKAMP!</p>
-            <h2 className="text-3xl">{opponent.emoji} {opponent.name}</h2>
-            <p className="font-extrabold text-primary">{opponent.elo} · {opponent.style}</p>
+            <p className="text-3xl font-semibold text-primary">Neste utfordring</p>
+            <h2 className="text-3xl">{opponent.name}</h2>
+            <p className="font-medium text-primary">{opponent.elo} · {opponent.style}</p>
             <p className="text-lg italic">«{opponent.line}»</p>
-            <button
-              className="btn-game btn-gold w-full max-w-sm !text-2xl"
+            <Button
+              className="btn-game btn-gold w-full max-w-sm "
               onClick={() => {
                 unlockAudio();
                 play("boss");
                 setPhase("playing");
               }}
             >
-              ⚔️ Kjør!
-            </button>
+              <Swords /> Start kampen
+            </Button>
           </div>
         </div>
       )}
 
-      <div className="grid gap-4 px-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         {phase !== "review" && phase !== "analysing" && (
           <section className="space-y-3">
-            <PlayerBar name={opponent ? `${opponent.emoji} ${opponent.name}` : "🤖 Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking ? "tenker…" : undefined} />
+            <PlayerBar name={opponent ? opponent.name : "Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking ? "tenker…" : undefined} />
             <div className="mx-auto w-full max-w-[min(94vw,68vh)]">
               <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player} lastMove={lastMove} />
             </div>
-            <PlayerBar name="⭐ Deg" clock={tcCfg ? fmtClock(clock[oppClockIdx === 0 ? 1 : 0]) : null} active={phase === "playing" && game.current.turn() === player} />
+            <PlayerBar name="Deg" clock={tcCfg ? fmtClock(clock[oppClockIdx === 0 ? 1 : 0]) : null} active={phase === "playing" && game.current.turn() === player} />
           </section>
         )}
 
@@ -273,7 +275,7 @@ function Game() {
 
           {phase === "playing" && (
             <>
-              <div className="card-game p-3 max-h-40 overflow-y-auto text-sm font-bold leading-7">
+              <div className="card-game p-3 max-h-64 overflow-y-auto text-sm font-medium leading-7">
                 {moveListSan.length === 0 ? (
                   <span className="text-muted-foreground">{player === "w" ? "Du starter – lykke til! 🍀" : "Motstanderen starter…"}</span>
                 ) : (
@@ -284,7 +286,7 @@ function Game() {
                   ))
                 )}
               </div>
-              <button className="btn-game btn-ghost w-full" onClick={() => finish("loss", "Du ga opp")}>🏳️ Gi opp</button>
+              <Button className="btn-game btn-ghost w-full" onClick={() => finish("loss", "Du ga opp")}><Flag /> Gi opp</Button>
             </>
           )}
 
@@ -296,34 +298,34 @@ function Game() {
                 </div>
               )}
               <div className="card-game p-5 text-center space-y-2">
-                <p className={`font-display text-5xl ${result.outcome === "win" ? "text-gradient-gold" : result.outcome === "draw" ? "neon-text" : "text-secondary"}`}>
-                  {result.outcome === "win" ? "SEIER!" : result.outcome === "draw" ? "REMIS" : "TAP"}
+                <p className={`text-3xl font-semibold ${result.outcome === "win" ? "text-primary" : result.outcome === "draw" ? "neon-text" : "text-muted-foreground"}`}>
+                  {result.outcome === "win" ? "Seier!" : result.outcome === "draw" ? "Remis" : "Tap"}
                 </p>
-                <p className="font-bold text-muted-foreground">{result.reason}</p>
+                <p className="font-medium text-muted-foreground">{result.reason}</p>
                 {opponent && <p className="italic">«{result.outcome === "win" ? opponent.winLine : opponent.line}»</p>}
                 {reward && (
                   <div className="flex flex-wrap justify-center gap-2 pt-2">
                     <span className="chip text-accent">+{reward.xp} XP</span>
                     <span className="chip">
-                      ♟️ {reward.ratingBefore} → {reward.ratingAfter} ({reward.ratingAfter >= reward.ratingBefore ? "+" : ""}
+                      <TrendingUp className="size-3" /> {reward.ratingBefore} → {reward.ratingAfter} ({reward.ratingAfter >= reward.ratingBefore ? "+" : ""}
                       {reward.ratingAfter - reward.ratingBefore})
                     </span>
-                    {reward.levelUp && <span className="chip text-gold">⬆️ Nytt nivå!</span>}
+                    {reward.levelUp && <span className="chip text-gold">Nytt nivå!</span>}
                     {reward.badges.map((b) => (
-                      <span key={b.id} className="chip text-gold animate-pop">{b.icon} {b.name}</span>
+                      <span key={b.id} className="chip text-gold animate-pop"><Award className="size-3" /> {b.name}</span>
                     ))}
                   </div>
                 )}
-                {result.outcome === "win" && nextOpp && <p className="font-extrabold text-accent pt-1">🔓 {nextOpp.name} er låst opp!</p>}
+                {result.outcome === "win" && nextOpp && <p className="font-medium text-accent pt-1"><LockKeyholeOpen className="inline size-4" /> {nextOpp.name} er låst opp!</p>}
               </div>
               <CoachBubble>
                 {result.outcome === "win" ? "Rått spilt! " : result.outcome === "draw" ? "Godt kjempet! " : "Ikke gi opp – tap er der vi lærer mest! "}
                 Skal vi se på de viktigste øyeblikkene sammen?
               </CoachBubble>
-              <button className="btn-game btn-primary w-full" disabled={moves.length < 2} onClick={startAnalysis}>🔍 Analyser med treneren</button>
+              <Button className="btn-game btn-primary w-full" disabled={moves.length < 2} onClick={startAnalysis}><Search /> Analyser med treneren</Button>
               <div className="grid grid-cols-2 gap-3">
-                <button className="btn-game btn-ghost" onClick={() => window.location.reload()}>🔁 Omkamp</button>
-                <Link to={opponent ? "/stigen" : "/"} className="btn-game btn-ghost">{opponent ? "🪜 Stigen" : "🏠 Hjem"}</Link>
+                <Button className="btn-game btn-ghost" onClick={() => window.location.reload()}><RotateCcw /> Omkamp</Button>
+                <Link to={opponent ? "/stigen" : "/"} className="btn-game btn-ghost">{opponent ? "<Swords /> Stigen" : "<House /> Oversikt"}</Link>
               </div>
             </div>
           )}
@@ -332,7 +334,7 @@ function Game() {
             <div className="card-game p-6 text-center space-y-4">
               <CoachBubble>Jeg går gjennom partiet med Stockfish… et øyeblikk! 🔎</CoachBubble>
               <div className="xp-track"><div className="xp-fill" style={{ width: `${analysisPct}%` }} /></div>
-              <p className="font-display text-2xl">{analysisPct}%</p>
+              <p className="text-xl font-semibold">{analysisPct}%</p>
             </div>
           )}
 
@@ -340,8 +342,8 @@ function Game() {
             <>
               <CoachReview mistakes={mistakes} orientation={orientation} />
               <div className="grid grid-cols-2 gap-3">
-                <button className="btn-game btn-secondary" onClick={() => window.location.reload()}>🔁 Ny kamp</button>
-                <Link to="/" className="btn-game btn-ghost">🏠 Hjem</Link>
+                <Button className="btn-game btn-secondary" onClick={() => window.location.reload()}><RotateCcw /> Ny kamp</Button>
+                <Link to="/" className="btn-game btn-ghost"><House /> Oversikt</Link>
               </div>
             </>
           )}
@@ -354,10 +356,10 @@ function Game() {
 function PlayerBar({ name, rating, clock, active, note }: { name: string; rating?: number | undefined; clock: string | null; active: boolean; note?: string | undefined }) {
   return (
     <div className={`mx-auto flex w-full max-w-[min(94vw,68vh)] items-center justify-between rounded-2xl px-4 py-2 border transition ${active ? "border-primary bg-primary/15" : "border-border bg-card/60"}`}>
-      <span className="font-extrabold truncate">
+      <span className="font-medium truncate">
         {name} {rating && <span className="text-muted-foreground">({rating})</span>} {note && <span className="text-primary animate-pulse">{note}</span>}
       </span>
-      {clock && <span className={`font-display text-2xl tabular-nums ${active ? "neon-text" : ""}`}>{clock}</span>}
+      {clock && <span className={`text-xl font-semibold tabular-nums ${active ? "neon-text" : ""}`}>{clock}</span>}
     </div>
   );
 }
