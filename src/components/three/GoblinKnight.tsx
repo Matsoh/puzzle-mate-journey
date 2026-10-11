@@ -56,15 +56,16 @@ export function GoblinKnight({ celebrate = false, ...props }: { celebrate?: bool
       body.current.position.y = rise * 0.24;
     }
   });
-  const stone = <meshStandardMaterial color={p.stone} map={texture} bumpMap={texture} bumpScale={0.045} roughness={0.98} />;
+  const stone = <meshStandardMaterial color={p.bone} map={texture} bumpMap={texture} bumpScale={0.035} roughness={0.98} />;
   return <group {...props}>
     <group ref={body}>
       <mesh castShadow receiveShadow><latheGeometry args={[profile,32]} />{stone}<Outlines thickness={0.025} color={p.ink} /></mesh>
       <group ref={head}>
         <mesh position-z={-0.26} castShadow><extrudeGeometry args={[shape,{depth:0.52,bevelEnabled:true,bevelThickness:0.08,bevelSize:0.065,bevelSegments:2,steps:1,curveSegments:8}]} />{stone}<Outlines thickness={0.027} color={p.ink} angle={Math.PI} /></mesh>
         <mesh geometry={mane} castShadow><meshStandardMaterial map={texture} color={p.dark} roughness={1} /><Outlines thickness={0.018} color={p.ink} /></mesh>
-        <mesh position={[-0.46,2.04,0.345]} rotation-z={0.22}><sphereGeometry args={[0.16,12,8]} /><meshStandardMaterial color={p.ink} /><group scale={[1,0.3,0.3]} position-z={0.115}><mesh><sphereGeometry args={[0.1,12,8]} /><meshStandardMaterial ref={eye} color={p.lime} emissive={p.lime} emissiveIntensity={2} toneMapped={false} /></mesh></group></mesh>
-        <mesh position={[-0.45,2.18,0.35]} rotation-z={0.24}><boxGeometry args={[0.44,0.15,0.15]} />{stone}<Outlines thickness={0.017} color={p.ink} /></mesh>
+        <mesh position={[-0.46,2.04,0.345]} rotation-z={0.22} scale={[1.3,0.65,0.5]}><sphereGeometry args={[0.16,12,8]} /><meshStandardMaterial color={p.ink} /></mesh>
+        <mesh position={[-0.47,2.03,0.445]} rotation-z={0.22} scale={[1,0.35,0.3]}><sphereGeometry args={[0.11,12,8]} /><meshStandardMaterial ref={eye} color={p.lime} emissive={p.lime} emissiveIntensity={2} toneMapped={false} /></mesh>
+        <mesh position={[-0.45,2.15,0.39]} rotation-z={0.24}><boxGeometry args={[0.44,0.13,0.15]} />{stone}<Outlines thickness={0.017} color={p.ink} /></mesh>
         <mesh position={[-1.01,1.62,0.335]} scale={[1,0.7,0.35]}><sphereGeometry args={[0.095,10,8]} /><meshStandardMaterial color={p.ink} /></mesh>
         <mesh position={[-0.75,1.4,0.32]} rotation-z={0.15}><boxGeometry args={[0.47,0.085,0.03]} /><meshStandardMaterial color={p.ink} /></mesh>
         <mesh geometry={teeth}><meshStandardMaterial color={p.bone} roughness={1} /></mesh>
