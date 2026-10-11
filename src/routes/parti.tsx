@@ -11,6 +11,7 @@ import { BossScene } from "@/components/three/Lazy3D";
 import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import type { ColorChoice, TimeControl } from "@/components/GameSetup";
 import { getEngine } from "@/lib/engine";
+import { OPPONENT_TEMPO, remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib/think-time";
 import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
 import { ENGINE_ELO_OFFSET, getOpponent, OPPONENTS } from "@/lib/opponents";
 import { markActive, updateProgress, withHistoryPoint } from "@/lib/progress";
@@ -67,6 +68,7 @@ function Game() {
   const [result, setResult] = useState<{ outcome: Outcome; reason: string } | null>(null);
   const [reward, setReward] = useState<Reward | null>(null);
   const [thinking, setThinking] = useState(false);
+  const turnSession = useRef(0);
   const [mistakes, setMistakes] = useState<Mistake[]>([]);
   const [analysisPct, setAnalysisPct] = useState(0);
   const [engineError, setEngineError] = useState(false);
@@ -200,7 +202,7 @@ function Game() {
       if (timer) clearTimeout(timer);
       setThinking(false);
     };
-  }, [fen, phase, player, applyMove, tcCfg]);
+  }, [fen, phase, player, applyMove, tcCfg, engineElo, opponent]);
 
   // Clock
   useEffect(() => {
@@ -284,7 +286,7 @@ function Game() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         {phase !== "review" && phase !== "analysing" && (
           <section className="space-y-3">
-            <PlayerBar name={opponent ? opponent.name : "Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking ? "tenker…" : undefined} />
+            <PlayerBar name={opponent ? opponent.name : "Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking && phase === "playing" ? "Tenker…" : undefined} />
             <div className="mx-auto w-full max-w-[min(94vw,68vh)]">
               <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player} lastMove={lastMove} />
             </div>
