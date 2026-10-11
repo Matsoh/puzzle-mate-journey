@@ -70,6 +70,20 @@ export function dailyFact(day: string): string {
 
 export type Peptalk = { kind: "daily" | "puzzles" | "win" | "milestone" | "badge" | "streak7" | "streak3" | "return"; text: string; goal: string };
 
+/** Presentation-only notification; never changes saved game progress. */
+export function rememberLadderWin(id: string, day: string): void {
+  try { sessionStorage.setItem("goblin-chess.coach-win", JSON.stringify({ id, day })); } catch { /* Optional notification. */ }
+}
+
+export function recentLadderWin(day: string): string | undefined {
+  try {
+    const raw = sessionStorage.getItem("goblin-chess.coach-win");
+    if (!raw) return undefined;
+    const win = JSON.parse(raw);
+    return win.day === day && typeof win.id === "string" ? win.id : undefined;
+  } catch { return undefined; }
+}
+
 export function dailyPeptalk(p: Progress, day: string, recentWinId?: string): Peptalk {
   const next = OPPONENTS.find((o) => !p.beaten.includes(o.id));
   const goal = next ? `${next.name} · ${next.elo} i rating` : p.rating < 2000 ? `${2000 - p.rating} poeng til 2000` : "Hold formen med dagens pusler";

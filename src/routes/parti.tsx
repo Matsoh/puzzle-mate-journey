@@ -14,6 +14,8 @@ import { markActive, updateProgress, withHistoryPoint } from "@/lib/progress";
 import { K_GAME, levelFromXp, newRating, XP } from "@/lib/rules";
 import { applyBadges, type Badge } from "@/lib/badges";
 import { play, unlockAudio } from "@/lib/sound";
+import { rememberLadderWin } from "@/lib/daily-coach";
+import { today } from "@/lib/progress";
 
 type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeControl; color: ColorChoice };
 
@@ -107,6 +109,7 @@ function Game() {
         return b.progress;
       });
       setReward(rw);
+      if (outcome === "win" && opponent) rememberLadderWin(opponent.id, today());
     },
     [opponent, engineElo],
   );

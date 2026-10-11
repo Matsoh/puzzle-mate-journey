@@ -1,7 +1,19 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { COACH_NAME } from "@/lib/coach-config";
 
-/** Tobias Future Champ: an ancient moss-stone goblin knight. */
 export function CoachAvatar({ className }: { className?: string }) {
+  const [unavailable, setUnavailable] = useState(false);
+  return (
+    <div className={cn("coach-portrait relative shrink-0 overflow-hidden rounded-full", className)}>
+      <GoblinAvatar className="size-full" />
+      {!unavailable && <img src="/coach-champ.png" alt={COACH_NAME} onError={() => setUnavailable(true)} className="absolute inset-0 size-full rounded-full object-cover" />}
+    </div>
+  );
+}
+
+/** Stone-knight fallback while the fictional coach portrait is unavailable. */
+function GoblinAvatar({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 100 100" className={cn("shrink-0", className)} aria-hidden>
       <circle cx="50" cy="50" r="48" fill="var(--background)" stroke="var(--border)" strokeWidth="2" />

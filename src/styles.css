@@ -211,6 +211,11 @@
     padding: 0.9rem 1rem;
     font-weight: 700;
   }
+  .coach-portrait {
+    border: 4px solid var(--stone-dark);
+    background: var(--background);
+    box-shadow: inset 0 0 0 2px var(--stone-highlight), 0 0 0 1px var(--border), var(--glow-primary);
+  }
   .speech::before {
     content: "";
     position: absolute;
