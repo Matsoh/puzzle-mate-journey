@@ -32,3 +32,9 @@
 - [x] Samme rammeverk på Fremgang: målkort og graflinje merket "2000" i stedet for "MÅL 2000"; peptalkens neste-mål ikke lenger poengregning.
 - [x] Sidebar: "Din trener" → "Din avatar".
 - [x] Tester og preview verifisert desktop/mobil; lagret fremgang urørt, ikke publisert.
+
+# Adaptiv trener (fase 2)
+- [x] 72 Lichess-oppgaver (CC0) i 8 temaer × 3 nivåer, validert med chess.js; intro-oppgaver som gjensyn.
+- [x] Ferdighetsmodell per trener+tema, nivåvalg, nivåtest, repetisjon, ærlig utbrukt-melding.
+- [x] Dagens økt bruker samme motor, fast per dato/profil; lagring v2 med migrering; ingen XP for oppgaver.
+- [x] Tester + nettlesersjekk (mobil/desktop).
