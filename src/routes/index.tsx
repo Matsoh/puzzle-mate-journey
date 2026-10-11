@@ -12,9 +12,9 @@ import { unlockAudio } from "@/lib/sound";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Hovedkvarter – Tobias Sjakktrener" },
+      { title: "Hovedkvarter – Goblin Chess" },
       { name: "description", content: "Ditt sjakkhovedkvarter: rating, streak, XP og dagens trening på vei mot 2000." },
-      { property: "og:title", content: "Hovedkvarter – Tobias Sjakktrener" },
+      { property: "og:title", content: "Hovedkvarter – Goblin Chess" },
       { property: "og:description", content: "Daglig sjakktrening med pusler, motstandere og trener." },
     ],
   }),
@@ -37,7 +37,7 @@ function Home() {
       <header className="flex items-center justify-between pt-[max(1rem,env(safe-area-inset-top))]">
         <div>
           <p className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">Hovedkvarter</p>
-          <h1 className="text-4xl sm:text-5xl neon-text">Tobias Sjakktrener</h1>
+          <h1 className="text-4xl sm:text-5xl neon-text">Goblin Chess</h1>
         </div>
         <MuteToggle />
       </header>

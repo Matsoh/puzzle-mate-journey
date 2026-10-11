@@ -27,9 +27,9 @@ export const Route = createFileRoute("/parti")({
   }),
   head: () => ({
     meta: [
-      { title: "Parti – Tobias Sjakktrener" },
+      { title: "Parti – Goblin Chess" },
       { name: "description", content: "Spill sjakk mot en motstander og få analyse fra treneren." },
-      { property: "og:title", content: "Parti – Tobias Sjakktrener" },
+      { property: "og:title", content: "Parti – Goblin Chess" },
       { property: "og:description", content: "Spill, vinn og lær av feilene dine." },
     ],
   }),
