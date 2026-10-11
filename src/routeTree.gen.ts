@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FrittRouteImport } from './routes/fritt'
+import { Route as StigenRouteImport } from './routes/stigen'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FrittRoute = FrittRouteImport.update({
+  id: '/fritt',
+  path: '/fritt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StigenRoute = StigenRouteImport.update({
+  id: '/stigen',
+  path: '/stigen',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/fritt': typeof FrittRoute
+  '/stigen': typeof StigenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/fritt': typeof FrittRoute
+  '/stigen': typeof StigenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/fritt': typeof FrittRoute
+  '/stigen': typeof StigenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/fritt' | '/stigen'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/fritt' | '/stigen'
+  id: '__root__' | '/' | '/fritt' | '/stigen'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FrittRoute: typeof FrittRoute
+  StigenRoute: typeof StigenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fritt': {
+      id: '/fritt'
+      path: '/fritt'
+      fullPath: '/fritt'
+      preLoaderRoute: typeof FrittRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stigen': {
+      id: '/stigen'
+      path: '/stigen'
+      fullPath: '/stigen'
+      preLoaderRoute: typeof StigenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FrittRoute: FrittRoute,
+  StigenRoute: StigenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
