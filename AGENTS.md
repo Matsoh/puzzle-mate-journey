@@ -17,3 +17,5 @@
 - 3D (react-three-fiber) is only used for home hero, boss intro and celebration, lazy-loaded behind ClientOnly (`src/components/three/Lazy3D.tsx`); the board stays 2D — SSR-safe and fast.
 - Pure game rules (Elo, XP, levels, streak) live in `src/lib/rules.ts` with tests in `src/lib/rules.test.ts`.
 - All decorative scenes share procedural geometry and stone textures through `stone.tsx`, `GoblinKnight.tsx` and `shared.tsx`; merged static geometry and CSS-derived scene tokens keep mobile draw calls low and the visual identity consistent.
+- Shared CoachAvatar loads the optional public portrait with an image-error SVG fallback so every speech bubble uses the same portrait behavior.
+- Daily coach selection and approved facts live in a browser-safe pure module with rule tests; a same-day session-only ladder-win notification supports contextual praise without changing saved progress.
