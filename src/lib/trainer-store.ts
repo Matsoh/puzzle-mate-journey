@@ -10,10 +10,12 @@ export type TrainerState = {
   coaches: Record<CoachId, CoachState>;
   /** Daily task id bound to `${day}:${coach}` so it never shifts. */
   daily: Record<string, string>;
+  /** Reflection drafts per `${day}:${coach}`. */
+  drafts: Record<string, string>;
 };
 const KEY_V1 = "goblin-chess.trainer.v1";
 const KEY = "goblin-chess.trainer.v2";
-export const emptyTrainer = (): TrainerState => ({ version: 2, coach: null, sessions: {}, coaches: { magnus: emptyCoach("magnus"), hikaru: emptyCoach("hikaru") }, daily: {} });
+export const emptyTrainer = (): TrainerState => ({ version: 2, coach: null, sessions: {}, coaches: { magnus: emptyCoach("magnus"), hikaru: emptyCoach("hikaru") }, daily: {}, drafts: {} });
 
 /** Safe migration: v1 kept coach + sessions; v1 key is left untouched. */
 export function migrate(raw: unknown): TrainerState {
@@ -23,6 +25,7 @@ export function migrate(raw: unknown): TrainerState {
   const out: TrainerState = { ...base, coach: r.coach === "magnus" || r.coach === "hikaru" ? r.coach : null, sessions: r.sessions && typeof r.sessions === "object" ? r.sessions : {} };
   if (r.version === 2) {
     out.daily = r.daily ?? {};
+    out.drafts = r.drafts && typeof r.drafts === "object" ? r.drafts : {};
     for (const c of ["magnus", "hikaru"] as CoachId[]) if (r.coaches?.[c]) out.coaches[c] = { ...base.coaches[c], ...r.coaches[c] };
   }
   return out;
@@ -103,4 +106,9 @@ export function ensureDaily(coach: CoachId, day: string): string | null {
   if ("exhausted" in p) return null;
   save({ ...s, daily: { ...s.daily, [k]: p.id } });
   return p.id;
+}
+
+export function saveDraft(day: string, coach: CoachId, text: string) {
+  const s = get();
+  save({ ...s, drafts: { ...s.drafts, [sessionKey(day, coach)]: text.slice(0, 300) } });
 }
