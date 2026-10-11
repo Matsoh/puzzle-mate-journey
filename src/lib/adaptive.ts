@@ -240,5 +240,5 @@ export function levelFromTest(results: Outcome[]): Level {
 
 export function overallLevel(cs: CoachState, coach: CoachId): Level {
   const ls = THEMES[coach].map((t) => cs.levels[t.id] ?? DEFAULT_LEVEL);
-  return Math.round(ls.reduce((a, b) => a + b, 0) / ls.length) as Level;
+  return Math.round(ls.reduce<number>((a, b) => a + b, 0) / ls.length) as Level;
 }
