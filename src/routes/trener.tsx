@@ -75,7 +75,8 @@ function TrainerPage() {
           <p className="mt-3 text-sm text-muted-foreground">{plan.motivation}</p>
         </section>); })()}
       {active && ex && (() => { const cur = idx % list.length; const last = cur === list.length - 1; return <section className="mt-6" aria-label="Øvelser">
-        <h2 className="section-title mb-3">Øvelser ({cur + 1}/{list.length})</h2>
+        <h2 className="section-title mb-1">Grunnoppgaver – gjensyn ({cur + 1}/{list.length})</h2>
+        <p className="mb-3 text-xs text-muted-foreground">Egenkomponerte introduksjonsoppgaver, kontrollert med regelmotor.</p>
         <nav aria-label="Øvelsesnavigasjon" className="card-game mb-3 space-y-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Button variant="outline" className="min-h-11" disabled={cur === 0} onClick={() => setIdx(cur - 1)}><ChevronLeft />Forrige</Button>
