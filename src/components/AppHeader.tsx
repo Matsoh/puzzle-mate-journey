@@ -22,14 +22,13 @@ export function AppHeader({ title, back = true }: { title: string; back?: boolea
   const lvl = levelFromXp(p.xp);
   return (
     <header className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-      <div className="min-w-0"><p className="eyebrow mb-2">Goblin Chess</p><div className="flex min-w-0 items-center gap-3">
+      <div className="col-span-2 min-w-0"><div className="mb-3 flex items-center justify-between"><p className="eyebrow">Goblin Chess</p><span className="chip shrink-0">Nivå {lvl.level}</span></div><div className="flex min-w-0 items-center gap-3">
       {back && (
         <Link to="/" aria-label="Tilbake til oversikten" className="grid size-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" />
         </Link>
       )}
-      <h1 className="page-title truncate">{title}</h1></div></div>
-      <span className="chip shrink-0">Nivå {lvl.level}</span>
+      <h1 className="page-title min-w-0 break-words">{title}</h1></div></div>
     </header>
   );
 }

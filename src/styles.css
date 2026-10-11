@@ -39,6 +39,7 @@
 
 :root {
   --radius: 1.125rem;
+  --control-radius: 11px;
   --background: oklch(0.1750275 0.0101934 172.76347);
   --foreground: oklch(0.9581525 0.0118312 133.37753);
   --card: oklch(0.2242552 0.0162737 160.42395);
@@ -181,7 +182,7 @@
   button,a,input { -webkit-tap-highlight-color:transparent; }
 }
 @media(min-width:1100px) { .app-content { margin-left:232px; padding-bottom:0; } }
-@media(max-width:639px) { .page-layout { padding:24px 16px 32px; } .page-title { font-size:28px; } .activity-link { padding:16px; gap:12px; } }
+@media(max-width:639px) { .page-layout { padding:24px 16px 32px; } .page-title { font-size:26px; } .activity-link { padding:16px; gap:12px; } }
 
 @keyframes pop-in {
   0% { transform: translateY(8px); opacity: 0; }
