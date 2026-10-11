@@ -24,7 +24,7 @@ export function ChampAvatarScene({ celebrate = false }: { celebrate?: boolean | 
       const image = new Image();
       image.onload = () => setLoaded(s => ({ ...s, [key]: true }));
       image.onerror = () => setFailed(true);
-      image.src = key === "stage" ? "/coach-stage.webp" : "/coach-champ.webp";
+      image.src = key === "stage" ? "/coach-stage.png" : "/coach-hero.png";
       return image;
     });
     return () => images.forEach(image => { image.onload = null; image.onerror = null; });
@@ -72,11 +72,11 @@ export function ChampAvatarScene({ celebrate = false }: { celebrate?: boolean | 
     <div ref={scene} className={`chess-avatar${ready ? " is-ready" : ""}`} role="group"
       aria-label={`Animert sjakkavatar: ${COACH_NAME}`} onPointerMove={move} onPointerLeave={() => tilt(0, 0)}>
       {!failed && <>
-        <img className="chess-avatar__stage" src="/coach-stage.webp" alt="" onLoad={() => setLoaded(s => ({ ...s, stage: true }))} onError={() => setFailed(true)} />
+        <img className="chess-avatar__stage" src="/coach-stage.png" alt="" onLoad={() => setLoaded(s => ({ ...s, stage: true }))} onError={() => setFailed(true)} />
         <div className="chess-avatar__aura" />
         <div className="chess-avatar__portal" />
         <div className="chess-avatar__tilt">
-          <img className="chess-avatar__hero" src="/coach-champ.webp" alt="Tobias Future Champ med en grønn hestebrikke"
+          <img className="chess-avatar__hero" src="/coach-hero.png" alt="Tobias Future Champ med en grønn hestebrikke"
             onLoad={() => setLoaded(s => ({ ...s, hero: true }))} onError={() => setFailed(true)} />
         </div>
       </>}
