@@ -7,6 +7,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { Board } from "@/components/Board";
 import { CoachBubble } from "@/components/CoachAvatar";
 import { CoachReview } from "@/components/CoachReview";
+import { CoachDebrief } from "@/components/CoachDebrief";
 import { BossScene } from "@/components/three/Lazy3D";
 import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import type { ColorChoice, TimeControl } from "@/components/GameSetup";
@@ -344,7 +345,7 @@ function Game() {
               </div>
               <CoachBubble>
                 {result.outcome === "win" ? "Rått spilt! " : result.outcome === "draw" ? "Godt kjempet! " : "Ikke gi opp – tap er der vi lærer mest! "}
-                Skal vi se på de viktigste øyeblikkene sammen?
+                Motoranalysen er ikke kjørt ennå. Trykk under, så ser vi på de viktigste øyeblikkene sammen.
               </CoachBubble>
               <Button className=" w-full" disabled={moves.length < 2} onClick={startAnalysis}><Search /> Analyser med treneren</Button>
               <div className="grid grid-cols-2 gap-3">
@@ -364,6 +365,7 @@ function Game() {
 
           {phase === "review" && (
             <>
+              {result && <CoachDebrief mistakes={mistakes} outcome={result.outcome} orientation={orientation} />}
               <CoachReview mistakes={mistakes} orientation={orientation} />
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Ny kamp</Button>

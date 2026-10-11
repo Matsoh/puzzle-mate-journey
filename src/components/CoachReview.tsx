@@ -5,7 +5,6 @@ import { Chess } from "chess.js";
 import { Board } from "./Board";
 import { CoachBubble } from "./CoachAvatar";
 import type { Mistake } from "@/lib/coach";
-import { COACH_NAME } from "@/lib/coach-config";
 import { cn } from "@/lib/utils";
 
 const SEVERITY: Record<string, string> = { tabbe: "?? Tabbe", feil: "? Feil", "unøyaktighet": "?! Unøyaktighet" };
@@ -51,7 +50,7 @@ export function CoachReview({ mistakes, orientation }: { mistakes: Mistake[]; or
         ))}
       </div>
       <CoachBubble>
-        <span className="block text-sm font-semibold text-muted-foreground">{COACH_NAME} · Trekk {m.moveNumber} · {SEVERITY[m.facts.severity]}</span>
+        <span className="block text-sm font-semibold text-muted-foreground">Trekk {m.moveNumber} · {SEVERITY[m.facts.severity]}</span>
         {m.text}
       </CoachBubble>
       <div className="mx-auto w-full max-w-[min(92vw,60vh)]">
