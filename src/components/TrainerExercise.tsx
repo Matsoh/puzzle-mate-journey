@@ -3,7 +3,7 @@ import { Lightbulb, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 import { Board } from "./Board";
 import { Button } from "@/components/ui/button";
 import { checkMove, type Exercise } from "@/lib/trainer";
-import { playSound } from "@/lib/sound";
+import { play } from "@/lib/sound";
 
 export function TrainerExercise({ exercise, onSolved, onNext }: { exercise: Exercise; onSolved?: () => void; onNext?: () => void }) {
   const [fen, setFen] = useState(exercise.fen);
@@ -22,7 +22,7 @@ export function TrainerExercise({ exercise, onSolved, onNext }: { exercise: Exer
           if (!r.legal) return false;
           setFen(r.fen); setTried(r.san);
           setStatus(r.correct ? "right" : "wrong");
-          try { playSound(r.correct ? "correct" : "wrong"); } catch { /* optional */ }
+          try { play(r.correct ? "correct" : "wrong"); } catch { /* optional */ }
           if (r.correct) onSolved?.();
           return true;
         }} />
