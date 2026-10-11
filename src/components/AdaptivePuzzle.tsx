@@ -9,10 +9,12 @@ type Props = {
   item: TrainingItem;
   /** Called once per presentation when the task ends (solved or solution shown). */
   onResult?: (o: Outcome, hints: number) => void;
+  /** Called every time the full line is actually played (also after a reset). */
+  onSolve?: () => void;
 };
 
 /** Multi-move puzzle: opponent's first move is already played, opponent replies automatically. Remount with key per task. */
-export function AdaptivePuzzle({ item, onResult }: Props) {
+export function AdaptivePuzzle({ item, onResult, onSolve }: Props) {
   const [ply, setPly] = useState(1);
   const [fen, setFen] = useState(() => fenAfter(item, 1));
   const [last, setLast] = useState<[string, string]>([item.line[0]!.slice(0, 2), item.line[0]!.slice(2, 4)]);
@@ -54,6 +56,7 @@ export function AdaptivePuzzle({ item, onResult }: Props) {
           }
           if (r.done) {
             setStatus("right"); try { play("correct"); } catch { /* optional */ }
+            onSolve?.();
             report(wrongs === 0 && totalHints.current === 0 ? "good" : "helped");
           } else { setPly(ply + 2); setHints(0); }
           return true;
