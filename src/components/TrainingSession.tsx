@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckCircle2, Circle, Clock, Puzzle, Target, MessageSquare, GraduationCap } from "lucide-react";
+import { X, ChevronRight, CheckCircle2, Circle, Clock, Puzzle, Target, MessageSquare, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrainerExercise } from "./TrainerExercise";
 import { useTrainer, updateSession, sessionKey } from "@/lib/trainer-store";
@@ -12,6 +12,7 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
   const [short, setShort] = useState(false);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
+  const [closed, setClosed] = useState(false);
   if (!tr.coach) {
     return <section className="card-game mt-6 p-5 sm:p-6" aria-labelledby="session-h">
       <p className="eyebrow mb-1">Dagens økt</p>
@@ -28,9 +29,16 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
   const exDone = !!rec?.exercise;
   const canFinish = exDone && (short || puzzlesDone);
   const Step = ({ done, n, children }: { done: boolean; n: number; children: React.ReactNode }) => <li className="flex items-start gap-3">{done ? <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" aria-label="Fullført" /> : <Circle className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-label={`Steg ${n}`} />}<div className="min-w-0 flex-1">{children}</div></li>;
+  if (closed) {
+    return <section className="card-game mt-6 flex items-center justify-between gap-3 p-4" aria-label="Dagens økt">
+      <div className="min-w-0"><p className="text-sm font-semibold">Dagens økt</p><p className="truncate text-xs text-muted-foreground">Fokus: {plan.focus}</p></div>
+      <Button onClick={() => setClosed(false)} className="min-h-11 shrink-0">Åpne økten<ChevronRight /></Button>
+    </section>;
+  }
   return (
-    <section className="card-game mt-6 p-5 sm:p-6" aria-labelledby="session-h">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <section className="card-game relative mt-6 p-5 sm:p-6" aria-labelledby="session-h">
+      <button type="button" aria-label="Lukk økten" onClick={() => setClosed(true)} className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"><X className="size-5" /></button>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 pr-12">
         <p className="eyebrow">Dagens økt · {prof.label}</p>
         <span className="chip"><Clock className="size-3" />{short ? "ca. 5 min" : "ca. 10–15 min"}</span>
       </div>
@@ -41,7 +49,7 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
       <ol className="mt-4 space-y-4">
         {!short && <Step n={1} done={puzzlesDone}><p className="text-sm font-medium">Dagens pusler</p><p className="text-xs text-muted-foreground">Fullført når alle fem er prøvd.</p>{!puzzlesDone && <Button asChild size="sm" variant="outline" className="mt-2"><Link to="/pusler"><Puzzle />Til puslene</Link></Button>}</Step>}
         <Step n={2} done={exDone}><p className="text-sm font-medium">Øvelse: {plan.exercise.title}</p>
-          {!exDone && (open ? <div className="mt-3"><TrainerExercise exercise={plan.exercise} onSolved={() => updateSession(day, coach, { exercise: true })} /></div> : <Button size="sm" variant="outline" className="mt-2" onClick={() => setOpen(true)}><Target />Start øvelsen</Button>)}
+          {!exDone && (open ? <div className="mt-3"><TrainerExercise exercise={plan.exercise} onSolved={() => updateSession(day, coach, { exercise: true })} /><Button size="sm" variant="ghost" className="mt-2 min-h-11" onClick={() => setOpen(false)}><X />Lukk øvelsen</Button></div> : <Button size="sm" variant="outline" className="mt-2" onClick={() => setOpen(true)}><Target />Start øvelsen</Button>)}
         </Step>
         <Step n={3} done={false}><p className="text-sm font-medium">Refleksjon</p>
           <label className="mt-1 block text-xs text-muted-foreground" htmlFor="refl">Hva så du? Hva vil du prøve neste parti?</label>
