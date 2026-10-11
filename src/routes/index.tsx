@@ -12,6 +12,8 @@ import { unlockAudio } from "@/lib/sound";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Hovedkvarter – Goblin Chess" },
       { name: "description", content: "Ditt sjakkhovedkvarter: rating, streak, XP og dagens trening på vei mot 2000." },
       { property: "og:title", content: "Hovedkvarter – Goblin Chess" },
