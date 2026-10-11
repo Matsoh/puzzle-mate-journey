@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X, ChevronRight, CheckCircle2, Circle, Clock, Puzzle, Target, MessageSquare, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TrainerExercise } from "./TrainerExercise";
-import { useTrainer, updateSession, sessionKey } from "@/lib/trainer-store";
+import { AdaptivePuzzle } from "./AdaptivePuzzle";
+import { useTrainer, updateSession, sessionKey, ensureDaily, recordAttempt } from "@/lib/trainer-store";
+import { getItem, LEVELS } from "@/lib/adaptive";
 import { dailyPlan, PROFILES } from "@/lib/trainer";
 import type { Progress } from "@/lib/progress";
 
@@ -13,6 +14,7 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [closed, setClosed] = useState(false);
+  useEffect(() => { if (tr.coach && day) ensureDaily(tr.coach, day); }, [tr.coach, day]);
   if (!tr.coach) {
     return <section className="card-game mt-6 p-5 sm:p-6" aria-labelledby="session-h">
       <p className="eyebrow mb-1">Dagens økt</p>
@@ -25,6 +27,7 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
   const prof = PROFILES[coach];
   const plan = dailyPlan(coach, day);
   const rec = tr.sessions[sessionKey(day, coach)];
+  const dItem = getItem(tr.daily[sessionKey(day, coach)]);
   const puzzlesDone = !!progress.daily && progress.daily.day === day && progress.daily.ids.length === 5 && progress.daily.ids.every((id) => progress.daily?.results[id]);
   const exDone = !!rec?.exercise;
   const canFinish = exDone && (short || puzzlesDone);
@@ -48,8 +51,8 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
       {rec?.done ? <p role="status" className="mt-4 flex items-center gap-2 text-sm font-medium text-primary"><CheckCircle2 className="size-5" />Økta er fullført i dag. {plan.motivation}</p> : (
       <ol className="mt-4 space-y-4">
         {!short && <Step n={1} done={puzzlesDone}><p className="text-sm font-medium">Dagens pusler</p><p className="text-xs text-muted-foreground">Fullført når alle fem er prøvd.</p>{!puzzlesDone && <Button asChild size="sm" variant="outline" className="mt-2"><Link to="/pusler"><Puzzle />Til puslene</Link></Button>}</Step>}
-        <Step n={2} done={exDone}><p className="text-sm font-medium">Øvelse: {plan.exercise.title}</p>
-          {!exDone && (open ? <div className="mt-3"><TrainerExercise exercise={plan.exercise} onSolved={() => updateSession(day, coach, { exercise: true })} /><Button size="sm" variant="ghost" className="mt-2 min-h-11" onClick={() => setOpen(false)}><X />Lukk øvelsen</Button></div> : <Button size="sm" variant="outline" className="mt-2" onClick={() => setOpen(true)}><Target />Start øvelsen</Button>)}
+        <Step n={2} done={exDone}><p className="text-sm font-medium">Dagens oppgave{dItem ? `: ${dItem.themeLabel} · ${LEVELS[dItem.level]}` : ""}</p>
+          {!exDone && dItem && (open ? <div className="mt-3"><AdaptivePuzzle key={dItem.id} item={dItem} onResult={(o, h) => { const r = tr.coaches[coach].items[dItem.id]; if (!(r?.last && r.lastDay === day)) recordAttempt(coach, dItem.id, o, h, day); }} onSolve={() => updateSession(day, coach, { exercise: true })} /><Button size="sm" variant="ghost" className="mt-2 min-h-11" onClick={() => setOpen(false)}><X />Lukk øvelsen</Button></div> : <Button size="sm" variant="outline" className="mt-2" onClick={() => setOpen(true)}><Target />Start øvelsen</Button>)}
         </Step>
         <Step n={3} done={false}><p className="text-sm font-medium">Refleksjon</p>
           <label className="mt-1 block text-xs text-muted-foreground" htmlFor="refl">Hva så du? Hva vil du prøve neste parti?</label>
