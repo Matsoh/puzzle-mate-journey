@@ -41,7 +41,14 @@ function Home() {
     refresh();
     const timer = window.setInterval(refresh, 60_000);
     window.addEventListener("focus", refresh);
-    const completed = dailyDone >= 5;
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", refresh); };
+  }, []);
+  const streak = t ? liveStreak(p.lastDay, t, p.streak) : 0;
+  const dailyDone = p.daily && p.daily.day === t ? Object.keys(p.daily.results).length : 0;
+  const nextOpp = OPPONENTS.find((o) => !p.beaten.includes(o.id));
+  const greeting = COACH_GREETINGS[(t.length ? Number(t.slice(-2)) : 0) % COACH_GREETINGS.length];
+  const toGoal = Math.max(0, 2000 - p.rating);
+  const completed = dailyDone >= 5;
   return (
     <main className="page-layout" onPointerDown={unlockAudio}>
       <header className="mb-6">
