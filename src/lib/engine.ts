@@ -107,7 +107,7 @@ export class StockfishEngine {
             }
           }
           const pvm = line.match(/ pv (.+)$/);
-          if (pvm) pv = pvm[1].trim().split(/\s+/);
+          if (pvm?.[1]) pv = pvm[1].trim().split(/\s+/);
         },
       );
       this.send(`position fen ${fen}`);
