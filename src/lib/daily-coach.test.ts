@@ -12,8 +12,11 @@ describe("daily coach rules", () => {
     expect(new Set(facts)).toEqual(new Set(CHESS_FACTS));
     expect(dailyFact(day)).toBe(dailyFact("2026-10-21"));
   });
-  it("rotates forty motivational lines deterministically by day", () => {
-    expect(PEPTALKS).toHaveLength(40);
+  it("rotates curated per-profile lines deterministically by day", () => {
+    expect(PEPTALKS.magnus).toHaveLength(14);
+    expect(PEPTALKS.hikaru).toHaveLength(14);
+    expect(dailyPeptalk(p(), day, undefined, "magnus").text).not.toBe(dailyPeptalk(p(), day, undefined, "hikaru").text);
+    expect(Object.values(PEPTALKS).flat().join(" ")).not.toMatch(/Grrr|Snøft|goblin/i);
     expect(dailyPeptalk(p(), day)).toEqual(dailyPeptalk(p(), day));
     expect(dailyPeptalk(p(), day).text).not.toBe(dailyPeptalk(p(), "2026-10-12").text);
   });
