@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/fremgang")({
   head: () => ({
     meta: [
-      { title: "Fremgang – SjakkStorm" },
+      { title: "Fremgang – Tobias Sjakktrener" },
       { name: "description", content: "Se ratinggrafen, statistikk og merkene du har samlet." },
-      { property: "og:title", content: "Fremgang – SjakkStorm" },
+      { property: "og:title", content: "Fremgang – Tobias Sjakktrener" },
       { property: "og:description", content: "Ratinggraf, streak og merker på vei mot 2000." },
     ],
   }),

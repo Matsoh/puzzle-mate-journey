@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/stigen")({
   head: () => ({
     meta: [
-      { title: "Opponentstigen – SjakkStorm" },
+      { title: "Opponentstigen – Tobias Sjakktrener" },
       { name: "description", content: "Slå 10 motstandere fra 1500 til 2000+ og bli Stormkongen." },
-      { property: "og:title", content: "Opponentstigen – SjakkStorm" },
+      { property: "og:title", content: "Opponentstigen – Tobias Sjakktrener" },
       { property: "og:description", content: "10 bosser fra 1500 til 2000+. Klarer du toppen?" },
     ],
   }),

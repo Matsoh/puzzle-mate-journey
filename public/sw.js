@@ -1,5 +1,5 @@
-// SjakkStorm service worker: offline-capable shell + cached chess engine.
-const CACHE = "sjakkstorm-v1";
+// Tobias Sjakktrener service worker: offline-capable shell + cached chess engine.
+const CACHE = "tobias-sjakktrener-v1";
 const PRECACHE = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/stockfish/stockfish-19-lite-single.js", "/stockfish/stockfish-19-lite-single.wasm"];
 
 self.addEventListener("install", (e) => {
