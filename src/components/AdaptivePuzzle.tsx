@@ -22,11 +22,12 @@ export function AdaptivePuzzle({ item, onResult }: Props) {
   const [tried, setTried] = useState("");
   const [done, setDone] = useState<string[]>([]);
   const reported = useRef(false);
-  const report = (o: Outcome) => { if (!reported.current) { reported.current = true; onResult?.(o, hints); } };
+  const totalHints = useRef(0);
+  const report = (o: Outcome) => { if (!reported.current) { reported.current = true; onResult?.(o, totalHints.current); } };
   const hintList = hintsFor(item, ply);
   const busy = status === "right" || status === "shown";
 
-  const reset = () => { setPly(1); setFen(fenAfter(item, 1)); setLast([item.line[0]!.slice(0, 2), item.line[0]!.slice(2, 4)]); setStatus("idle"); setHints(0); setDone([]); };
+  const reset = () => { setPly(1); setFen(fenAfter(item, 1)); setLast([item.line[0]!.slice(0, 2), item.line[0]!.slice(2, 4)]); setStatus("idle"); setHints(0); setDone([]); setWrongs(0); };
   const show = () => {
     setFen(fenAfter(item, item.line.length)); const u = item.line[item.line.length - 1]!; setLast([u.slice(0, 2), u.slice(2, 4)]);
     setStatus("shown"); report("fail");
@@ -44,7 +45,7 @@ export function AdaptivePuzzle({ item, onResult }: Props) {
             return false;
           }
           setDone((d) => [...d, r.san, ...(r.reply ? [`(${r.reply.san})`] : [])]);
-          setHints(0 + hints); setStatus("idle");
+          setStatus("idle");
           if (r.done && !r.reply) { setFen(r.fen); setLast([from, to]); }
           else if (r.reply) {
             setFen(r.fen); setLast([from, to]);
@@ -53,8 +54,8 @@ export function AdaptivePuzzle({ item, onResult }: Props) {
           }
           if (r.done) {
             setStatus("right"); try { play("correct"); } catch { /* optional */ }
-            report(wrongs === 0 && hints === 0 ? "good" : "helped");
-          } else setPly(ply + 2);
+            report(wrongs === 0 && totalHints.current === 0 ? "good" : "helped");
+          } else { setPly(ply + 2); setHints(0); }
           return true;
         }} />
       </div>
@@ -64,11 +65,11 @@ export function AdaptivePuzzle({ item, onResult }: Props) {
         {status === "idle" && hints > 0 && <ul className="space-y-1 text-sm text-muted-foreground">{hintList.slice(0, hints).map((h) => <li key={h} className="flex gap-2"><Lightbulb className="size-4 shrink-0 text-primary" />{h}</li>)}</ul>}
         {status === "wrong" && <p role="status" className="flex gap-2 text-sm"><XCircle className="size-4 shrink-0 text-destructive" />{tried} er ikke løsningen. Brikken står der den stod – prøv igjen.</p>}
         {busy && <div role="status" className="space-y-2">
-          {status === "right" ? <p className="flex gap-2 text-sm font-medium text-primary"><CheckCircle2 className="size-4 shrink-0" />Riktig{wrongs === 0 && hints === 0 ? " – uten hjelp!" : "!"}</p> : <p className="text-sm font-medium">Her er løsningen.</p>}
+          {status === "right" ? <p className="flex gap-2 text-sm font-medium text-primary"><CheckCircle2 className="size-4 shrink-0" />Riktig{wrongs === 0 && totalHints.current === 0 ? " – uten hjelp!" : "!"}</p> : <p className="text-sm font-medium">Her er løsningen.</p>}
           <p className="text-sm text-muted-foreground" data-testid="puzzle-explanation">{explain(item)}</p>
         </div>}
         <div className="flex flex-wrap gap-2">
-          {status !== "right" && status !== "shown" && hints < hintList.length && <Button variant="outline" className="min-h-11" onClick={() => { setHints(hints + 1); if (status === "wrong") setStatus("idle"); }}><Lightbulb />{hints === 0 ? "Hint" : "Mer hint"}</Button>}
+          {status !== "right" && status !== "shown" && hints < hintList.length && <Button variant="outline" className="min-h-11" onClick={() => { setHints(hints + 1); totalHints.current += 1; if (status === "wrong") setStatus("idle"); }}><Lightbulb />{hints === 0 ? "Hint" : "Mer hint"}</Button>}
           {status === "wrong" && <Button variant="outline" className="min-h-11" onClick={() => setStatus("idle")}><RotateCcw />Prøv igjen</Button>}
           {!busy && <Button variant="ghost" className="min-h-11" onClick={show}><Eye />Vis løsning</Button>}
           {busy && <Button variant="outline" className="min-h-11" onClick={reset}><RotateCcw />Øv på den igjen</Button>}
