@@ -6,7 +6,7 @@
 - [x] Verify desktop/mobile scenes and existing chess flows.
 
 # Daily coach additions
-- [ ] Add optional portrait with SVG fallback to shared coach avatar.
-- [ ] Add deterministic context-aware daily peptalk and next goal.
-- [ ] Add daily rotation of the ten approved chess facts.
-- [ ] Test daily rules and verify portrait fallback and mobile/desktop home.
+- [x] Add optional portrait with SVG fallback to shared coach avatar.
+- [x] Add deterministic context-aware daily peptalk and next goal.
+- [x] Add daily rotation of the ten approved chess facts.
+- [x] Test daily rules and verify portrait fallback and mobile/desktop home.
