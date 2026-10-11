@@ -154,29 +154,51 @@ function Game() {
     [checkEnd, tcCfg],
   );
 
-  // Engine's turn
+  // Engine's turn: one cancellable job; total turn length follows the think-time model.
   useEffect(() => {
     if (phase !== "playing" || game.current.turn() === player || game.current.isGameOver()) return;
+    const session = ++turnSession.current;
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const alive = () => !cancelled && turnSession.current === session;
     setThinking(true);
-    const remaining = tcCfg ? clockRef.current[player === "w" ? 1 : 0] : 0;
-    const movetime = tcCfg ? Math.max(250, Math.min(1500, remaining / 40)) : 1000;
-    const fenNow = game.current.fen();
+    const started = performance.now();
+    const g = game.current;
+    const fenNow = g.fen();
+    const legal = g.moves({ verbose: true });
+    const remaining = tcCfg ? clockRef.current[player === "w" ? 1 : 0] : null;
+    const target = thinkTimeMs({
+      elo: engineElo,
+      tempo: opponent ? OPPONENT_TEMPO[opponent.id] : undefined,
+      ply: g.history().length,
+      legalMoves: legal.length,
+      inCheck: g.inCheck(),
+      captures: legal.filter((m) => m.captured).length,
+      promotions: legal.filter((m) => m.promotion).length,
+      pieces: fenNow.split(" ")[0]!.replace(/[^a-zA-Z]/g, "").length,
+      remainingMs: remaining,
+      initialMs: tcCfg ? tcCfg[0] : null,
+      incrementMs: tcCfg ? tcCfg[1] : 0,
+    });
     getEngine()
-      .bestMove(fenNow, movetime)
+      .bestMove(fenNow, searchTimeMs(remaining, target))
       .then((uci) => {
-        if (cancelled || game.current.fen() !== fenNow || !uci || uci === "(none)") return;
-        setTimeout(() => {
-          if (!cancelled) applyMove(uci.slice(0, 2), uci.slice(2, 4), uci[4] || "q");
+        if (!alive() || game.current.fen() !== fenNow || !uci || uci === "(none)") return;
+        timer = setTimeout(() => {
+          if (!alive() || game.current.fen() !== fenNow || game.current.turn() === player) return;
+          applyMove(uci.slice(0, 2), uci.slice(2, 4), uci[4] || "q");
           setThinking(false);
-        }, 250);
+        }, remainingDelay(target, performance.now() - started));
       })
       .catch(() => {
+        if (!alive()) return;
         setEngineError(true);
         setThinking(false);
       });
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
+      setThinking(false);
     };
   }, [fen, phase, player, applyMove, tcCfg]);
 
