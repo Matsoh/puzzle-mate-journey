@@ -18,6 +18,18 @@ export function ChampAvatarScene({ celebrate = false }: { celebrate?: boolean | 
   const [failed, setFailed] = useState(false);
   const ready = loaded.stage && loaded.hero && !failed;
 
+  useEffect(() => {
+    // SSR images may finish before hydration attaches their event handlers.
+    const images = (["stage", "hero"] as const).map(key => {
+      const image = new Image();
+      image.onload = () => setLoaded(s => ({ ...s, [key]: true }));
+      image.onerror = () => setFailed(true);
+      image.src = key === "stage" ? "/coach-stage.webp" : "/coach-champ.webp";
+      return image;
+    });
+    return () => images.forEach(image => { image.onload = null; image.onerror = null; });
+  }, []);
+
   const replay = useCallback(() => {
     const node = scene.current;
     if (!node) return;
