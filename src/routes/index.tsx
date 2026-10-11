@@ -11,6 +11,7 @@ import { COACH_GREETINGS } from "@/lib/coach-config";
 import { OPPONENTS } from "@/lib/opponents";
 import { unlockAudio } from "@/lib/sound";
 import { DailyCoach } from "@/components/DailyCoach";
+import { TrainingSession } from "@/components/TrainingSession";
 import { recentLadderWin } from "@/lib/daily-coach";
 
 export const Route = createFileRoute("/")({
@@ -78,6 +79,7 @@ function Home() {
           <CoachBubble>{greeting}</CoachBubble>
         </section>
       </div>
+      {t && <TrainingSession progress={p} day={t} />}
       <section className="mt-6 grid gap-3 md:grid-cols-3" aria-label="Fortsett treningen">
         <Link to="/stigen" className="activity-link"><Crown className="size-5 text-muted-foreground" /><div className="min-w-0"><h2 className="text-sm font-semibold">Motstanderstigen</h2><p className="mt-1 text-xs text-muted-foreground">{p.beaten.length}/{OPPONENTS.length} slått{nextOpp ? ` · Neste: ${nextOpp.elo}` : " · Fullført"}</p></div><ArrowUpRight className="size-4 text-muted-foreground" /></Link>
         <Link to="/fritt" className="activity-link"><Swords className="size-5 text-muted-foreground" /><div className="min-w-0"><h2 className="text-sm font-semibold">Fritt parti</h2><p className="mt-1 text-xs text-muted-foreground">Velg styrke, farge og tempo</p></div><ArrowUpRight className="size-4 text-muted-foreground" /></Link>
