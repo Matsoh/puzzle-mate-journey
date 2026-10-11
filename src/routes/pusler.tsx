@@ -106,7 +106,7 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
 
   useEffect(() => {
     const t = setTimeout(() => {
-      playUci(solution[0]);
+      playUci(solution[0]!);
       setIdx(1);
       setStatus("yourTurn");
     }, 700);
@@ -138,7 +138,7 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
 
   const onMove = (from: string, to: string) => {
     if (status !== "yourTurn" && status !== "retry") return false;
-    const expected = solution[idx];
+    const expected = solution[idx] ?? "";
     let mv;
     try {
       mv = chess.current.move({ from, to, promotion: expected?.[4] || "q" });
@@ -171,19 +171,19 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
     }
     play("correct");
     setTimeout(() => {
-      playUci(solution[next]);
+      playUci(solution[next]!);
       setIdx(next + 1);
     }, 450);
     return true;
   };
 
   const showSolution = () => {
-    const expected = solution[idx];
+    const expected = solution[idx] ?? "";
     setHintSquare(expected.slice(0, 2));
   };
 
   const labels = themeLabels(puzzle);
-  const arrows = hintSquare && status !== "solved" ? [{ startSquare: solution[idx].slice(0, 2), endSquare: solution[idx].slice(2, 4), color: "var(--arrow-good)" }] : [];
+  const arrows = hintSquare && status !== "solved" ? [{ startSquare: solution[idx]!.slice(0, 2), endSquare: solution[idx]!.slice(2, 4), color: "var(--arrow-good)" }] : [];
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">

@@ -69,7 +69,7 @@ function Game() {
   const clockRef = useRef(clock);
   clockRef.current = clock;
 
-  const lastMove = moves.length ? ([moves[moves.length - 1].uci.slice(0, 2), moves[moves.length - 1].uci.slice(2, 4)] as [string, string]) : null;
+  const lastMove = moves.length ? ([moves[moves.length - 1]!.uci.slice(0, 2), moves[moves.length - 1]!.uci.slice(2, 4)] as [string, string]) : null;
 
   // Engine setup
   useEffect(() => {
@@ -136,7 +136,8 @@ function Game() {
       setMoves((m) => [...m, { fenBefore, uci, san: mv.san, color: mv.color }]);
       setFen(g.fen());
       if (tcCfg && tcCfg[1]) {
-        setClock((c) => (mv.color === "w" ? [c[0] + tcCfg[1], c[1]] : [c[0], c[1] + tcCfg[1]]));
+        const inc = tcCfg[1];
+        setClock((c) => (mv.color === "w" ? [c[0] + inc, c[1]] : [c[0], c[1] + inc]));
       }
       play(g.inCheck() ? "check" : mv.captured ? "capture" : "move");
       checkEnd();
@@ -182,7 +183,7 @@ function Game() {
       const side = game.current.turn() === "w" ? 0 : 1;
       setClock((c) => {
         const n: [number, number] = [...c] as [number, number];
-        n[side] = Math.max(0, n[side] - dt);
+        n[side] = Math.max(0, n[side]! - dt);
         return n;
       });
     }, 200);
@@ -257,7 +258,7 @@ function Game() {
             <div className="mx-auto w-full max-w-[min(94vw,68vh)]">
               <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player} lastMove={lastMove} />
             </div>
-            <PlayerBar name="⭐ Deg" clock={tcCfg ? fmtClock(clock[1 - oppClockIdx]) : null} active={phase === "playing" && game.current.turn() === player} />
+            <PlayerBar name="⭐ Deg" clock={tcCfg ? fmtClock(clock[oppClockIdx === 0 ? 1 : 0]) : null} active={phase === "playing" && game.current.turn() === player} />
           </section>
         )}
 
@@ -344,7 +345,7 @@ function Game() {
   );
 }
 
-function PlayerBar({ name, rating, clock, active, note }: { name: string; rating?: number; clock: string | null; active: boolean; note?: string }) {
+function PlayerBar({ name, rating, clock, active, note }: { name: string; rating?: number | undefined; clock: string | null; active: boolean; note?: string | undefined }) {
   return (
     <div className={`mx-auto flex w-full max-w-[min(94vw,68vh)] items-center justify-between rounded-2xl px-4 py-2 border transition ${active ? "border-primary bg-primary/15" : "border-border bg-card/60"}`}>
       <span className="font-extrabold truncate">
