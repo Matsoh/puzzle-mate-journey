@@ -4,6 +4,7 @@ import { Compass, Zap, ExternalLink, CheckCircle2, Target, ChevronLeft, ChevronR
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { TrainerExercise } from "@/components/TrainerExercise";
+import { AdaptiveTrainer } from "@/components/AdaptiveTrainer";
 import { chooseCoach, useTrainer } from "@/lib/trainer-store";
 import { DISCLAIMER, PROFILES, dailyPlan, exercisesFor, type CoachId } from "@/lib/trainer";
 import { today, useProgress } from "@/lib/progress";
@@ -74,6 +75,7 @@ function TrainerPage() {
           <p className="mt-3 flex gap-2 text-sm"><Target className="size-4 shrink-0 text-primary" /><span><span className="font-medium">Oppgave:</span> {plan.task}</span></p>
           <p className="mt-3 text-sm text-muted-foreground">{plan.motivation}</p>
         </section>); })()}
+      {active && day && <AdaptiveTrainer coach={active} day={day} />}
       {active && ex && (() => { const cur = idx % list.length; const last = cur === list.length - 1; return <section className="mt-6" aria-label="Øvelser">
         <h2 className="section-title mb-1">Grunnoppgaver – gjensyn ({cur + 1}/{list.length})</h2>
         <p className="mb-3 text-xs text-muted-foreground">Egenkomponerte introduksjonsoppgaver, kontrollert med regelmotor.</p>
