@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FremgangRouteImport } from './routes/fremgang'
 import { Route as FrittRouteImport } from './routes/fritt'
+import { Route as PartiRouteImport } from './routes/parti'
+import { Route as PuslerRouteImport } from './routes/pusler'
 import { Route as StigenRouteImport } from './routes/stigen'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,9 +21,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FremgangRoute = FremgangRouteImport.update({
+  id: '/fremgang',
+  path: '/fremgang',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FrittRoute = FrittRouteImport.update({
   id: '/fritt',
   path: '/fritt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartiRoute = PartiRouteImport.update({
+  id: '/parti',
+  path: '/parti',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PuslerRoute = PuslerRouteImport.update({
+  id: '/pusler',
+  path: '/pusler',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StigenRoute = StigenRouteImport.update({
@@ -31,31 +49,44 @@ const StigenRoute = StigenRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
+  '/parti': typeof PartiRoute
+  '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
+  '/parti': typeof PartiRoute
+  '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
+  '/parti': typeof PartiRoute
+  '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/fritt' | '/stigen'
+  fullPaths: '/' | '/fremgang' | '/fritt' | '/parti' | '/pusler' | '/stigen'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/fritt' | '/stigen'
-  id: '__root__' | '/' | '/fritt' | '/stigen'
+  to: '/' | '/fremgang' | '/fritt' | '/parti' | '/pusler' | '/stigen'
+  id:
+    '__root__' | '/' | '/fremgang' | '/fritt' | '/parti' | '/pusler' | '/stigen'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FremgangRoute: typeof FremgangRoute
   FrittRoute: typeof FrittRoute
+  PartiRoute: typeof PartiRoute
+  PuslerRoute: typeof PuslerRoute
   StigenRoute: typeof StigenRoute
 }
 
@@ -68,11 +99,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fremgang': {
+      id: '/fremgang'
+      path: '/fremgang'
+      fullPath: '/fremgang'
+      preLoaderRoute: typeof FremgangRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/fritt': {
       id: '/fritt'
       path: '/fritt'
       fullPath: '/fritt'
       preLoaderRoute: typeof FrittRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parti': {
+      id: '/parti'
+      path: '/parti'
+      fullPath: '/parti'
+      preLoaderRoute: typeof PartiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pusler': {
+      id: '/pusler'
+      path: '/pusler'
+      fullPath: '/pusler'
+      preLoaderRoute: typeof PuslerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stigen': {
@@ -87,7 +139,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FremgangRoute: FremgangRoute,
   FrittRoute: FrittRoute,
+  PartiRoute: PartiRoute,
+  PuslerRoute: PuslerRoute,
   StigenRoute: StigenRoute,
 }
 export const routeTree = rootRouteImport
