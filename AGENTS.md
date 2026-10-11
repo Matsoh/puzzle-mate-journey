@@ -14,7 +14,7 @@
 - Stockfish runs as the lite single-threaded WASM build from `public/stockfish/` in a Web Worker (`src/lib/engine.ts`) — works without cross-origin isolation headers and stays small for phones.
 - Coach explanations are built only from Stockfish facts in `src/lib/coach.ts`; LLM rephrasing and TTS plug in through `src/lib/coach-hooks.ts` (disabled flags) — keeps advice truthful.
 - Puzzles use the Lichess puzzle CSV format; import larger sets with `parseLichessCsv` into `src/data/puzzles.json` — one data format end to end.
-- 3D (react-three-fiber) is only used for home hero, boss intro and celebration, lazy-loaded behind ClientOnly (`src/components/three/Lazy3D.tsx`); the board stays 2D — SSR-safe and fast.
+- Home and win scenes use the reusable CSS/image ChampAvatarScene; load the procedural Hero3D only after an image fails, behind ClientOnly, and retain lazy 3D boss intros — keeps the normal home free of Three.js and the board 2D.
 - Pure game rules (Elo, XP, levels, streak) live in `src/lib/rules.ts` with tests in `src/lib/rules.test.ts`.
 - All decorative scenes share procedural geometry and stone textures through `stone.tsx`, `GoblinKnight.tsx` and `shared.tsx`; merged static geometry and CSS-derived scene tokens keep mobile draw calls low and the visual identity consistent.
 - Shared CoachAvatar loads the optional public portrait with an image-error SVG fallback so every speech bubble uses the same portrait behavior.

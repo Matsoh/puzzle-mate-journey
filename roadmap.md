@@ -10,3 +10,9 @@
 - [x] Add deterministic context-aware daily peptalk and next goal.
 - [x] Add daily rotation of the ten approved chess facts.
 - [x] Test daily rules and verify portrait fallback and mobile/desktop home.
+
+# Animated champion scene
+- [x] Add reusable image-based avatar scene with tilt, particles and replayable celebration.
+- [x] Replace home and win scenes; update round portrait and offline cache.
+- [x] Verify real missing-image fallback and replay; verify desktop/mobile image layout with temporary browser fixtures, pending final uploads.
+- [ ] Add the two new images when uploaded (waiting for user uploads).

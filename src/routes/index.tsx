@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { HeroScene } from "@/components/three/Lazy3D";
+import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import { CoachBubble } from "@/components/CoachAvatar";
 import { MuteToggle } from "@/components/AppHeader";
 import { today, useProgress } from "@/lib/progress";
 import { levelFromXp, liveStreak } from "@/lib/rules";
-import { COACH_GREETINGS, COACH_NAME } from "@/lib/coach-config";
+import { COACH_GREETINGS } from "@/lib/coach-config";
 import { OPPONENTS } from "@/lib/opponents";
 import { unlockAudio } from "@/lib/sound";
 import { DailyCoach } from "@/components/DailyCoach";
@@ -58,9 +58,8 @@ function Home() {
       </header>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:items-center mt-2">
-        <section className="relative min-w-0 h-[40vh] min-h-64 md:h-[460px]">
-          <HeroScene />
-          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 chip whitespace-nowrap">♞ {COACH_NAME}</span>
+        <section className="chess-avatar-slot relative min-w-0 h-[40vh] min-h-64 md:h-[460px]">
+          <ChampAvatarScene />
         </section>
 
         <section className="min-w-0 space-y-4">

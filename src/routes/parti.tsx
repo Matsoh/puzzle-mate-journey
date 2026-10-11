@@ -5,7 +5,8 @@ import { AppHeader } from "@/components/AppHeader";
 import { Board } from "@/components/Board";
 import { CoachBubble } from "@/components/CoachAvatar";
 import { CoachReview } from "@/components/CoachReview";
-import { BossScene, CelebrationScene } from "@/components/three/Lazy3D";
+import { BossScene } from "@/components/three/Lazy3D";
+import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import type { ColorChoice, TimeControl } from "@/components/GameSetup";
 import { getEngine } from "@/lib/engine";
 import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
@@ -290,8 +291,8 @@ function Game() {
           {phase === "over" && result && (
             <div className="space-y-4 animate-pop">
               {result.outcome === "win" && (
-                <div className="relative h-64 rounded-3xl overflow-hidden card-game">
-                  <CelebrationScene />
+                <div className="relative aspect-square">
+                  <ChampAvatarScene celebrate />
                 </div>
               )}
               <div className="card-game p-5 text-center space-y-2">
