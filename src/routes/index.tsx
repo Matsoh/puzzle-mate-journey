@@ -58,7 +58,7 @@ function Home() {
       </header>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:items-center mt-2">
-        <section className="relative min-w-0 h-[40vh] min-h-64 md:h-[460px]">
+        <section className="chess-avatar-slot relative min-w-0 h-[40vh] min-h-64 md:h-[460px]">
           <ChampAvatarScene />
         </section>
 
