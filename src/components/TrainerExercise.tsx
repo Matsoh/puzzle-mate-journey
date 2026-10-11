@@ -11,7 +11,7 @@ export function TrainerExercise({ exercise, onSolved, onNext }: { exercise: Exer
   const [hint, setHint] = useState(false);
   const [tried, setTried] = useState("");
   const [lastId, setLastId] = useState(exercise.id);
-  if (lastId !== exercise.id) { setLastId(exercise.id); setFen(exercise.fen); setStatus("idle"); setHint(false); }
+  if (lastId !== exercise.id) { setLastId(exercise.id); setFen(exercise.fen); setStatus("idle"); setHint(false); setTried(""); }
   const orientation = exercise.fen.split(" ")[1] === "b" ? "black" : "white";
   const reset = () => { setFen(exercise.fen); setStatus("idle"); };
   return (
