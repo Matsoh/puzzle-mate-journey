@@ -220,7 +220,8 @@ function Preparation({ t }: { t: Tournament }) {
 
 function Rounds({ t }: { t: Tournament }) {
   const active = activeRound(t);
-  const [open, setOpen] = useState<number | null>(active);
+  const needsResult = t.rounds.findIndex((r) => r.status === "done" && !r.result);
+  const [open, setOpen] = useState<number | null>(needsResult >= 0 ? needsResult : active);
   return (
     <section aria-labelledby="rounds-h" className="space-y-3">
       <h2 id="rounds-h" className="section-title">Runder</h2>
