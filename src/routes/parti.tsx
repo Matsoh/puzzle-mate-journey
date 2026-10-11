@@ -194,7 +194,7 @@ function Game() {
     if (!tcCfg || phase !== "playing") return;
     const pi = player === "w" ? 0 : 1;
     if (clock[pi] <= 0) finish("loss", "Tiden gikk ut");
-    else if (clock[1 - pi] <= 0) finish("win", "Motstanderen gikk tom for tid");
+    else if (clock[pi === 0 ? 1 : 0] <= 0) finish("win", "Motstanderen gikk tom for tid");
   }, [clock, tcCfg, phase, player, finish]);
 
   const onPlayerMove = (from: string, to: string) => {
