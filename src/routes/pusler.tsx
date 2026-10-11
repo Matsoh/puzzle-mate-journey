@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, RotateCcw, Flag, Search, Lightbulb, Swords, House, Award, TrendingUp, Puzzle, LockKeyholeOpen } from "lucide-react";
+import { ArrowRight, RotateCcw, Lightbulb, Swords, House, Puzzle as PuzzleIcon } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Chess } from "chess.js";
@@ -75,7 +75,7 @@ function Puzzles() {
               </span>
             ))}
           </div>
-          <span className="chip"><Puzzle className="size-3" /> {p.puzzleRating}</span>
+          <span className="chip"><PuzzleIcon className="size-3" /> {p.puzzleRating}</span>
         </div>
 
         {allDone ? (
