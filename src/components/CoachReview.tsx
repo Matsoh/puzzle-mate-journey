@@ -45,7 +45,7 @@ export function CoachReview({ mistakes, orientation }: { mistakes: Mistake[]; or
     <div className="space-y-4">
       <div className="flex gap-2">
         {mistakes.map((mm, i) => (
-          <Button key={mm.ply} onClick={() => { setIdx(i); setStep(0); }} className={cn("btn-game btn-ghost flex-1 min-h-11 ", i === idx && "border-primary bg-primary/10")}>
+          <Button variant="outline" key={mm.ply} onClick={() => { setIdx(i); setStep(0); }} className={cn("flex-1 min-h-11 ", i === idx && "border-primary bg-primary/10")}>
             Feil {i + 1}
           </Button>
         ))}
@@ -59,8 +59,8 @@ export function CoachReview({ mistakes, orientation }: { mistakes: Mistake[]; or
       </div>
       <p className="text-center text-base font-medium">{f.label}</p>
       <div className="grid grid-cols-2 gap-3">
-        <Button className="btn-game btn-ghost" disabled={step === 0} onClick={() => setStep((s) => s - 1)}><ArrowLeft /> Tilbake</Button>
-        <Button className="btn-game btn-primary" disabled={step >= frames.length - 1} onClick={() => setStep((s) => s + 1)}>Neste <ArrowRight /></Button>
+        <Button variant="outline" className="" disabled={step === 0} onClick={() => setStep((s) => s - 1)}><ArrowLeft /> Tilbake</Button>
+        <Button className="" disabled={step >= frames.length - 1} onClick={() => setStep((s) => s + 1)}>Neste <ArrowRight /></Button>
       </div>
     </div>
   );

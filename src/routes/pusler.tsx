@@ -212,10 +212,10 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
           <div className="space-y-3 animate-pop">
             <CoachBubble>Nesten! Det var ikke helt riktig. {delta !== null && <b>({delta} poeng)</b>}</CoachBubble>
             <div className="grid grid-cols-2 gap-3">
-              <Button className="btn-game btn-ghost" onClick={() => setStatus("retry")}><RotateCcw /> Prøv igjen</Button>
-              <Button className="btn-game btn-ghost" onClick={() => { setStatus("retry"); showSolution(); }}><Lightbulb /> Vis trekk</Button>
+              <Button variant="outline" className="" onClick={() => setStatus("retry")}><RotateCcw /> Prøv igjen</Button>
+              <Button variant="outline" className="" onClick={() => { setStatus("retry"); showSolution(); }}><Lightbulb /> Vis trekk</Button>
             </div>
-            <Button className="btn-game btn-primary w-full" onClick={onNext}>Neste pusle <ArrowRight /></Button>
+            <Button className=" w-full" onClick={onNext}>Neste pusle <ArrowRight /></Button>
           </div>
         )}
         {status === "solved" && (
@@ -224,7 +224,7 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
               <p className="text-2xl font-semibold text-primary">Riktig!</p>
               {delta !== null && <p className="chip mt-2 text-success">+{delta} puslerating · +{XP.puzzleSolved} XP</p>}
             </div>
-            <Button className="btn-game btn-accent w-full" onClick={onNext}>Neste pusle <ArrowRight /></Button>
+            <Button className=" w-full" onClick={onNext}>Neste pusle <ArrowRight /></Button>
           </div>
         )}
       </div>

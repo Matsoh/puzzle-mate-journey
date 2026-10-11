@@ -246,7 +246,7 @@ function Game() {
             <p className="font-medium text-primary">{opponent.elo} · {opponent.style}</p>
             <p className="text-lg italic">«{opponent.line}»</p>
             <Button
-              className="btn-game btn-gold w-full max-w-sm "
+              className=" w-full max-w-sm "
               onClick={() => {
                 unlockAudio();
                 play("boss");
@@ -286,7 +286,7 @@ function Game() {
                   ))
                 )}
               </div>
-              <Button className="btn-game btn-ghost w-full" onClick={() => finish("loss", "Du ga opp")}><Flag /> Gi opp</Button>
+              <Button variant="outline" className=" w-full" onClick={() => finish("loss", "Du ga opp")}><Flag /> Gi opp</Button>
             </>
           )}
 
@@ -322,9 +322,9 @@ function Game() {
                 {result.outcome === "win" ? "Rått spilt! " : result.outcome === "draw" ? "Godt kjempet! " : "Ikke gi opp – tap er der vi lærer mest! "}
                 Skal vi se på de viktigste øyeblikkene sammen?
               </CoachBubble>
-              <Button className="btn-game btn-primary w-full" disabled={moves.length < 2} onClick={startAnalysis}><Search /> Analyser med treneren</Button>
+              <Button className=" w-full" disabled={moves.length < 2} onClick={startAnalysis}><Search /> Analyser med treneren</Button>
               <div className="grid grid-cols-2 gap-3">
-                <Button className="btn-game btn-ghost" onClick={() => window.location.reload()}><RotateCcw /> Omkamp</Button>
+                <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Omkamp</Button>
                 <Link to={opponent ? "/stigen" : "/"} className="btn-game btn-ghost">{opponent ? "<Swords /> Stigen" : "<House /> Oversikt"}</Link>
               </div>
             </div>
@@ -342,7 +342,7 @@ function Game() {
             <>
               <CoachReview mistakes={mistakes} orientation={orientation} />
               <div className="grid grid-cols-2 gap-3">
-                <Button className="btn-game btn-secondary" onClick={() => window.location.reload()}><RotateCcw /> Ny kamp</Button>
+                <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Ny kamp</Button>
                 <Link to="/" className="btn-game btn-ghost"><House /> Oversikt</Link>
               </div>
             </>
@@ -355,7 +355,7 @@ function Game() {
 
 function PlayerBar({ name, rating, clock, active, note }: { name: string; rating?: number | undefined; clock: string | null; active: boolean; note?: string | undefined }) {
   return (
-    <div className={`mx-auto flex w-full max-w-[min(94vw,68vh)] items-center justify-between rounded-2xl px-4 py-2 border transition ${active ? "border-primary bg-primary/15" : "border-border bg-card/60"}`}>
+    <div className={`mx-auto grid grid-cols-[minmax(0,1fr)_auto] gap-3 w-full max-w-[min(94vw,68vh)] items-center justify-between rounded-xl px-4 py-2 border transition ${active ? "border-primary bg-primary/15" : "border-border bg-card/60"}`}>
       <span className="font-medium truncate">
         {name} {rating && <span className="text-muted-foreground">({rating})</span>} {note && <span className="text-primary animate-pulse">{note}</span>}
       </span>
