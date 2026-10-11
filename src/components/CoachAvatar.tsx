@@ -8,13 +8,13 @@ export function CoachAvatar({ className }: { className?: string }) {
     const portrait = new Image();
     portrait.onload = () => setAvailable(true);
     portrait.onerror = () => setAvailable(false);
-    portrait.src = "/coach-champ.png";
+    portrait.src = "/coach-champ.webp";
     return () => { portrait.onload = null; portrait.onerror = null; };
   }, []);
   return (
     <div className={cn("coach-portrait relative shrink-0 overflow-hidden rounded-full", className)}>
       <GoblinAvatar className="size-full" />
-      {available && <img src="/coach-champ.png" alt={COACH_NAME} onError={() => setAvailable(false)} className="absolute inset-0 size-full rounded-full object-cover" />}
+      {available && <img src="/coach-champ.webp" alt={COACH_NAME} onError={() => setAvailable(false)} className="absolute inset-0 size-full rounded-full object-cover object-[50%_22%]" />}
     </div>
   );
 }
