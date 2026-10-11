@@ -60,7 +60,7 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
     <section className="card-game relative mt-6 p-5 sm:p-6" aria-labelledby="session-h">
       <button type="button" aria-label="Lukk økten" onClick={() => setClosed(true)} className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"><X className="size-5" /></button>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 pr-12">
-        <p className="eyebrow flex items-center gap-2"><CoachAvatar className="size-9" />Dagens økt · {prof.label}</p>
+        <div className="eyebrow flex items-center gap-2"><CoachAvatar className="size-9" />Dagens økt · {prof.label}</div>
         <span className="chip"><Clock className="size-3" />{short ? "ca. 5 min" : "ca. 10–15 min"}</span>
       </div>
       <h2 id="session-h" className="section-title">Fokus: {plan.focus}</h2>
