@@ -34,14 +34,14 @@ function Ladder() {
         <p className="text-sm text-muted-foreground">
           {beatenCount}/10 slått. Slå en motstander for å låse opp den neste.
         </p>
-        {[...OPPONENTS].reverse().map((o) => {
+        {OPPONENTS.map((o) => {
           const idx = OPPONENTS.indexOf(o);
           const unlocked = isUnlocked(idx, p.beaten);
           const beaten = p.beaten.includes(o.id);
           const isOpen = open === o.id;
           return (
-            <div key={o.id} className={cn("card-game overflow-hidden transition", !unlocked && "opacity-55", isOpen && "ring-2 ring-primary")}>
-              <Button variant="ghost" disabled={!unlocked} aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : o.id)} className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-none p-4 text-left sm:gap-4 sm:p-5">
+            <div key={o.id} className={cn("card-game overflow-hidden transition", isOpen && "border-primary")}>
+              <Button variant="ghost" disabled={!unlocked} aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : o.id)} className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-none p-4 text-left disabled:opacity-100 sm:gap-4 sm:p-5">
                 <div className="opp-avatar grid size-12 shrink-0 place-items-center rounded-xl" >
                   {beaten ? <CheckCircle2 className="size-5 text-primary" /> : unlocked ? <ChessKnight className="size-5" /> : <Lock className="size-5" />}
                 </div>
@@ -49,6 +49,8 @@ function Ladder() {
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <h2 className="text-base font-semibold">{o.name}</h2>
                     {beaten && <span className="chip text-success">Fullført</span>}
+                    {!unlocked && <span className="text-xs text-muted-foreground">Låst</span>}
+                    {unlocked && !beaten && <span className="text-xs text-primary">Tilgjengelig</span>}
                   </div>
                   <p className="text-xs font-medium text-muted-foreground">{o.elo} · {o.style}</p>
                   <p className="text-sm text-muted-foreground italic truncate">«{o.line}»</p>
