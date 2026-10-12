@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Archive, CheckCircle2, ChevronDown, Clock, Flag, Pencil, Plus, Swords, Trophy } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
+import { PrepPanel } from "@/components/TournamentPrep";
 import { CoachAvatar, CoachLabel } from "@/components/CoachAvatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,9 +17,9 @@ import {
 export const Route = createFileRoute("/turnering")({
   head: () => ({
     meta: [
-      { title: "Turneringsdagen – Goblin Chess" },
-      { name: "description", content: "Planlegg turneringsdagen, før runde for runde og se faktiske poeng." },
-      { property: "og:title", content: "Turneringsdagen – Goblin Chess" },
+      { title: "Turnering – Goblin Chess" },
+      { name: "description", content: "Forbered åpningene dine, øv taktikk og sluttspill, og før rundene på turneringsdagen." },
+      { property: "og:title", content: "Turnering – Goblin Chess" },
       { property: "og:description", content: "Forberedelse, rundekort og oppsummering for en ekte sjakkturnering." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -42,11 +43,22 @@ function TournamentPage() {
   const ts = useTournaments();
   const current = ts.list.find((t) => t.id === ts.current) ?? null;
   const history = ts.list.filter((t) => t.id !== ts.current).sort((a, b) => b.createdAt - a.createdAt);
+  const [tab, setTab] = useState<"prep" | "day">("prep");
+  const playing = !!current?.rounds.some((r) => r.status === "playing");
+  const view = playing ? "day" : tab;
   return (
     <main className="page-layout page-narrow">
-      <AppHeader title="Turneringsdagen" />
-      {current ? <Current t={current} /> : <NewTournament />}
-      {history.length > 0 && !current?.rounds.some((r) => r.status === "playing") && <History list={history} />}
+      <AppHeader title="Turnering" />
+      <div role="tablist" aria-label="Turnering" className="mb-5 grid grid-cols-2 gap-2">
+        {([["prep", "Forberedelse"], ["day", "På turneringsdagen"]] as const).map(([id, label]) => (
+          <Button key={id} role="tab" aria-selected={view === id} variant="outline" disabled={playing && id === "prep"} onClick={() => setTab(id)} className={cn("h-12", view === id && "border-primary bg-primary/10")}>{label}</Button>
+        ))}
+      </div>
+      <div className="space-y-6">
+        {current ? <Current t={current} view={view} /> : <NewTournament />}
+        {view === "prep" && <PrepPanel tournament={current} allTournaments={ts.list} />}
+        {view === "day" && history.length > 0 && !playing && <History list={history} />}
+      </div>
     </main>
   );
 }
@@ -94,7 +106,7 @@ function SetupForm({ value: s, onChange }: { value: Setup; onChange: (s: Setup) 
   );
 }
 
-function Current({ t }: { t: Tournament }) {
+function Current({ t, view }: { t: Tournament; view: "prep" | "day" }) {
   const playingIdx = t.rounds.findIndex((r) => r.status === "playing");
   const { points, played } = score(t);
   const [editing, setEditing] = useState(false);
@@ -127,9 +139,8 @@ function Current({ t }: { t: Tournament }) {
         {editing && <EditSetup t={t} onDone={() => setEditing(false)} />}
       </section>
 
-      {!allDone && <Preparation t={t} />}
-      <Rounds t={t} />
-      <AfterDay t={t} />
+      {view === "day" && <Rounds t={t} />}
+      {view === "day" && <AfterDay t={t} />}
     </div>
   );
 }
