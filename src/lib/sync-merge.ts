@@ -21,14 +21,14 @@ export function mergeState(server: unknown, local: unknown, key = ""): unknown {
       const id = JSON.stringify(item);
       if (!seen.has(id)) { seen.add(id); out.push(item); }
     }
-    if (out.length && out.every((i) => isObj(i) && typeof i.t === "number")) {
+    if (out.length && out.every((i) => isObj(i) && typeof i["t"] === "number")) {
       out.sort((a, b) => ((a as { t: number }).t - (b as { t: number }).t));
     }
     return out;
   }
   if (isObj(server) && isObj(local)) {
-    if (typeof server.day === "string" && typeof local.day === "string" && server.day !== local.day) {
-      return server.day > local.day ? server : local;
+    if (typeof server["day"] === "string" && typeof local["day"] === "string" && server["day"] !== local["day"]) {
+      return server["day"] > local["day"] ? server : local;
     }
     const out: Record<string, unknown> = {};
     for (const k of new Set([...Object.keys(server), ...Object.keys(local)])) out[k] = mergeState(server[k], local[k], k);

@@ -88,14 +88,14 @@ export function AuthGate({ children }: { children: ReactNode }) {
 function ImportOffer({ offer, onDone }: { offer: { uid: string; snap: Record<string, unknown> }; onDone: () => void }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(false);
-  const p = offer.snap.progress as { xp?: number; rating?: number; games?: number; puzzlesSolved?: number } | undefined;
-  const t = offer.snap.tournament as { list?: unknown[] } | undefined;
+  const p = offer.snap["progress"] as { xp?: number; rating?: number; games?: number; puzzlesSolved?: number } | undefined;
+  const t = offer.snap["tournament"] as { list?: unknown[] } | undefined;
   const lines = [
     p && `${p.xp ?? 0} XP og app-rating ${p.rating ?? "–"}`,
     p && `${p.games ?? 0} partier og ${p.puzzlesSolved ?? 0} løste pusler`,
-    offer.snap.trainer && "Trenervalg og treningsøkter",
+    offer.snap["trainer"] && "Trenervalg og treningsøkter",
     t?.list?.length && `${t.list.length} turneringer`,
-    offer.snap.prep && "Åpningsplan og øvinger",
+    offer.snap["prep"] && "Åpningsplan og øvinger",
   ].filter(Boolean) as string[];
 
   async function take() {
