@@ -14,13 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      approved_players: {
+        Row: {
+          approved_at: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_state: {
+        Row: {
+          data: Json
+          revision: number
+          store_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data: Json
+          revision?: number
+          store_key: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          data?: Json
+          revision?: number
+          store_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_approved_player: { Args: never; Returns: boolean }
+      save_user_state: {
+        Args: { p_data: Json; p_expected: number; p_key: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
