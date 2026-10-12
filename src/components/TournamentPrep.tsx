@@ -95,7 +95,7 @@ export function PracticeLauncher({ fen, side, source, tournamentTc, label = "Spi
 
 type DrillResult = { independent: boolean; branch: Branch };
 export function OpeningDrill({ opening: o, rec, tournamentTc, onDone }: { opening: Opening; rec: OpeningRec | undefined; tournamentTc: string | null; onDone: (r: DrillResult) => void }) {
-  const branch = branchFor(o, rec);
+  const [branch] = useState(() => branchFor(o, rec));
   const [phase, setPhase] = useState<"demo" | "try" | "why" | "done">(rec?.practiced ? "try" : "demo");
   const [ply, setPly] = useState(0);
   const [hint, setHint] = useState<0 | 1 | 2 | 3>(0);
