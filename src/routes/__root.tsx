@@ -43,7 +43,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => {
     // After a new build, old page chunks disappear: reload once to fetch the fresh version.
-    if (/dynamically imported module|Importing a module script failed|error loading dynamically/i.test(String(error?.message))) {
+    if (/dynamically imported module|Importing a module script failed|error loading dynamically/i.test(String((error as Error | undefined)?.message))) {
       try {
         if (!sessionStorage.getItem("goblin-chess.chunk-reload")) {
           sessionStorage.setItem("goblin-chess.chunk-reload", "1");
