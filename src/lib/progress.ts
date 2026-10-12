@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { createSyncedStore } from "./cloud-sync";
 import { dayKey, nextStreak } from "./rules";
 
 export type RatingPoint = { t: number; game: number; puzzle: number };
@@ -48,47 +48,20 @@ export const DEFAULT_PROGRESS: Progress = {
   muted: false,
 };
 
-// Key intentionally unchanged after renaming the app to "Goblin Chess" — do not bump, or saved progress is lost.
-const KEY = "sjakkstorm.progress.v1";
-let state: Progress = DEFAULT_PROGRESS;
-let loaded = false;
-const listeners = new Set<() => void>();
+// Old anonymous key — read only for the one-time import offer, never deleted.
+const LEGACY_KEY = "sjakkstorm.progress.v1";
 
-function load() {
-  if (loaded || typeof window === "undefined") return;
-  loaded = true;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (raw) state = { ...DEFAULT_PROGRESS, ...JSON.parse(raw) };
-  } catch {
-    /* corrupt storage — start fresh */
-  }
-}
+const store = createSyncedStore<Progress>({
+  key: "progress",
+  empty: () => DEFAULT_PROGRESS,
+  migrate: (raw) => ({ ...DEFAULT_PROGRESS, ...(raw && typeof raw === "object" ? (raw as Partial<Progress>) : {}) }),
+  legacyKeys: [LEGACY_KEY],
+  hasData: (p) => p.xp > 0 || p.games > 0 || p.puzzlesTried > 0 || p.history.length > 0,
+});
 
-export function getProgress(): Progress {
-  load();
-  return state;
-}
-
-export function updateProgress(fn: (p: Progress) => Progress) {
-  load();
-  state = fn(state);
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    /* storage full / private mode */
-  }
-  listeners.forEach((l) => l());
-}
-
-function subscribe(l: () => void) {
-  listeners.add(l);
-  return () => listeners.delete(l);
-}
-
-export function useProgress(): Progress {
-  return useSyncExternalStore(subscribe, getProgress, () => DEFAULT_PROGRESS);
-}
+export const getProgress = store.get;
+export const updateProgress = store.set;
+export const useProgress = store.use;
 
 export const today = () => dayKey(new Date());
 

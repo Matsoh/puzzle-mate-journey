@@ -1,36 +1,22 @@
-import { useSyncExternalStore } from "react";
+import { createSyncedStore } from "./cloud-sync";
 import { migrateTournaments, type Tournament, type TournamentState } from "./tournament";
 
-const KEY = "goblin-chess.tournament.v1";
-const SERVER: TournamentState = { version: 1, current: null, list: [] };
-let state = SERVER;
-let loaded = false;
-const listeners = new Set<() => void>();
+const empty = (): TournamentState => ({ version: 1, current: null, list: [] });
+const store = createSyncedStore<TournamentState>({
+  key: "tournament",
+  empty,
+  migrate: migrateTournaments,
+  legacyKeys: ["goblin-chess.tournament.v1"],
+  hasData: (t) => t.list.length > 0,
+});
 
-const get = () => {
-  if (!loaded && typeof window !== "undefined") {
-    loaded = true;
-    try { const raw = localStorage.getItem(KEY); if (raw) state = migrateTournaments(JSON.parse(raw)); } catch { /* fresh */ }
-  }
-  return state;
-};
-function save(next: TournamentState) {
-  state = next;
-  try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* private mode */ }
-  listeners.forEach((l) => l());
-}
-export function useTournaments(): TournamentState {
-  return useSyncExternalStore((l) => { listeners.add(l); return () => listeners.delete(l); }, get, () => SERVER);
-}
+export const useTournaments = store.use;
 export function addTournament(t: Tournament) {
-  const s = get();
-  save({ ...s, current: t.id, list: [...s.list.map((x) => (x.id === s.current ? { ...x, archived: true } : x)), t] });
+  store.set((s) => ({ ...s, current: t.id, list: [...s.list.map((x) => (x.id === s.current ? { ...x, archived: true } : x)), t] }));
 }
 export function updateTournament(id: string, f: (t: Tournament) => Tournament) {
-  const s = get();
-  save({ ...s, list: s.list.map((t) => (t.id === id ? f(t) : t)) });
+  store.set((s) => ({ ...s, list: s.list.map((t) => (t.id === id ? f(t) : t)) }));
 }
 export function archiveCurrent() {
-  const s = get();
-  save({ ...s, current: null, list: s.list.map((t) => (t.id === s.current ? { ...t, archived: true } : t)) });
+  store.set((s) => ({ ...s, current: null, list: s.list.map((t) => (t.id === s.current ? { ...t, archived: true } : t)) }));
 }
