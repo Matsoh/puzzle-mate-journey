@@ -1,6 +1,6 @@
 import { createSyncedStore } from "./cloud-sync";
 import { SESSION_XP, type CoachId, type SessionRecord } from "./trainer";
-import { updateProgress } from "./progress";
+import { updateProgress, withCredit } from "./progress";
 import { emptyCoach, getItem, markSeen, pickNext, recordOutcome, type CoachState, type Outcome } from "./adaptive";
 
 export type TrainerState = {
@@ -55,7 +55,7 @@ export function updateSession(day: string, coach: CoachId, patch: Partial<Sessio
   if (rec.done && !rec.xpGiven) { rec.xpGiven = true; award = true; }
   save({ ...s, sessions: { ...s.sessions, [k]: rec } });
   // XP only — never rating — and only the first time this session is completed.
-  if (award) updateProgress((p) => ({ ...p, xp: p.xp + SESSION_XP }));
+  if (award) updateProgress((p) => withCredit(p, `session:${k}`, SESSION_XP));
 }
 
 export function setCoachState(coach: CoachId, f: (cs: CoachState) => CoachState) {

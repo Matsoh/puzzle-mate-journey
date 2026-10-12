@@ -4,9 +4,9 @@ import { mergeState } from "./sync-merge";
 
 /**
  * Personal progress lives on the server (table user_state, one row per store).
- * Each store keeps an in-memory copy plus a per-user device cache so unsynced
- * edits survive reload. Nothing is readable or writable before an approved
- * user has been hydrated from the server.
+ * Each store keeps an in-memory copy, the last confirmed server copy (`base`)
+ * and a per-user device cache so unsynced edits survive reload. Nothing is
+ * readable or writable before an approved user has been hydrated.
  */
 export type StoreDef<T> = {
   key: string; // server store_key
@@ -15,12 +15,15 @@ export type StoreDef<T> = {
   /** Old anonymous localStorage keys (read-only; only used for the import offer). */
   legacyKeys: string[];
   hasData: (t: T) => boolean;
+  /** Optional store-specific fix-up after the generic three-way merge. */
+  reconcile?: (base: T | undefined, server: T, local: T, merged: T) => T;
 };
 
 type Store<T = unknown> = {
   def: StoreDef<T>;
   get: () => T;
   replace: (next: T) => void;
+  base: T | undefined;
   rev: number;
   dirty: boolean;
   inflight: boolean;
@@ -35,22 +38,36 @@ let hydrated = false;
 
 export type SyncStatus = "saved" | "saving" | "error";
 let status: SyncStatus = "saved";
+let merged = 0; // count of conflict merges, shown as a notice
 const statusListeners = new Set<() => void>();
+const emit = () => statusListeners.forEach((l) => l());
 function recomputeStatus() {
   const next: SyncStatus = stores.some((s) => s.failures > 0) ? "error" : stores.some((s) => s.dirty || s.inflight) ? "saving" : "saved";
-  if (next !== status) { status = next; statusListeners.forEach((l) => l()); }
+  if (next !== status) { status = next; emit(); }
 }
+const subStatus = (l: () => void) => { statusListeners.add(l); return () => { statusListeners.delete(l); }; };
 export function useSyncStatus(): SyncStatus {
-  return useSyncExternalStore((l) => { statusListeners.add(l); return () => statusListeners.delete(l); }, () => status, () => "saved");
+  return useSyncExternalStore(subStatus, () => status, () => "saved");
 }
+/** Number of times progress from another device was merged in this session. */
+export function useMergeNotices(): number {
+  return useSyncExternalStore(subStatus, () => merged, () => 0);
+}
+export function dismissMergeNotice() { merged = 0; emit(); }
 
 const cacheKey = (u: string, key: string) => `goblin-chess.u.${u}.${key}`;
 function writeCache(s: Store) {
   if (!uid) return;
-  try { localStorage.setItem(cacheKey(uid, s.def.key), JSON.stringify({ rev: s.rev, dirty: s.dirty, data: s.get() })); } catch { /* storage blocked */ }
+  try { localStorage.setItem(cacheKey(uid, s.def.key), JSON.stringify({ rev: s.rev, dirty: s.dirty, data: s.get(), base: s.base })); } catch { /* storage blocked */ }
 }
-function readCache(u: string, key: string): { rev: number; dirty: boolean; data: unknown } | null {
+function readCache(u: string, key: string): { rev: number; dirty: boolean; data: unknown; base?: unknown } | null {
   try { const raw = localStorage.getItem(cacheKey(u, key)); return raw ? JSON.parse(raw) : null; } catch { return null; }
+}
+
+function merge<T>(s: Store<T>, base: unknown, server: unknown, local: unknown): T {
+  const m = s.def.migrate(mergeState(base, server, local));
+  if (!s.def.reconcile) return m;
+  return s.def.reconcile(base === undefined ? undefined : s.def.migrate(base), s.def.migrate(server), s.def.migrate(local), m);
 }
 
 export function createSyncedStore<T>(def: StoreDef<T>) {
@@ -58,7 +75,7 @@ export function createSyncedStore<T>(def: StoreDef<T>) {
   let state: T = def.empty();
   const listeners = new Set<() => void>();
   const notify = () => listeners.forEach((l) => l());
-  const s: Store<T> = { def, get: () => state, replace: (n) => { state = n; notify(); }, rev: 0, dirty: false, inflight: false, timer: null, failures: 0 };
+  const s: Store<T> = { def, get: () => state, replace: (n) => { state = n; notify(); }, base: undefined, rev: 0, dirty: false, inflight: false, timer: null, failures: 0 };
   stores.push(s as Store);
   return {
     get: () => state,
@@ -72,7 +89,7 @@ export function createSyncedStore<T>(def: StoreDef<T>) {
       schedule(s as Store, 800);
     },
     use(): T {
-      return useSyncExternalStore((l) => { listeners.add(l); return () => listeners.delete(l); }, () => state, () => SERVER);
+      return useSyncExternalStore((l) => { listeners.add(l); return () => { listeners.delete(l); }; }, () => state, () => SERVER);
     },
   };
 }
@@ -92,28 +109,35 @@ async function fetchRow(key: string) {
 
 async function push(s: Store, g: number) {
   if (s.inflight || !s.dirty) return;
+  const owner = uid;
+  if (!owner) return;
   s.inflight = true;
   recomputeStatus();
   try {
     for (let attempt = 0; attempt < 4; attempt++) {
+      if (g !== gen) return; // logged out / switched user: never send the old snapshot
       const snapshot = s.get();
-      const { data: rev, error } = await supabase.rpc("save_user_state", { p_key: s.def.key, p_data: snapshot as never, p_expected: s.rev });
-      if (g !== gen) return; // user changed: drop stale result
+      const { data: rev, error } = await supabase.rpc("save_user_state_for", { p_user: owner, p_key: s.def.key, p_data: snapshot as never, p_expected: s.rev });
+      if (g !== gen) return;
       if (error) throw error;
       if (typeof rev === "number") {
         s.rev = rev;
+        s.base = snapshot;
         if (s.get() === snapshot) s.dirty = false; // newer edits keep it dirty
         s.failures = 0;
         writeCache(s);
         if (s.dirty) schedule(s, 300);
         return;
       }
-      // Conflict: another device saved first. Merge, never overwrite blindly.
+      // Conflict: another device saved first. Three-way merge — never overwrite blindly.
       const row = await fetchRow(s.def.key);
       if (g !== gen) return;
       if (row) {
+        const base = s.rev === 0 ? s.def.empty() : s.base;
+        s.replace(merge(s, base, row.data, s.get()));
         s.rev = row.revision;
-        s.replace(s.def.migrate(mergeState(row.data, s.get())));
+        s.base = row.data;
+        merged++; emit();
       } else s.rev = 0;
       writeCache(s);
     }
@@ -124,7 +148,7 @@ async function push(s: Store, g: number) {
     writeCache(s);
     schedule(s, Math.min(60_000, 3000 * 2 ** (s.failures - 1)));
   } finally {
-    s.inflight = false;
+    if (g === gen) s.inflight = false;
     recomputeStatus();
   }
 }
@@ -149,12 +173,15 @@ export async function activateUser(userId: string): Promise<{ cloudEmpty: boolea
     s.failures = 0;
     if (row) {
       s.rev = row.revision;
+      s.base = row.data;
       if (cache?.dirty) {
-        s.replace(s.def.migrate(cache.rev === row.revision ? cache.data : mergeState(row.data, cache.data)));
+        // Unsynced edits from last visit: keep them, merged on top of what the server has now.
+        s.replace(cache.rev === row.revision ? s.def.migrate(cache.data) : merge(s, cache.base, row.data, cache.data));
         s.dirty = true;
       } else { s.replace(s.def.migrate(row.data)); s.dirty = false; }
     } else {
       s.rev = 0;
+      s.base = undefined;
       if (cache?.dirty) { s.replace(s.def.migrate(cache.data)); s.dirty = true; }
       else { s.replace(s.def.empty()); s.dirty = false; }
     }
@@ -166,18 +193,26 @@ export async function activateUser(userId: string): Promise<{ cloudEmpty: boolea
   return { cloudEmpty: rows.size === 0 && stores.every((s) => !s.dirty) };
 }
 
-/** Logout / user switch: wipe active state from memory. Per-user caches stay isolated. */
+/** Logout / user switch: stop all saving and wipe active state from memory. Per-user caches stay isolated. */
 export function deactivate() {
   gen++;
   hydrated = false;
   uid = null;
+  merged = 0;
   for (const s of stores) {
     if (s.timer) clearTimeout(s.timer);
-    s.timer = null; s.inflight = false; s.dirty = false; s.failures = 0; s.rev = 0;
+    s.timer = null; s.inflight = false; s.dirty = false; s.failures = 0; s.rev = 0; s.base = undefined;
     s.replace(s.def.empty());
   }
   try { sessionStorage.removeItem("goblin-chess.coach-win"); } catch { /* ignore */ }
   recomputeStatus();
+  emit();
+}
+
+/** Signs out after local saving has been stopped, so no old progress is sent afterwards. */
+export async function signOutSafely() {
+  deactivate();
+  await supabase.auth.signOut();
 }
 
 // ---------- One-time import of old anonymous device progress ----------
@@ -204,7 +239,7 @@ export async function importLegacy(u: string): Promise<void> {
   const snap = legacySnapshot();
   try { localStorage.setItem(`goblin-chess.backup.${u}.${Date.now()}`, JSON.stringify(snap)); } catch { /* backup best effort; originals remain */ }
   for (const [key, data] of Object.entries(snap)) {
-    const { error } = await supabase.rpc("save_user_state", { p_key: key, p_data: data as never, p_expected: 0 });
+    const { error } = await supabase.rpc("save_user_state_for", { p_user: u, p_key: key, p_data: data as never, p_expected: 0 });
     if (error) throw error;
   }
   decideImport(u, "imported");

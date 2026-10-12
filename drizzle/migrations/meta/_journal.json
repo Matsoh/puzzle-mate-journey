@@ -15,6 +15,13 @@
       "when": 1791803026251,
       "tag": "0001_revoke_anon_user_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791803231373,
+      "tag": "0002_save_user_state_bound_to_user",
+      "breakpoints": true
     }
   ]
 }
