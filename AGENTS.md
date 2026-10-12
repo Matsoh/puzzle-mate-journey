@@ -10,7 +10,8 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
-- Everything runs client-side in v1; progress lives in localStorage via `src/lib/progress.ts` (single store, useSyncExternalStore) — no login or personal data.
+- Personal progress stores are built with `createSyncedStore` in `src/lib/cloud-sync.ts`: server table `user_state` (one row per store, optimistic revision via `save_user_state`, conflict merge in pure `sync-merge.ts`) plus a per-user device cache; writes are ignored until an approved user is hydrated — fail-closed and no blind overwrites.
+- Access is a closed allowlist (`approved_players`, no client writes, signup disabled) checked by `AuthGate` in __root; only /innlogging and /tilbakestill-passord render without it — RLS is the real boundary, the gate is UX.
 - Stockfish runs as the lite single-threaded WASM build from `public/stockfish/` in a Web Worker (`src/lib/engine.ts`) — works without cross-origin isolation headers and stays small for phones.
 - Coach explanations are built only from Stockfish facts in `src/lib/coach.ts`; LLM rephrasing and TTS plug in through `src/lib/coach-hooks.ts` (disabled flags) — keeps advice truthful.
 - Puzzles use the Lichess puzzle CSV format; import larger sets with `parseLichessCsv` into `src/data/puzzles.json` — one data format end to end.
