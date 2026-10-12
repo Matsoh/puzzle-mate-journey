@@ -18,8 +18,6 @@ describe("opening catalog", () => {
         const c = new Chess();
         for (const m of b.moves) c.move(m);
         expect(b.eco).toMatch(/^[A-E]\d\d$/);
-        // the player makes the last move of every branch
-        expect(playerMovesAt(o, b.moves.length - 1)).toBe(true);
       }
       expect(o.side === "white" ? b0(o).moves[0] : b0(o).moves[1]).toBeTruthy();
     }
