@@ -16,6 +16,7 @@ import { Route as PartiRouteImport } from './routes/parti'
 import { Route as PuslerRouteImport } from './routes/pusler'
 import { Route as StigenRouteImport } from './routes/stigen'
 import { Route as TrenerRouteImport } from './routes/trener'
+import { Route as TreningspartiRouteImport } from './routes/treningsparti'
 import { Route as TurneringRouteImport } from './routes/turnering'
 
 const IndexRoute = IndexRouteImport.update({
@@ -53,6 +54,11 @@ const TrenerRoute = TrenerRouteImport.update({
   path: '/trener',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TreningspartiRoute = TreningspartiRouteImport.update({
+  id: '/treningsparti',
+  path: '/treningsparti',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TurneringRoute = TurneringRouteImport.update({
   id: '/turnering',
   path: '/turnering',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
   '/trener': typeof TrenerRoute
+  '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
   '/trener': typeof TrenerRoute
+  '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
   '/trener': typeof TrenerRoute
+  '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/pusler'
     | '/stigen'
     | '/trener'
+    | '/treningsparti'
     | '/turnering'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/pusler'
     | '/stigen'
     | '/trener'
+    | '/treningsparti'
     | '/turnering'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/pusler'
     | '/stigen'
     | '/trener'
+    | '/treningsparti'
     | '/turnering'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   PuslerRoute: typeof PuslerRoute
   StigenRoute: typeof StigenRoute
   TrenerRoute: typeof TrenerRoute
+  TreningspartiRoute: typeof TreningspartiRoute
   TurneringRoute: typeof TurneringRoute
 }
 
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrenerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/treningsparti': {
+      id: '/treningsparti'
+      path: '/treningsparti'
+      fullPath: '/treningsparti'
+      preLoaderRoute: typeof TreningspartiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/turnering': {
       id: '/turnering'
       path: '/turnering'
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   PuslerRoute: PuslerRoute,
   StigenRoute: StigenRoute,
   TrenerRoute: TrenerRoute,
+  TreningspartiRoute: TreningspartiRoute,
   TurneringRoute: TurneringRoute,
 }
 export const routeTree = rootRouteImport

@@ -42,3 +42,7 @@
 # Browser QA: DOM nesting fix
 - [x] Wrap the daily-session label in a div and make the coach/player avatar root an inline-flex span.
 - [x] Reproduce the old warning, then verify no nesting or hydration errors on any route, desktop and mobile.
+
+## Turneringsforberedelse (okt 2026)
+- [ ] Bygg om /turnering til forberedelse: åpningsplan, åpningsdrill, taktikk, sluttspill, treningsparti med trenerhjelp
+- [ ] Bruk offentlige Lichess-filer (raw, ingen konto/connector); Listudy kun inspirasjon; enkel tekst

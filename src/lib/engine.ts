@@ -1,6 +1,11 @@
 // Stockfish (WASM, lite single-threaded) running in a Web Worker. Browser only.
 
-export type AnalysisResult = { cp?: number | undefined; mate?: number | undefined; bestMove: string; pv: string[] };
+export type AnalysisResult = {
+  cp?: number | undefined;
+  mate?: number | undefined;
+  bestMove: string;
+  pv: string[];
+};
 
 type Listener = (line: string) => void;
 
@@ -62,7 +67,9 @@ export class StockfishEngine {
         this.send("setoption name UCI_LimitStrength value false");
       } else {
         this.send("setoption name UCI_LimitStrength value true");
-        this.send(`setoption name UCI_Elo value ${Math.max(1320, Math.min(3190, Math.round(elo)))}`);
+        this.send(
+          `setoption name UCI_Elo value ${Math.max(1320, Math.min(3190, Math.round(elo)))}`,
+        );
       }
       await this.isReady();
     });
@@ -87,7 +94,33 @@ export class StockfishEngine {
 
   /** Score is from the side to move's perspective. */
   analyse(fen: string, depth: number): Promise<AnalysisResult> {
+    return this.run(() => this.analyseNow(fen, depth));
+  }
+
+  private applyStrength(elo: number | null) {
+    if (elo == null) this.send("setoption name UCI_LimitStrength value false");
+    else {
+      this.send("setoption name UCI_LimitStrength value true");
+      this.send(`setoption name UCI_Elo value ${Math.max(1320, Math.min(3190, Math.round(elo)))}`);
+    }
+  }
+
+  /** Full-strength analysis in one queued job, then restores the bot strength — bot moves never interleave. */
+  analyseFull(fen: string, depth: number, restoreElo: number | null): Promise<AnalysisResult> {
     return this.run(async () => {
+      this.applyStrength(null);
+      await this.isReady();
+      try {
+        return await this.analyseNow(fen, depth);
+      } finally {
+        this.applyStrength(restoreElo);
+        await this.isReady();
+      }
+    });
+  }
+
+  private analyseNow(fen: string, depth: number): Promise<AnalysisResult> {
+    return (async () => {
       let cp: number | undefined;
       let mate: number | undefined;
       let pv: string[] = [];
@@ -114,7 +147,7 @@ export class StockfishEngine {
       this.send(`go depth ${depth}`);
       const line = await p;
       return { cp, mate, pv, bestMove: line.split(" ")[1] ?? "" };
-    });
+    })();
   }
 
   terminate() {
