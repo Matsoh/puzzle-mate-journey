@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FremgangRouteImport } from './routes/fremgang'
 import { Route as FrittRouteImport } from './routes/fritt'
+import { Route as InnloggingRouteImport } from './routes/innlogging'
 import { Route as PartiRouteImport } from './routes/parti'
 import { Route as PuslerRouteImport } from './routes/pusler'
 import { Route as StigenRouteImport } from './routes/stigen'
+import { Route as TilbakestillPassordRouteImport } from './routes/tilbakestill-passord'
 import { Route as TrenerRouteImport } from './routes/trener'
 import { Route as TreningspartiRouteImport } from './routes/treningsparti'
 import { Route as TurneringRouteImport } from './routes/turnering'
@@ -34,6 +36,11 @@ const FrittRoute = FrittRouteImport.update({
   path: '/fritt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InnloggingRoute = InnloggingRouteImport.update({
+  id: '/innlogging',
+  path: '/innlogging',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PartiRoute = PartiRouteImport.update({
   id: '/parti',
   path: '/parti',
@@ -47,6 +54,11 @@ const PuslerRoute = PuslerRouteImport.update({
 const StigenRoute = StigenRouteImport.update({
   id: '/stigen',
   path: '/stigen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TilbakestillPassordRoute = TilbakestillPassordRouteImport.update({
+  id: '/tilbakestill-passord',
+  path: '/tilbakestill-passord',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrenerRoute = TrenerRouteImport.update({
@@ -69,9 +81,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
+  '/innlogging': typeof InnloggingRoute
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
+  '/tilbakestill-passord': typeof TilbakestillPassordRoute
   '/trener': typeof TrenerRoute
   '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
@@ -80,9 +94,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
+  '/innlogging': typeof InnloggingRoute
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
+  '/tilbakestill-passord': typeof TilbakestillPassordRoute
   '/trener': typeof TrenerRoute
   '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
@@ -92,9 +108,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
+  '/innlogging': typeof InnloggingRoute
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
   '/stigen': typeof StigenRoute
+  '/tilbakestill-passord': typeof TilbakestillPassordRoute
   '/trener': typeof TrenerRoute
   '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
@@ -105,9 +123,11 @@ export interface FileRouteTypes {
     | '/'
     | '/fremgang'
     | '/fritt'
+    | '/innlogging'
     | '/parti'
     | '/pusler'
     | '/stigen'
+    | '/tilbakestill-passord'
     | '/trener'
     | '/treningsparti'
     | '/turnering'
@@ -116,9 +136,11 @@ export interface FileRouteTypes {
     | '/'
     | '/fremgang'
     | '/fritt'
+    | '/innlogging'
     | '/parti'
     | '/pusler'
     | '/stigen'
+    | '/tilbakestill-passord'
     | '/trener'
     | '/treningsparti'
     | '/turnering'
@@ -127,9 +149,11 @@ export interface FileRouteTypes {
     | '/'
     | '/fremgang'
     | '/fritt'
+    | '/innlogging'
     | '/parti'
     | '/pusler'
     | '/stigen'
+    | '/tilbakestill-passord'
     | '/trener'
     | '/treningsparti'
     | '/turnering'
@@ -139,9 +163,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FremgangRoute: typeof FremgangRoute
   FrittRoute: typeof FrittRoute
+  InnloggingRoute: typeof InnloggingRoute
   PartiRoute: typeof PartiRoute
   PuslerRoute: typeof PuslerRoute
   StigenRoute: typeof StigenRoute
+  TilbakestillPassordRoute: typeof TilbakestillPassordRoute
   TrenerRoute: typeof TrenerRoute
   TreningspartiRoute: typeof TreningspartiRoute
   TurneringRoute: typeof TurneringRoute
@@ -170,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FrittRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/innlogging': {
+      id: '/innlogging'
+      path: '/innlogging'
+      fullPath: '/innlogging'
+      preLoaderRoute: typeof InnloggingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/parti': {
       id: '/parti'
       path: '/parti'
@@ -189,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/stigen'
       fullPath: '/stigen'
       preLoaderRoute: typeof StigenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tilbakestill-passord': {
+      id: '/tilbakestill-passord'
+      path: '/tilbakestill-passord'
+      fullPath: '/tilbakestill-passord'
+      preLoaderRoute: typeof TilbakestillPassordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trener': {
@@ -219,9 +259,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FremgangRoute: FremgangRoute,
   FrittRoute: FrittRoute,
+  InnloggingRoute: InnloggingRoute,
   PartiRoute: PartiRoute,
   PuslerRoute: PuslerRoute,
   StigenRoute: StigenRoute,
+  TilbakestillPassordRoute: TilbakestillPassordRoute,
   TrenerRoute: TrenerRoute,
   TreningspartiRoute: TreningspartiRoute,
   TurneringRoute: TurneringRoute,

@@ -5,6 +5,7 @@ import { MuteToggle } from "./AppHeader";
 import { ThemeToggle } from "./ThemeToggle";
 import { PlayerAvatar } from "./CoachAvatar";
 import { COACH_NAME } from "@/lib/coach-config";
+import { SyncStatus, LogoutButton } from "./SyncStatus";
 
 const navigation = [
   { to: "/", label: "Oversikt", mobile: "Oversikt", icon: House },
@@ -26,9 +27,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-3 px-2"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-xs font-medium">{COACH_NAME}</p></div></div>
         <div className="mt-5 flex items-center justify-between gap-2 px-2"><span className="text-xs text-muted-foreground">Tema</span><ThemeToggle /></div>
         <div className="mt-4 flex items-center justify-between px-2"><span className="text-xs text-muted-foreground">Spilllyd</span><MuteToggle /></div>
+        <div className="mt-4 flex items-center justify-between gap-2 px-2"><SyncStatus /><LogoutButton /></div>
       </div>
     </aside>
-    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center border-b border-border bg-background px-4 pb-3 pt-[max(12px,env(safe-area-inset-top))] min-[1100px]:hidden"><Link to="/" className="flex min-w-0 items-center gap-2 font-semibold"><ChessKnight className="size-5 shrink-0 text-primary" /><span className="truncate">Goblin Chess</span></Link><div className="flex items-center gap-2"><ThemeToggle compact /><MuteToggle /></div></header>
+    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center border-b border-border bg-background px-4 pb-3 pt-[max(12px,env(safe-area-inset-top))] min-[1100px]:hidden"><Link to="/" className="flex min-w-0 items-center gap-2 font-semibold"><ChessKnight className="size-5 shrink-0 text-primary" /><span className="truncate">Goblin Chess</span></Link><div className="flex items-center gap-2"><SyncStatus compact /><ThemeToggle compact /><MuteToggle /><LogoutButton compact /></div></header>
     <div className="app-content">{children}</div>
     <nav aria-label="Mobilnavigasjon" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-border bg-background/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg min-[1100px]:hidden">{navigation.filter(n => !("desktopOnly" in n)).map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors ${path === n.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}><n.icon className="size-5 shrink-0" /><span className="truncate max-w-full">{n.mobile}</span></Link>)}</nav>
   </>;
