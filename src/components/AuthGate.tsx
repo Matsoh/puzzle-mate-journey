@@ -32,7 +32,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await withTimeout(supabase.auth.getUser());
       // No/expired session is a normal "signed out"; only network failures show the error screen.
-      if (error && error.name !== "AuthSessionMissingError" && (error as { status?: number }).status === undefined) throw error;
+      if (error && (error.name === "AuthRetryableFetchError" || (error.name !== "AuthSessionMissingError" && (error as { status?: number }).status === undefined))) throw error;
       await run(data.user);
     } catch { deactivate(); setPhase("error"); }
   }

@@ -1,5 +1,5 @@
 import { Cloud, CloudOff, LogOut, RefreshCw } from "lucide-react";
-import { retrySync, signOutSafely, useSyncStatus } from "@/lib/cloud-sync";
+import { dismissMergeNotice, retrySync, signOutSafely, useMergeNotices, useSyncStatus } from "@/lib/cloud-sync";
 import { Button } from "@/components/ui/button";
 
 /** Shows whether progress has reached the server. Never claims success on a network error. */
@@ -29,5 +29,17 @@ export function LogoutButton({ compact = false }: { compact?: boolean }) {
       className={compact ? "size-10 shrink-0 rounded-lg border border-border text-muted-foreground" : "text-muted-foreground"}>
       <LogOut className="size-4" />{!compact && "Logg ut"}
     </Button>
+  );
+}
+
+/** Tells the player when progress from another device was combined with this one. */
+export function MergeNotice() {
+  const n = useMergeNotices();
+  if (!n) return null;
+  return (
+    <div role="status" className="mx-4 mt-3 flex items-center justify-between gap-3 rounded-lg border border-border bg-muted px-3 py-2 text-sm">
+      <span>Du har spilt på en annen enhet også. Fremgangen er slått sammen, ingenting er borte.</span>
+      <Button variant="ghost" size="sm" onClick={dismissMergeNotice}>Ok</Button>
+    </div>
   );
 }
