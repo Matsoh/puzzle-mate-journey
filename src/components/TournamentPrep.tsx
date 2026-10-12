@@ -115,13 +115,6 @@ export function OpeningDrill({ opening: o, rec, tournamentTc, onDone }: { openin
   }, [phase, ply, offline, end, o]);
   useEffect(() => { if (phase === "try" && ply >= end) setPhase("why"); }, [phase, ply, end]);
 
-  const lastOf = (p: number): [string, string] | null => {
-    if (p === 0) return null;
-    const c = (() => { const f = fenAt(branch, p - 1); return f; })();
-    const g = gradeDrillMove(branch, p - 1, "a1", "a1"); void g; void c;
-    return null;
-  };
-  void lastOf;
 
   const onMove = (from: string, to: string) => {
     if (phase !== "try" || offline || !playerMovesAt(o, ply)) return false;
