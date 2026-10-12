@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { createSyncedStore } from "./cloud-sync";
 import { SESSION_XP, type CoachId, type SessionRecord } from "./trainer";
 import { updateProgress } from "./progress";
 import { emptyCoach, getItem, markSeen, pickNext, recordOutcome, type CoachState, type Outcome } from "./adaptive";
@@ -31,28 +31,16 @@ export function migrate(raw: unknown): TrainerState {
   return out;
 }
 
-let state: TrainerState = emptyTrainer();
-const SERVER = emptyTrainer();
-let loaded = false;
-const listeners = new Set<() => void>();
-
-function load() {
-  if (loaded || typeof window === "undefined") return;
-  loaded = true;
-  try {
-    const raw = localStorage.getItem(KEY) ?? localStorage.getItem(KEY_V1);
-    if (raw) state = migrate(JSON.parse(raw));
-  } catch { /* start fresh */ }
-}
-function save(next: TrainerState) {
-  state = next;
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* private mode */ }
-  listeners.forEach((l) => l());
-}
-const get = () => { load(); return state; };
-export function useTrainer(): TrainerState {
-  return useSyncExternalStore((l) => { listeners.add(l); return () => listeners.delete(l); }, get, () => SERVER);
-}
+const store = createSyncedStore<TrainerState>({
+  key: "trainer",
+  empty: emptyTrainer,
+  migrate,
+  legacyKeys: [KEY, KEY_V1],
+  hasData: (t) => t.coach !== null || Object.keys(t.sessions).length > 0,
+});
+const get = store.get;
+const save = (next: TrainerState) => store.set(() => next);
+export const useTrainer = store.use;
 
 export const sessionKey = (day: string, coach: CoachId) => `${day}:${coach}`;
 const blank: SessionRecord = { exercise: false, reflection: "", done: false, xpGiven: false };

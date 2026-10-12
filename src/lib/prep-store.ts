@@ -1,41 +1,14 @@
-import { useSyncExternalStore } from "react";
+import { createSyncedStore } from "./cloud-sync";
 import { emptyPrep, migratePrep, type PrepState } from "./prep";
 
-const KEY = "goblin-chess.prep.v1";
-const SERVER = emptyPrep();
-let state = SERVER;
-let loaded = false;
-const listeners = new Set<() => void>();
+const store = createSyncedStore<PrepState>({
+  key: "prep",
+  empty: emptyPrep,
+  migrate: migratePrep,
+  legacyKeys: ["goblin-chess.prep.v1"],
+  hasData: (p) => JSON.stringify(p) !== JSON.stringify(emptyPrep()),
+});
 
-const get = () => {
-  if (!loaded && typeof window !== "undefined") {
-    loaded = true;
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) state = migratePrep(JSON.parse(raw));
-    } catch {
-      /* fresh */
-    }
-  }
-  return state;
-};
-export function updatePrep(f: (s: PrepState) => PrepState) {
-  state = f(get());
-  try {
-    localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    /* private mode */
-  }
-  listeners.forEach((l) => l());
-}
-export const readPrep = get;
-export function usePrep(): PrepState {
-  return useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
-    },
-    get,
-    () => SERVER,
-  );
-}
+export const updatePrep = store.set;
+export const readPrep = store.get;
+export const usePrep = store.use;
