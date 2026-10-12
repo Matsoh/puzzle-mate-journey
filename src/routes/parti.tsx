@@ -73,8 +73,10 @@ function Game() {
   const [mistakes, setMistakes] = useState<Mistake[]>([]);
   const [analysisPct, setAnalysisPct] = useState(0);
   const [engineError, setEngineError] = useState(false);
+  const [retryTick, setRetryTick] = useState(0);
 
-  const tcCfg = tcToMs(tc);
+  // Must be referentially stable: a fresh array each render restarted the bot turn on every clock tick.
+  const tcCfg = useMemo(() => tcToMs(tc), [tc]);
   const [clock, setClock] = useState<[number, number]>(tcCfg ? [tcCfg[0], tcCfg[0]] : [0, 0]);
   const clockRef = useRef(clock);
   clockRef.current = clock;
@@ -203,7 +205,7 @@ function Game() {
       if (timer) clearTimeout(timer);
       setThinking(false);
     };
-  }, [fen, phase, player, applyMove, tcCfg, engineElo, opponent]);
+  }, [fen, phase, player, applyMove, tcCfg, engineElo, opponent, retryTick]);
 
   // Clock
   useEffect(() => {
@@ -296,7 +298,12 @@ function Game() {
         )}
 
         <aside className={phase === "review" || phase === "analysing" ? "lg:col-span-2 mx-auto w-full max-w-2xl space-y-4" : "space-y-4"}>
-          {engineError && <CoachBubble>Oi, sjakkmotoren fikk hikke. Prøv å laste siden på nytt! 🔄</CoachBubble>}
+          {engineError && (
+            <div className="space-y-2" role="alert">
+              <CoachBubble>Oi, sjakkmotoren fikk hikke. Trykk «Prøv igjen».</CoachBubble>
+              <Button variant="outline" onClick={() => { setEngineError(false); setRetryTick((n) => n + 1); }}>Prøv igjen</Button>
+            </div>
+          )}
 
           {phase === "playing" && (
             <>
