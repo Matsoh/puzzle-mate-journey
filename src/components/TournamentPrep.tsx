@@ -335,7 +335,7 @@ export function PrepPanel({ tournament, allTournaments }: { tournament: Tourname
                 </div>
                 <Button variant={open === id ? "secondary" : "outline"} aria-expanded={open === id} onClick={() => setOpen(open === id ? null : id)}>{open === id ? "Lukk" : r && !due ? "Repeter nå" : "Øv nå"}</Button>
               </div>
-              {open === id && <div className="mt-4 border-t border-border pt-4"><OpeningDrill key={`${id}-${r?.practiced ?? 0}`} opening={o} rec={r} tournamentTc={tc} onDone={(res) => recordOpening(o, res)} /></div>}
+              {open === id && <div className="mt-4 border-t border-border pt-4"><OpeningDrill key={id} opening={o} rec={r} tournamentTc={tc} onDone={(res) => recordOpening(o, res)} /></div>}
             </div>
           );
         })}
