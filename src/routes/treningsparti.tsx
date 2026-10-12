@@ -181,7 +181,7 @@ function PracticeGame() {
     setHelpUsed((n) => n + 1);
     if (tcCfg) setHelpPause(true);
     setHelpBusy(true);
-    const fresh = () => mounted.current && helpReq.current === id && game.current.fen() === fenNow;
+    const fresh = () => { const ok = mounted.current && helpReq.current === id && game.current.fen() === fenNow; if (!ok) console.warn("stale", mounted.current, helpReq.current, id); return ok; };
     try {
       if (kind === "threat") {
         const t = threats(fenNow);
