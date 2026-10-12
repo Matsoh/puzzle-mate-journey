@@ -82,7 +82,7 @@ function PracticeGame() {
   const helpReq = useRef(0);
   const saved = useRef(false);
   const mounted = useRef(true);
-  useEffect(() => () => { mounted.current = false; turnSession.current++; helpReq.current++; }, []);
+  useEffect(() => { mounted.current = true; const h = helpReq, t = turnSession; return () => { mounted.current = false; t.current++; h.current++; }; }, []);
 
   useEffect(() => {
     const e = getEngine();
