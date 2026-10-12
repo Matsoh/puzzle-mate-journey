@@ -114,7 +114,7 @@ function PracticeGame() {
     try { mv = g.move({ from, to, promotion }); } catch { return false; }
     setMoves((m) => [...m, { fenBefore, uci: mv.from + mv.to + (mv.promotion ?? ""), san: mv.san, color: mv.color }]);
     setFen(g.fen());
-    setHelp(null); helpReq.current++; setHelpBusy(false);
+    setHelp(null); helpReq.current++; setHelpBusy(false); setHelpPause(false);
     if (tcCfg?.[1]) { const inc = tcCfg[1]; setClock((c) => (mv.color === "w" ? [c[0] + inc, c[1]] : [c[0], c[1] + inc])); }
     play(g.inCheck() ? "check" : mv.captured ? "capture" : "move");
     checkEnd();
@@ -226,7 +226,7 @@ function PracticeGame() {
     turnSession.current++; helpReq.current++;
     let n = 0;
     const hist = [...moves];
-    while (hist.length && (n === 0 || hist[hist.length - 1]!.color !== player)) { const last = hist.pop()!; n++; if (last.color === player) break; }
+    while (hist.length) { const l = hist.pop()!; n++; if (l.color === player) break; }
     for (let i = 0; i < n; i++) g.undo();
     setMoves(hist); setFen(g.fen()); setHelp(null); setHelpBusy(false); setThinking(false);
   };
