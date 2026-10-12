@@ -1,6 +1,5 @@
 import { Cloud, CloudOff, LogOut, RefreshCw } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { retrySync, useSyncStatus } from "@/lib/cloud-sync";
+import { retrySync, signOutSafely, useSyncStatus } from "@/lib/cloud-sync";
 import { Button } from "@/components/ui/button";
 
 /** Shows whether progress has reached the server. Never claims success on a network error. */
@@ -26,7 +25,7 @@ export function SyncStatus({ compact = false }: { compact?: boolean }) {
 export function LogoutButton({ compact = false }: { compact?: boolean }) {
   return (
     <Button variant="ghost" size={compact ? "icon" : "sm"} aria-label="Logg ut" title="Logg ut"
-      onClick={() => supabase.auth.signOut()}
+      onClick={() => void signOutSafely()}
       className={compact ? "size-10 shrink-0 rounded-lg border border-border text-muted-foreground" : "text-muted-foreground"}>
       <LogOut className="size-4" />{!compact && "Logg ut"}
     </Button>

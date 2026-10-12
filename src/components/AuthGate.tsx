@@ -2,10 +2,14 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { activateUser, deactivate, decideImport, importDecided, importLegacy, legacySnapshot } from "@/lib/cloud-sync";
+import { signOutSafely, activateUser, deactivate, decideImport, importDecided, importLegacy, legacySnapshot } from "@/lib/cloud-sync";
 import { AppShell } from "./AppShell";
 import { AuthScreen } from "./AuthScreen";
 import { Button } from "@/components/ui/button";
+
+function withTimeout<T>(p: PromiseLike<T>, ms = 12_000): Promise<T> {
+  return Promise.race([Promise.resolve(p), new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+}
 
 const PUBLIC_PATHS = ["/innlogging", "/tilbakestill-passord"];
 type Phase = "loading" | "out" | "pending" | "error" | "ready";
@@ -22,18 +26,29 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const current = useRef<string | null>(null);
   const runId = useRef(0);
 
+  /** Real network trouble ends in a retry screen, never an endless "Laster…". */
+  async function start() {
+    setPhase("loading");
+    try {
+      const { data, error } = await withTimeout(supabase.auth.getUser());
+      // No/expired session is a normal "signed out"; only network failures show the error screen.
+      if (error && error.name !== "AuthSessionMissingError" && (error as { status?: number }).status === undefined) throw error;
+      await run(data.user);
+    } catch { deactivate(); setPhase("error"); }
+  }
+
   async function run(user: User | null) {
     const id = ++runId.current;
     current.current = user?.id ?? null;
     setOffer(null);
     if (!user) { deactivate(); setPhase("out"); return; }
     setPhase("loading");
-    const { data: ok, error } = await supabase.rpc("is_approved_player");
+    const { data: ok, error } = await withTimeout(supabase.rpc("is_approved_player"));
     if (id !== runId.current) return;
     if (error) { deactivate(); setPhase("error"); return; }
     if (ok !== true) { deactivate(); setPhase("pending"); return; }
     try {
-      const { cloudEmpty } = await activateUser(user.id);
+      const { cloudEmpty } = await withTimeout(activateUser(user.id));
       if (id !== runId.current) return;
       if (cloudEmpty && !importDecided(user.id)) {
         const snap = legacySnapshot();
@@ -47,7 +62,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => run(data.user));
+    void start();
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") void run(null);
       else if ((event === "SIGNED_IN" || event === "USER_UPDATED") && session?.user && session.user.id !== current.current) void run(session.user);
@@ -63,7 +78,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }, [phase, isPublic, path, navigate]);
 
   if (isPublic) return <>{children}</>;
-  const signOut = () => supabase.auth.signOut();
+  const signOut = () => void signOutSafely();
 
   if (phase === "pending") return (
     <AuthScreen title="Venter på godkjenning">
@@ -74,7 +89,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   if (phase === "error") return (
     <AuthScreen title="Ingen forbindelse">
       <p className="text-sm text-muted-foreground">Vi fikk ikke kontakt. Sjekk nettet, og prøv igjen.</p>
-      <Button className="mt-5 h-12 w-full" onClick={() => supabase.auth.getUser().then(({ data }) => run(data.user))}>Prøv igjen</Button>
+      <Button className="mt-5 h-12 w-full" onClick={() => void start()}>Prøv igjen</Button>
       <Button variant="outline" className="mt-2 h-12 w-full" onClick={signOut}>Logg ut</Button>
     </AuthScreen>
   );

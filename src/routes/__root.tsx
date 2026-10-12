@@ -42,6 +42,16 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    // After a new build, old page chunks disappear: reload once to fetch the fresh version.
+    if (/dynamically imported module|Importing a module script failed|error loading dynamically/i.test(String(error?.message))) {
+      try {
+        if (!sessionStorage.getItem("goblin-chess.chunk-reload")) {
+          sessionStorage.setItem("goblin-chess.chunk-reload", "1");
+          window.location.reload();
+          return;
+        }
+      } catch { /* fall through to the error screen */ }
+    }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
@@ -127,6 +137,7 @@ function RootComponent() {
 
   useEffect(() => {
     // Register the PWA service worker only in production and outside iframes (editor preview).
+    try { sessionStorage.removeItem("goblin-chess.chunk-reload"); } catch { /* ignore */ }
     if (!import.meta.env.PROD || !("serviceWorker" in navigator) || window.self !== window.top) return;
     navigator.serviceWorker.register("/sw.js").catch(() => undefined);
   }, []);
