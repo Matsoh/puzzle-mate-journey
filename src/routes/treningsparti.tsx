@@ -97,7 +97,8 @@ function PracticeGame() {
   const player = search.side;
   const elo = clampElo(search.elo);
   const tc = parseTimeControl(search.tc === "none" ? "none" : search.tc);
-  const tcCfg = search.tc === "none" ? null : tcToMs(tc);
+  // Stable reference: otherwise every clock tick restarted the bot turn.
+  const tcCfg = useMemo(() => (search.tc === "none" ? null : tcToMs(tc)), [search.tc, tc]);
   const coach = useTrainer().coach;
 
   const game = useRef(new Chess(startFen));

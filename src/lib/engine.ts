@@ -10,18 +10,46 @@ export type AnalysisResult = {
 type Listener = (line: string) => void;
 
 export class StockfishEngine {
-  private worker: Worker;
+  private worker!: Worker;
   private listeners = new Set<Listener>();
   private queue: Promise<unknown> = Promise.resolve();
-  private ready: Promise<void>;
+  private ready!: Promise<void>;
+  private strength: number | null = null;
+  private failAll: ((e: Error) => void)[] = [];
 
   constructor() {
+    this.boot();
+  }
+
+  /** (Re)start the worker. Pending waits are rejected so no caller hangs forever. */
+  private boot() {
     this.worker = new Worker("/stockfish/stockfish-19-lite-single.js");
     this.worker.onmessage = (e) => {
       const line = typeof e.data === "string" ? e.data : String(e.data);
       this.listeners.forEach((l) => l(line));
     };
-    this.ready = this.init();
+    const crash = () => this.fail(new Error("Stockfish worker error"));
+    this.worker.onerror = crash;
+    this.worker.onmessageerror = crash;
+    this.ready = withTimeout(this.init(), 15_000, () => this.fail(new Error("Stockfish init timeout")));
+    this.ready.catch(() => undefined);
+  }
+
+  private fail(err: Error) {
+    const f = this.failAll;
+    this.failAll = [];
+    this.listeners.clear();
+    f.forEach((r) => r(err));
+  }
+
+  /** Kill a stuck/crashed worker and boot a fresh one with the last strength. */
+  private restart() {
+    this.fail(new Error("Stockfish restarted"));
+    try { this.worker.terminate(); } catch { /* already gone */ }
+    this.boot();
+    const elo = this.strength;
+    this.ready = this.ready.then(async () => { this.applyStrength(elo); await this.isReady(); });
+    this.ready.catch(() => undefined);
   }
 
   private send(cmd: string) {
@@ -29,7 +57,8 @@ export class StockfishEngine {
   }
 
   private waitFor(pred: (l: string) => boolean, onLine?: Listener): Promise<string> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      this.failAll.push(reject);
       const l: Listener = (line) => {
         onLine?.(line);
         if (pred(line)) {
@@ -55,13 +84,18 @@ export class StockfishEngine {
   }
 
   private run<T>(task: () => Promise<T>): Promise<T> {
-    const r = this.queue.then(() => this.ready).then(task);
+    const r = this.queue.then(() => this.ready).then(task).catch((e) => {
+      // Any failure (crash, timeout) gets a fresh worker so the next request can succeed.
+      this.restart();
+      throw e;
+    });
     this.queue = r.catch(() => undefined);
     return r;
   }
 
   /** null = full strength */
   setStrength(elo: number | null) {
+    this.strength = elo;
     return this.run(async () => {
       if (elo == null) {
         this.send("setoption name UCI_LimitStrength value false");
@@ -87,7 +121,8 @@ export class StockfishEngine {
       const p = this.waitFor((l) => l.startsWith("bestmove"));
       this.send(`position fen ${fen}`);
       this.send(`go movetime ${Math.round(movetimeMs)}`);
-      const line = await p;
+      // Bounded: never wait forever for a bestmove.
+      const line = await withTimeout(p, movetimeMs + 10_000, () => this.fail(new Error("Stockfish bestmove timeout")));
       return line.split(" ")[1] ?? "";
     });
   }
@@ -153,6 +188,16 @@ export class StockfishEngine {
   terminate() {
     this.worker.terminate();
   }
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number, onTimeout: () => void): Promise<T> {
+  let t: ReturnType<typeof setTimeout> | undefined;
+  return Promise.race([
+    p,
+    new Promise<T>((_, rej) => {
+      t = setTimeout(() => { onTimeout(); rej(new Error("timeout")); }, ms);
+    }),
+  ]).finally(() => clearTimeout(t));
 }
 
 let shared: StockfishEngine | null = null;
