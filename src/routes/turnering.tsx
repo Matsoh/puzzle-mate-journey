@@ -114,7 +114,6 @@ function Current({ t, view }: { t: Tournament; view: "prep" | "day" }) {
 
   if (playingIdx >= 0) return <Playing t={t} i={playingIdx} />;
 
-  const allDone = activeRound(t) === null;
   return (
     <div className="space-y-6">
       <section className="card-game p-5" aria-label="Turneringen">
@@ -162,70 +161,6 @@ function EditSetup({ t, onDone }: { t: Tournament; onDone: () => void }) {
         <div className="flex gap-2"><Button onClick={() => (lost > 0 ? setConfirm(true) : save())}>Lagre oppsett</Button><Button variant="ghost" onClick={onDone}>Avbryt</Button></div>
       )}
     </div>
-  );
-}
-
-function Preparation({ t }: { t: Tournament }) {
-  const today = dayKey(new Date());
-  const days = daysBetween(today, t.setup.date);
-  const [prep, setPrep] = useState<Prep>(t.prep);
-  const [saved, setSaved] = useState(false);
-  const [test, setTest] = useState<null | "white" | "e4" | "d4">(null);
-  const [revealed, setRevealed] = useState(false);
-  const [open, setOpen] = useState(true);
-  const dirty = JSON.stringify(prep) !== JSON.stringify(t.prep);
-  const tc = tcString(t.setup);
-  return (
-    <section className="card-game p-5" aria-labelledby="prep-h">
-      <button type="button" className="flex w-full items-center justify-between gap-3 text-left" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-        <span><span id="prep-h" className="section-title block">Forberedelse</span><span className="text-sm text-muted-foreground">{days > 0 ? `${days} ${days === 1 ? "dag" : "dager"} igjen` : days === 0 ? "Det er i dag!" : "Turneringen er passert"}</span></span>
-        <ChevronDown className={cn("size-5 shrink-0 transition-transform", open && "rotate-180")} />
-      </button>
-      {open && (
-        <div className="mt-5 space-y-6">
-          <ul className="space-y-2 text-sm">{prepPlan(days, t.prep).map((p) => <li key={p} className="flex gap-2"><Flag className="mt-0.5 size-4 shrink-0 text-primary" />{p}</li>)}</ul>
-
-          <div className="space-y-3">
-            <h3 className="font-semibold">Åpningsrepetisjon</h3>
-            <p className="text-xs text-muted-foreground">Skriv dine egne åpninger. Appen kjenner ikke repertoaret ditt og legger ikke til linjer.</p>
-            <label className="block text-sm font-medium">Min åpning med hvit<input className={cn(field, "mt-1.5")} placeholder="F.eks. 1.e4 og italiensk" value={prep.whiteOpening} onChange={(e) => { setPrep({ ...prep, whiteOpening: e.target.value }); setSaved(false); }} /></label>
-            <label className="block text-sm font-medium">Mitt svar mot 1.e4<input className={cn(field, "mt-1.5")} value={prep.vsE4} onChange={(e) => { setPrep({ ...prep, vsE4: e.target.value }); setSaved(false); }} /></label>
-            <label className="block text-sm font-medium">Mitt svar mot 1.d4<input className={cn(field, "mt-1.5")} value={prep.vsD4} onChange={(e) => { setPrep({ ...prep, vsD4: e.target.value }); setSaved(false); }} /></label>
-            <label className="block text-sm font-medium">Plan og huskeregel<textarea rows={3} className={cn(field, "mt-1.5")} placeholder="F.eks. Rokér tidlig, ta midten, se etter trusler." value={prep.plan} onChange={(e) => { setPrep({ ...prep, plan: e.target.value }); setSaved(false); }} /></label>
-            <div className="flex items-center gap-3"><Button onClick={() => { updateTournament(t.id, (x) => ({ ...x, prep })); setSaved(true); }} disabled={!dirty}>Lagre notater</Button>{saved && !dirty && <span className="text-sm text-primary" role="status">Lagret</span>}</div>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="font-semibold">Selvtest: Hva er planen?</h3>
-            {!t.prep.whiteOpening && !t.prep.vsE4 && !t.prep.vsD4 ? <p className="text-sm text-muted-foreground">Lagre noen notater over først, så kan du teste deg selv.</p> : (
-              <>
-                <div className="flex flex-wrap gap-2">
-                  {([["white", "Med hvit"], ["e4", "Mot 1.e4"], ["d4", "Mot 1.d4"]] as const).map(([id, l]) => <Button key={id} variant="outline" aria-pressed={test === id} className={cn(test === id && "border-primary bg-primary/10")} onClick={() => { setTest(id); setRevealed(false); }}>{l}</Button>)}
-                </div>
-                {test && (
-                  <div className="rounded-lg border border-border bg-muted p-4 text-sm">
-                    <p className="font-medium">Hva spiller du {test === "white" ? "med hvit" : test === "e4" ? "mot 1.e4" : "mot 1.d4"}, og hva er planen? Si det høyt først.</p>
-                    {revealed ? (
-                      <div className="mt-3 space-y-1"><p><span className="text-muted-foreground">Dine notater: </span>{(test === "white" ? t.prep.whiteOpening : test === "e4" ? t.prep.vsE4 : t.prep.vsD4) || "Ikke skrevet ennå."}</p>{t.prep.plan && <p><span className="text-muted-foreground">Plan: </span>{t.prep.plan}</p>}</div>
-                    ) : <Button variant="secondary" className="mt-3" onClick={() => setRevealed(true)}>Vis mine notater</Button>}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold">Trening</h3>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <Link to="/pusler" className="activity-link !p-4 text-sm font-medium">Taktikk: dagens pusler</Link>
-              <Link to="/trener" className="activity-link !p-4 text-sm font-medium">Sluttspill og øvelser</Link>
-              <Link to="/fritt" search={{ tc }} className="activity-link !p-4 text-sm font-medium">Treningsparti {tc}</Link>
-            </div>
-            <p className="text-xs text-muted-foreground">Treningspartiet teller som et vanlig parti i appen.</p>
-          </div>
-        </div>
-      )}
-    </section>
   );
 }
 

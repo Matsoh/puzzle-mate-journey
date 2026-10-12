@@ -22,7 +22,7 @@ const fmtDay = (d: string) => (d ? new Date(d + "T12:00:00").toLocaleDateString(
 
 /* ---------- Plan picker ---------- */
 
-function PlanPicker({ initial, onSave, onCancel }: { initial: Plan | null; onSave: (p: Plan) => void; onCancel?: () => void }) {
+function PlanPicker({ initial, onSave, onCancel }: { initial: Plan | null; onSave: (p: Plan) => void; onCancel?: (() => void) | undefined }) {
   const [mode, setMode] = useState<PlanMode>(initial?.mode ?? "one");
   const [count, setCount] = useState(Math.max(1, initial?.openings.length ?? 3));
   const [ids, setIds] = useState<string[]>(initial?.openings ?? []);
