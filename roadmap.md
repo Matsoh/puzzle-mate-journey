@@ -46,3 +46,5 @@
 ## Turneringsforberedelse (okt 2026)
 - [ ] Bygg om /turnering til forberedelse: åpningsplan, åpningsdrill, taktikk, sluttspill, treningsparti med trenerhjelp
 - [ ] Bruk offentlige Lichess-filer (raw, ingen konto/connector); Listudy kun inspirasjon; enkel tekst
+
+- [x] Bot never moved in clocked games (clock tick restarted bot turn); engine timeout/restart + Prøv igjen; clock frozen on engine error

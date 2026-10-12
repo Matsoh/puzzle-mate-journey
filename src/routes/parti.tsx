@@ -209,7 +209,8 @@ function Game() {
 
   // Clock
   useEffect(() => {
-    if (!tcCfg || phase !== "playing" || moves.length < 1) return;
+    // Engine failure is not a game result: freeze both clocks until «Prøv igjen».
+    if (!tcCfg || phase !== "playing" || moves.length < 1 || engineError) return;
     let last = performance.now();
     const id = setInterval(() => {
       const now = performance.now();
@@ -223,7 +224,7 @@ function Game() {
       });
     }, 200);
     return () => clearInterval(id);
-  }, [tcCfg, phase, moves.length]);
+  }, [tcCfg, phase, moves.length, engineError]);
 
   useEffect(() => {
     if (!tcCfg || phase !== "playing") return;
