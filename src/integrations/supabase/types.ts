@@ -66,6 +66,15 @@ export type Database = {
         Args: { p_data: Json; p_expected: number; p_key: string }
         Returns: number
       }
+      save_user_state_for: {
+        Args: {
+          p_data: Json
+          p_expected: number
+          p_key: string
+          p_user: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
