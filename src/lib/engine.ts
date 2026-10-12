@@ -1,6 +1,11 @@
 // Stockfish (WASM, lite single-threaded) running in a Web Worker. Browser only.
 
-export type AnalysisResult = { cp?: number | undefined; mate?: number | undefined; bestMove: string; pv: string[] };
+export type AnalysisResult = {
+  cp?: number | undefined;
+  mate?: number | undefined;
+  bestMove: string;
+  pv: string[];
+};
 
 type Listener = (line: string) => void;
 
@@ -62,7 +67,9 @@ export class StockfishEngine {
         this.send("setoption name UCI_LimitStrength value false");
       } else {
         this.send("setoption name UCI_LimitStrength value true");
-        this.send(`setoption name UCI_Elo value ${Math.max(1320, Math.min(3190, Math.round(elo)))}`);
+        this.send(
+          `setoption name UCI_Elo value ${Math.max(1320, Math.min(3190, Math.round(elo)))}`,
+        );
       }
       await this.isReady();
     });
@@ -103,7 +110,12 @@ export class StockfishEngine {
     return this.run(async () => {
       this.applyStrength(null);
       await this.isReady();
-      try { return await this.analyseNow(fen, depth); } finally { this.applyStrength(restoreElo); await this.isReady(); }
+      try {
+        return await this.analyseNow(fen, depth);
+      } finally {
+        this.applyStrength(restoreElo);
+        await this.isReady();
+      }
     });
   }
 

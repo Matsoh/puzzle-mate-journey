@@ -2,8 +2,26 @@ import { describe, expect, it } from "vitest";
 import { Chess } from "chess.js";
 import { OPENINGS, getOpening } from "@/data/openings";
 import {
-  buildSession, cleanPlan, drillHint, emptyRec, ENDGAME_TOPICS, fenAt, forkAfter, gradeDrillMove, migratePrep, oldNotes, pickTopicItem,
-  playerMovesAt, recordDrill, recordTopic, sessionSummary, TACTIC_TOPICS, threats, topicStartFen, branchFor, trainedCount,
+  buildSession,
+  cleanPlan,
+  drillHint,
+  emptyRec,
+  ENDGAME_TOPICS,
+  fenAt,
+  forkAfter,
+  gradeDrillMove,
+  migratePrep,
+  oldNotes,
+  pickTopicItem,
+  playerMovesAt,
+  recordDrill,
+  recordTopic,
+  sessionSummary,
+  TACTIC_TOPICS,
+  threats,
+  topicStartFen,
+  branchFor,
+  trainedCount,
 } from "./prep";
 import { newTournament, defaultSetup } from "./tournament";
 
@@ -23,29 +41,43 @@ describe("opening catalog", () => {
     }
   });
   it("black openings start with the right first move for their group", () => {
-    for (const o of OPENINGS.filter((x) => x.side === "black")) for (const b of o.branches) expect(b.moves[0]).toBe(o.group === "e4" ? "e4" : "d4");
+    for (const o of OPENINGS.filter((x) => x.side === "black"))
+      for (const b of o.branches) expect(b.moves[0]).toBe(o.group === "e4" ? "e4" : "d4");
   });
 });
 const b0 = (o: (typeof OPENINGS)[number]) => o.branches[0]!;
 
 describe("plan", () => {
   it("removes duplicates and unknown ids, one-plan keeps one", () => {
-    expect(cleanPlan({ mode: "many", openings: ["italiensk", "italiensk", "x", "fransk"] }).openings).toEqual(["italiensk", "fransk"]);
+    expect(
+      cleanPlan({ mode: "many", openings: ["italiensk", "italiensk", "x", "fransk"] }).openings,
+    ).toEqual(["italiensk", "fransk"]);
     expect(cleanPlan({ mode: "one", openings: ["london", "fransk"] }).openings).toEqual(["london"]);
   });
   it("three chosen openings give three different training runs", () => {
     const plan = { mode: "many" as const, openings: ["italiensk", "carokann", "kongeindisk"] };
     const s = buildSession(plan, {}, "2026-10-12", 15, "fork", "kp");
-    expect(s.steps.filter((x) => x.kind === "opening").map((x) => x.ref)).toEqual(["italiensk", "carokann", "kongeindisk"]);
+    expect(s.steps.filter((x) => x.kind === "opening").map((x) => x.ref)).toEqual([
+      "italiensk",
+      "carokann",
+      "kongeindisk",
+    ]);
     const starts = plan.openings.map((id) => branchFor(getOpening(id)!, undefined).moves.join(" "));
     expect(new Set(starts).size).toBe(3);
-    expect(s.steps.map((x) => x.kind)).toEqual(["opening", "opening", "opening", "tactic", "endgame"]);
+    expect(s.steps.map((x) => x.kind)).toEqual([
+      "opening",
+      "opening",
+      "opening",
+      "tactic",
+      "endgame",
+    ]);
     expect(buildSession(plan, {}, "d", 5, "fork", "kp").steps).toHaveLength(1);
   });
 });
 
 describe("drill", () => {
-  const ital = getOpening("italiensk")!, caro = getOpening("carokann")!;
+  const ital = getOpening("italiensk")!,
+    caro = getOpening("carokann")!;
   it("grades line move, off-line legal move and illegal move", () => {
     expect(gradeDrillMove(ital.branches[0]!, 0, "e2", "e4").kind).toBe("line");
     expect(gradeDrillMove(ital.branches[0]!, 0, "d2", "d4").kind).toBe("offline");
@@ -63,28 +95,47 @@ describe("drill", () => {
   });
   it("scheduler: 1/3/7 days, help resets, early repeat is not mastery, alternates branch", () => {
     let r = recordDrill(emptyRec(), ital, "giuoco", "2026-10-12", true);
-    expect(r.dueDay).toBe("2026-10-13"); expect(r.nextBranch).toBe(1);
+    expect(r.dueDay).toBe("2026-10-13");
+    expect(r.nextBranch).toBe(1);
     const early = recordDrill(r, ital, "tospringer", "2026-10-12", true);
-    expect(early.independent).toBe(1); expect(early.dueDay).toBe("2026-10-13");
-    r = recordDrill(r, ital, "tospringer", "2026-10-13", true); expect(r.dueDay).toBe("2026-10-16");
-    r = recordDrill(r, ital, "giuoco", "2026-10-16", true); expect(r.dueDay).toBe("2026-10-23");
+    expect(early.independent).toBe(1);
+    expect(early.dueDay).toBe("2026-10-13");
+    r = recordDrill(r, ital, "tospringer", "2026-10-13", true);
+    expect(r.dueDay).toBe("2026-10-16");
+    r = recordDrill(r, ital, "giuoco", "2026-10-16", true);
+    expect(r.dueDay).toBe("2026-10-23");
     const h = recordDrill(r, ital, "giuoco", "2026-10-23", false);
-    expect(h.streak).toBe(0); expect(h.dueDay).toBe("2026-10-24"); expect(h.nextBranch).toBe(0); expect(h.independent).toBe(r.independent);
+    expect(h.streak).toBe(0);
+    expect(h.dueDay).toBe("2026-10-24");
+    expect(h.nextBranch).toBe(0);
+    expect(h.independent).toBe(r.independent);
   });
   it("progress counts only practised openings", () => {
-    expect(trainedCount({ mode: "many", openings: ["a", "b", "c"] }, { a: { ...emptyRec(), practiced: 1 } })).toEqual({ trained: 1, total: 3 });
+    expect(
+      trainedCount(
+        { mode: "many", openings: ["a", "b", "c"] },
+        { a: { ...emptyRec(), practiced: 1 } },
+      ),
+    ).toEqual({ trained: 1, total: 3 });
   });
   it("summary only uses recorded events", () => {
     expect(sessionSummary([])).toHaveLength(1);
-    expect(sessionSummary([{ kind: "opening", ref: "x", independent: true, note: "" }])).toEqual(["Du øvde på 1 åpning.", "Én spilte du helt uten hjelp."]);
+    expect(sessionSummary([{ kind: "opening", ref: "x", independent: true, note: "" }])).toEqual([
+      "Du øvde på 1 åpning.",
+      "Én spilte du helt uten hjelp.",
+    ]);
   });
 });
 
 describe("topics", () => {
   it("every dropdown topic has real bank puzzles of that theme", () => {
-    for (const t of [...TACTIC_TOPICS, ...ENDGAME_TOPICS]) expect(t.items.length).toBeGreaterThan(0);
-    expect(TACTIC_TOPICS.find((t) => t.id === "fork")!.items.every((i) => i.theme === "fork")).toBe(true);
-    for (const i of ENDGAME_TOPICS.find((t) => t.id === "aktivkonge")!.items) expect(new Chess(topicStartFen(i)).get(i.line[1]!.slice(0, 2) as never)?.type).toBe("k");
+    for (const t of [...TACTIC_TOPICS, ...ENDGAME_TOPICS])
+      expect(t.items.length).toBeGreaterThan(0);
+    expect(TACTIC_TOPICS.find((t) => t.id === "fork")!.items.every((i) => i.theme === "fork")).toBe(
+      true,
+    );
+    for (const i of ENDGAME_TOPICS.find((t) => t.id === "aktivkonge")!.items)
+      expect(new Chess(topicStartFen(i)).get(i.line[1]!.slice(0, 2) as never)?.type).toBe("k");
   });
   it("picks unseen first, then due review; help re-queues for tomorrow", () => {
     const t = TACTIC_TOPICS[0]!;
@@ -97,7 +148,10 @@ describe("topics", () => {
 
 describe("verified facts", () => {
   it("detects a real knight fork", () => {
-    expect(forkAfter("3q3k/6pp/8/4N3/8/8/6PP/6K1 w - - 0 1", "e5f7")?.targets).toEqual(["dronningen på d8", "kongen på h8"]);
+    expect(forkAfter("3q3k/6pp/8/4N3/8/8/6PP/6K1 w - - 0 1", "e5f7")?.targets).toEqual([
+      "dronningen på d8",
+      "kongen på h8",
+    ]);
     expect(forkAfter("3q3k/6pp/8/4N3/8/8/6PP/6K1 w - - 0 1", "e5d3")).toBeNull();
   });
   it("lists the bot's threats from the real position", () => {
@@ -111,10 +165,18 @@ describe("verified facts", () => {
 describe("storage", () => {
   it("migrates bad data safely and keeps old notes readable", () => {
     expect(migratePrep("x").plan).toBeNull();
-    expect(migratePrep({ version: 1, plan: { mode: "many", openings: ["fransk", "fransk"] }, tacticTopic: "zzz" }).plan?.openings).toEqual(["fransk"]);
+    expect(
+      migratePrep({
+        version: 1,
+        plan: { mode: "many", openings: ["fransk", "fransk"] },
+        tacticTopic: "zzz",
+      }).plan?.openings,
+    ).toEqual(["fransk"]);
     expect(migratePrep({ version: 1, tacticTopic: "zzz" }).tacticTopic).toBe("fork");
     const t = newTournament(defaultSetup("2026-10-20"), "a", 0);
     t.prep.vsE4 = "Caro-Kann";
-    expect(oldNotes([t])).toEqual([{ from: "Turnering", label: "Mitt svar mot 1.e4", text: "Caro-Kann" }]);
+    expect(oldNotes([t])).toEqual([
+      { from: "Turnering", label: "Mitt svar mot 1.e4", text: "Caro-Kann" },
+    ]);
   });
 });
