@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy } from "lucide-react";
+import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, Dumbbell } from "lucide-react";
 import type { ReactNode } from "react";
 import { MuteToggle } from "./AppHeader";
 import { ThemeToggle } from "./ThemeToggle";
@@ -7,22 +7,35 @@ import { PlayerAvatar } from "./CoachAvatar";
 import { COACH_NAME } from "@/lib/coach-config";
 import { SyncStatus, LogoutButton, MergeNotice } from "./SyncStatus";
 
-const navigation = [
-  { to: "/", label: "Oversikt", mobile: "Oversikt", icon: House },
-  { to: "/pusler", label: "Dagens pusler", mobile: "Pusler", icon: Puzzle },
-  { to: "/stigen", label: "Motstanderstigen", mobile: "Stigen", icon: Crown },
-  { to: "/trener", label: "Trener", mobile: "Trener", icon: GraduationCap, Trophy },
-  { to: "/turnering", label: "Turneringsdagen", mobile: "Turnering", icon: Trophy },
-  { to: "/fritt", label: "Fritt parti", mobile: "Fritt", icon: Swords },
-  { to: "/fremgang", label: "Fremgang", mobile: "Fremgang", icon: ChartNoAxesCombined, desktopOnly: true },
+/** The four things Tobias does every day + "Mer" for the rest. */
+export const PRIMARY_NAV = [
+  { to: "/", label: "Hjem", icon: House },
+  { to: "/stigen", label: "Spill", icon: Crown },
+  { to: "/pusler", label: "Oppgaver", icon: Puzzle },
+  { to: "/fremgang", label: "Fremgang", icon: ChartNoAxesCombined },
 ] as const;
+
+export const MORE_NAV = [
+  { to: "/fritt", label: "Fritt parti", hint: "Velg styrke, farge og tempo", icon: Swords },
+  { to: "/treningsparti", label: "Treningsparti", hint: "Spill med hjelp underveis", icon: Dumbbell },
+  { to: "/trener", label: "Trener", hint: "Treningsøkt og øvelser", icon: GraduationCap },
+  { to: "/turnering", label: "Turnering", hint: "Forberedelse og turneringsdag", icon: Trophy },
+] as const;
+
+const MORE_PATHS: readonly string[] = MORE_NAV.map((n) => n.to);
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: s => s.location.pathname });
+  const active = (to: string) => path === to || (to === "/mer" && MORE_PATHS.includes(path)) || (to === "/stigen" && path === "/parti");
+  const mobileNav = [...PRIMARY_NAV, { to: "/mer", label: "Mer", icon: Ellipsis }] as const;
   return <>
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] flex-col border-r border-border bg-background px-4 py-8 min-[1100px]:flex">
-      <Link to="/" className="mb-10 flex items-center gap-3 px-3 text-lg font-semibold"><ChessKnight className="size-6 text-primary" />Goblin Chess</Link>
-      <nav aria-label="Hovednavigasjon" className="space-y-2">{navigation.map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`nav-link${path === n.to ? " is-active" : ""}`}><n.icon className="size-5 shrink-0" />{n.label}</Link>)}</nav>
+      <Link to="/" className="mb-8 flex items-center gap-3 px-3 text-lg font-semibold"><ChessKnight className="size-6 text-primary" />Goblin Chess</Link>
+      <nav aria-label="Hovednavigasjon" className="space-y-1">
+        {PRIMARY_NAV.map(n => <Link key={n.to} to={n.to} aria-current={active(n.to) ? "page" : undefined} className={`nav-link${active(n.to) ? " is-active" : ""}`}><n.icon className="size-5 shrink-0" />{n.label}</Link>)}
+        <p className="eyebrow px-3 pt-4 pb-1">Mer</p>
+        {MORE_NAV.map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`nav-link${path === n.to ? " is-active" : ""}`}><n.icon className="size-5 shrink-0" />{n.label}</Link>)}
+      </nav>
       <div className="mt-auto border-t border-border pt-5">
         <div className="flex items-center gap-3 px-2"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-xs font-medium">{COACH_NAME}</p></div></div>
         <div className="mt-5 flex items-center justify-between gap-2 px-2"><span className="text-xs text-muted-foreground">Tema</span><ThemeToggle /></div>
@@ -30,8 +43,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mt-4 flex items-center justify-between gap-2 px-2"><SyncStatus /><LogoutButton /></div>
       </div>
     </aside>
-    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center border-b border-border bg-background px-4 pb-3 pt-[max(12px,env(safe-area-inset-top))] min-[1100px]:hidden"><Link to="/" className="flex min-w-0 items-center gap-2 font-semibold"><ChessKnight className="size-5 shrink-0 text-primary" /><span className="truncate">Goblin Chess</span></Link><div className="flex items-center gap-2"><SyncStatus compact /><ThemeToggle compact /><MuteToggle /><LogoutButton compact /></div></header>
+    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center border-b border-border bg-background px-4 pb-3 pt-[max(12px,env(safe-area-inset-top))] min-[1100px]:hidden">
+      <Link to="/" className="flex min-w-0 items-center gap-2 font-semibold"><ChessKnight className="size-5 shrink-0 text-primary" /><span className="truncate">Goblin Chess</span></Link>
+      <div className="flex items-center gap-2"><SyncStatus compact /><MuteToggle /></div>
+    </header>
     <div className="app-content"><MergeNotice />{children}</div>
-    <nav aria-label="Mobilnavigasjon" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-border bg-background/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg min-[1100px]:hidden">{navigation.filter(n => !("desktopOnly" in n)).map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors ${path === n.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}><n.icon className="size-5 shrink-0" /><span className="truncate max-w-full">{n.mobile}</span></Link>)}</nav>
+    <nav aria-label="Mobilnavigasjon" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-background/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg min-[1100px]:hidden">
+      {mobileNav.map(n => <Link key={n.to} to={n.to} aria-current={active(n.to) ? "page" : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-lg py-2 text-[11px] font-semibold transition-colors ${active(n.to) ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}><n.icon className="size-6 shrink-0" /><span className="truncate max-w-full">{n.label}</span></Link>)}
+    </nav>
   </>;
 }

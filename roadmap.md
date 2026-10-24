@@ -48,3 +48,9 @@
 - [ ] Bruk offentlige Lichess-filer (raw, ingen konto/connector); Listudy kun inspirasjon; enkel tekst
 
 - [x] Bot never moved in clocked games (clock tick restarted bot turn); engine timeout/restart + Prøv igjen; clock frozen on engine error
+
+# Spillforside og Mike (steg 1)
+- [x] Ny forside: Mike med replikk, stor XP-stolpe med nivåtittel, «Spill mot …»-knapp, dagens tre oppdrag (5 oppgaver, spill ett parti, vinn ett parti) med +40 XP bonus én gang per dag.
+- [x] Navigasjon ned til Hjem/Spill/Oppgaver/Fremgang + «Mer» (fritt parti, treningsparti, trener, turnering, innstillinger); forklaringstekster fjernet.
+- [x] Mike tegnet som SVG fra filtfiguren (chill/happy/think/shock/sleep); engelske, tørre replikker i src/lib/mike.ts som senere kan byttes mot en lokal LLM.
+- [x] Dev-modus uten innlogging (VITE_LOCAL_DEV=1, kun `vite dev`); tester for oppdrag, nivåtitler og Mike.

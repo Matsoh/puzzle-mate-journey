@@ -2,7 +2,7 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { signOutSafely, activateUser, deactivate, decideImport, importDecided, importLegacy, legacySnapshot } from "@/lib/cloud-sync";
+import { signOutSafely, activateUser, activateLocalDev, isLocalDev, deactivate, decideImport, importDecided, importLegacy, legacySnapshot } from "@/lib/cloud-sync";
 import { AppShell } from "./AppShell";
 import { AuthScreen } from "./AuthScreen";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    if (isLocalDev()) { activateLocalDev(); setPhase("ready"); return; }
     void start();
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") void run(null);

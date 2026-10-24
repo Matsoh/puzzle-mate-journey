@@ -264,3 +264,35 @@
 @keyframes chess-portal { 0% { transform:scale(.8); opacity:1; } 100% { transform:scale(1.65); opacity:0; } }
 @media (max-width:400px) { .chess-avatar__badge { padding:8px 12px; font-size:12px; } }
 @media (prefers-reduced-motion:reduce) { .chess-avatar *,.chess-avatar *::after { animation:none!important; transition:none!important; } .chess-avatar__tilt { transform:none; } .chess-avatar__particle { opacity:.45; } }
+
+/* ---- Mike + game-like home ---- */
+.mike { display:block; overflow:visible; }
+.mike--float { animation: mike-float 4s ease-in-out infinite; transform-origin: 50% 90%; }
+.mike__eye { animation: mike-blink 5s infinite; transform-box: fill-box; transform-origin: center; }
+.mike__zzz { animation: mike-zzz 2s ease-in-out infinite; }
+@keyframes mike-float { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-6px) rotate(1deg); } }
+@keyframes mike-blink { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } }
+@keyframes mike-zzz { 0%,100% { opacity:.2; transform: translateY(0); } 50% { opacity:1; transform: translateY(-8px); } }
+.mike-bubble { position:relative; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:12px 16px; line-height:1.45; font-weight:500; }
+.mike-bubble::before { content:""; position:absolute; left:-9px; bottom:18px; width:16px; height:16px; background:var(--card); border-left:1px solid var(--border); border-bottom:1px solid var(--border); transform:rotate(45deg); }
+.mike-bubble__name { display:block; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); margin-bottom:2px; }
+
+.quest { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:14px; padding:14px 16px; min-height:72px; border:1px solid var(--border); border-radius:16px; background:var(--card); transition:border-color .15s, transform .15s, background .15s; }
+.quest:active { transform:scale(.985); }
+.quest.is-done { border-color:color-mix(in oklab,var(--primary) 55%,transparent); background:color-mix(in oklab,var(--primary) 10%,var(--card)); }
+.quest__check { display:grid; place-items:center; width:40px; height:40px; border-radius:12px; background:var(--muted); color:var(--muted-foreground); font-weight:700; }
+.quest.is-done .quest__check { background:var(--primary); color:var(--primary-foreground); }
+.quest__xp { font-size:12px; font-weight:700; color:var(--primary); white-space:nowrap; }
+.quest__bar { height:6px; border-radius:4px; background:var(--muted); overflow:hidden; margin-top:8px; }
+.quest__bar > div { height:100%; background:var(--primary); transition:width .4s ease; }
+
+.xp-big { padding:14px 16px; border:1px solid var(--border); border-radius:16px; background:var(--card); }
+.xp-big__track { height:14px; border-radius:8px; background:var(--muted); overflow:hidden; margin-top:10px; }
+.xp-big__fill { height:100%; border-radius:8px; background:linear-gradient(90deg, color-mix(in oklab,var(--primary) 70%,#fff0), var(--primary)); transition:width .6s cubic-bezier(.2,.8,.2,1); box-shadow:0 0 12px color-mix(in oklab,var(--primary) 50%,transparent); }
+
+.btn-play { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:64px; border-radius:18px; background:var(--primary); color:var(--primary-foreground); font-size:20px; font-weight:800; letter-spacing:.02em; box-shadow:0 10px 30px color-mix(in oklab,var(--primary) 35%,transparent); transition:transform .15s, filter .15s; }
+.btn-play:hover { filter:brightness(1.06); }
+.btn-play:active { transform:scale(.98); }
+.btn-play svg { width:26px; height:26px; }
+.streak-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--card); border:1px solid var(--border); font-weight:700; font-size:14px; }
+.streak-chip.is-hot { border-color:color-mix(in oklab,var(--gold) 60%,transparent); color:var(--gold); }

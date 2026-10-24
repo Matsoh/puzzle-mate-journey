@@ -17,6 +17,7 @@ import { OPPONENT_TEMPO, remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib
 import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
 import { ENGINE_ELO_OFFSET, getOpponent, OPPONENTS } from "@/lib/opponents";
 import { markActive, updateProgress, withHistoryPoint } from "@/lib/progress";
+import { withDayGame } from "@/lib/quests";
 import { K_GAME, levelFromXp, newRating, XP } from "@/lib/rules";
 import { applyBadges, type Badge } from "@/lib/badges";
 import { play, unlockAudio } from "@/lib/sound";
@@ -111,7 +112,7 @@ function Game() {
           beaten: firstBeat && opponent ? [...p0.beaten, opponent.id] : p0.beaten,
           maxBeatenElo: outcome === "win" ? Math.max(p0.maxBeatenElo, engineElo) : p0.maxBeatenElo,
         };
-        p = withHistoryPoint(markActive(p));
+        p = withDayGame(withHistoryPoint(markActive(p)), today(), outcome === "win");
         const b = applyBadges(p);
         rw = { xp: gained, ratingBefore: p0.rating, ratingAfter: p.rating, badges: b.earned, levelUp: levelFromXp(p.xp).level > before };
         return b.progress;

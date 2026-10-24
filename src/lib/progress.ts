@@ -27,6 +27,8 @@ export type Progress = {
   muted: boolean;
   /** One-time XP credits by event id, so the same event never pays twice (also across devices). */
   credits: Record<string, number>;
+  /** Games played/won per day (last two weeks) — drives "Dagens oppdrag". */
+  dayStats: Record<string, { games: number; wins: number }>;
 };
 
 export const DEFAULT_PROGRESS: Progress = {
@@ -50,6 +52,7 @@ export const DEFAULT_PROGRESS: Progress = {
   daily: null,
   muted: false,
   credits: {},
+  dayStats: {},
 };
 
 // Old anonymous key — read only for the one-time import offer, never deleted.

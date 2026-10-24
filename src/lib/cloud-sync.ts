@@ -84,6 +84,7 @@ export function createSyncedStore<T>(def: StoreDef<T>) {
       if (!hydrated || !uid) return;
       state = f(state);
       notify();
+      if (localOnly) { writeCache(s as Store); return; }
       s.dirty = true;
       writeCache(s as Store);
       schedule(s as Store, 800);
@@ -193,8 +194,33 @@ export async function activateUser(userId: string): Promise<{ cloudEmpty: boolea
   return { cloudEmpty: rows.size === 0 && stores.every((s) => !s.dirty) };
 }
 
+let localOnly = false;
+/** True when the dev-only local mode is on (VITE_LOCAL_DEV=1 in `vite dev`). Never in production builds. */
+export const isLocalDev = () => import.meta.env.DEV && import.meta.env["VITE_LOCAL_DEV"] === "1";
+
+/**
+ * Dev-only: hydrate every store from the device cache and keep saving to the
+ * device only (no server calls). Lets the game run without a Supabase login
+ * while developing. Does nothing outside `vite dev` with VITE_LOCAL_DEV=1.
+ */
+export function activateLocalDev(userId = "local-dev") {
+  if (!isLocalDev()) return;
+  deactivate();
+  uid = userId;
+  localOnly = true;
+  for (const s of stores) {
+    const cache = readCache(userId, s.def.key);
+    s.replace(cache ? s.def.migrate(cache.data) : s.def.empty());
+    s.dirty = false;
+    writeCache(s);
+  }
+  hydrated = true;
+  recomputeStatus();
+}
+
 /** Logout / user switch: stop all saving and wipe active state from memory. Per-user caches stay isolated. */
 export function deactivate() {
+  localOnly = false;
   gen++;
   hydrated = false;
   uid = null;
