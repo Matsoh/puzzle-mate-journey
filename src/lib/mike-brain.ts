@@ -85,10 +85,10 @@ export async function askOllama(settings: BrainSettings, context: string, histor
 export type BrainSource = "cloud" | "ollama" | "offline";
 
 /** Ask Mike's cloud brain. Throws on any failure (caller falls back). */
-export async function askCloud(context: string, history: ChatMsg[]): Promise<string> {
+export async function askCloud(context: string, history: ChatMsg[], extraRules = ""): Promise<string> {
   const { supabase } = await import("@/integrations/supabase/client");
   const { data, error } = await supabase.functions.invoke<{ text?: string; error?: string }>("mike", {
-    body: { system: MIKE_SYSTEM_PROMPT, context, messages: history.slice(-12) },
+    body: { system: extraRules ? `${MIKE_SYSTEM_PROMPT}\n\n${extraRules}` : MIKE_SYSTEM_PROMPT, context, messages: history.slice(-12) },
   });
   if (error) throw error;
   const text = data?.text?.trim();
@@ -97,9 +97,9 @@ export async function askCloud(context: string, history: ChatMsg[]): Promise<str
 }
 
 /** Cloud first, then Ollama if the user configured it and it answers, then the built-in Mike. */
-export async function askMike(settings: BrainSettings, context: string, history: ChatMsg[], ollamaOk: boolean): Promise<{ text: string; source: BrainSource }> {
+export async function askMike(settings: BrainSettings, context: string, history: ChatMsg[], ollamaOk: boolean, extraRules = ""): Promise<{ text: string; source: BrainSource }> {
   const last = history[history.length - 1]?.content ?? "";
-  try { return { text: await askCloud(context, history), source: "cloud" }; } catch { /* fall through */ }
+  try { return { text: await askCloud(context, history, extraRules), source: "cloud" }; } catch { /* fall through */ }
   if (ollamaOk) { try { return { text: await askOllama(settings, context, history), source: "ollama" }; } catch { /* fall through */ } }
   return { text: offlineMike(last), source: "offline" };
 }

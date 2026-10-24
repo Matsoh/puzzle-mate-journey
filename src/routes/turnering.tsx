@@ -43,6 +43,8 @@ import {
   type Setup,
   type Tournament,
 } from "@/lib/tournament";
+import { MikeCompanion } from "@/components/MikeCompanion";
+import { tournamentContext, tournamentLine } from "@/lib/mike-game";
 
 export const Route = createFileRoute("/turnering")({
   head: () => ({
@@ -269,7 +271,7 @@ function Current({ t, view }: { t: Tournament; view: "prep" | "day" }) {
   const [editing, setEditing] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
 
-  if (playingIdx >= 0) return <Playing t={t} i={playingIdx} />;
+  if (playingIdx >= 0) return <><Playing t={t} i={playingIdx} /><MikeCompanion mode="tournament" line={tournamentLine(t, t.rounds[playingIdx], playingIdx)} context={tournamentContext(t)} className="mt-4" /></>;
 
   return (
     <div className="space-y-6">
@@ -319,6 +321,7 @@ function Current({ t, view }: { t: Tournament; view: "prep" | "day" }) {
         {editing && <EditSetup t={t} onDone={() => setEditing(false)} />}
       </section>
 
+      {view === "day" && <MikeCompanion mode="tournament" line={tournamentLine(t, t.rounds[activeRound(t) ?? 0], activeRound(t) ?? t.rounds.length)} context={tournamentContext(t)} />}
       {view === "day" && <Rounds t={t} />}
       {view === "day" && <AfterDay t={t} />}
     </div>

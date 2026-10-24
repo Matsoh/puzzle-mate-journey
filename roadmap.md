@@ -62,3 +62,8 @@
 - [x] Monsterverkstedet (/avatar): egen filt-monster-avatar i seks deler, gratis grunndeler, resten kjøpes for mynter. Avataren vises overalt.
 - [x] Snakk med Mike (/mike): systemprompt, kontekst med ekte tall, Ollama lokalt med innebygd reserve. Innstillinger for adresse/modell. README-oppsett.
 - [x] Nav: Samling erstatter Fremgang i hovedmenyen; Mike, verksted og Fremgang under Mer.
+
+# Mike ved brettet (steg 3)
+- [x] MikeCompanion: Mike med live-replikk + «Spør Mike»-minichat med sidens kontekst, i parti, treningsparti, turneringsdag og trenersiden.
+- [x] Regler per modus: i parti aldri trekkhint (bare vaner og ro); i treningsparti hint tillatt; etter parti kommenterer Mike motorens fakta; turneringsdag = ringside-coach.
+- [x] Deterministiske reaksjoner uten nett (slag, sjakk, materiell, klokke, milepæler) og introreplikk per motstander. Tester.

@@ -10,6 +10,7 @@ import { AdaptiveTrainer } from "@/components/AdaptiveTrainer";
 import { chooseCoach, useTrainer } from "@/lib/trainer-store";
 import { DISCLAIMER, PROFILES, dailyPlan, exercisesFor, type CoachId } from "@/lib/trainer";
 import { today, useProgress } from "@/lib/progress";
+import { MikeCompanion } from "@/components/MikeCompanion";
 
 export const Route = createFileRoute("/trener")({
   head: () => ({
@@ -70,13 +71,17 @@ function TrainerPage() {
           </div>;
         })}
       </section>
-      {active && day && (() => { const plan = dailyPlan(active, day); return (
+      {active && day && (() => { const plan = dailyPlan(active, day); return (<>
         <section className="card-game mt-6 p-5 sm:p-6" aria-label="Dagens råd">
           <div className="mb-2 flex items-center gap-3"><CoachAvatar className="size-10" /><p className="eyebrow">Dagens råd · {COACH_IDENTITY[active].label}</p></div>
           <p className="text-sm" data-testid="daily-advice">{plan.advice}</p>
           <p className="mt-3 flex gap-2 text-sm"><Target className="size-4 shrink-0 text-primary" /><span><span className="font-medium">Oppgave:</span> {plan.task}</span></p>
           <p className="mt-3 text-sm text-muted-foreground">{plan.motivation}</p>
-        </section>); })()}
+        </section>
+        <MikeCompanion mode="trainer" compact className="mt-3"
+          line={{ text: active === "magnus" ? "Magnus-style today. Slow, deep, slightly smug. I'll keep it fun." : "Hikaru-style today. Fast, sharp, lots of checks. I'll keep you breathing.", mood: "chill" }}
+          context={`Trainer profile: ${COACH_IDENTITY[active].label}. Today's advice: ${plan.advice} Task: ${plan.task}`} />
+        </>); })()}
       {active && day && <AdaptiveTrainer coach={active} day={day} />}
       {active && ex && (() => { const cur = idx % list.length; const last = cur === list.length - 1; return <section className="mt-6" aria-label="Øvelser">
         <h2 className="section-title mb-1">Grunnoppgaver – gjensyn ({cur + 1}/{list.length})</h2>

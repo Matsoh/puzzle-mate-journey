@@ -26,6 +26,8 @@ import { updatePrep } from "@/lib/prep-store";
 import { useTrainer } from "@/lib/trainer-store";
 import { dayKey } from "@/lib/rules";
 import { play, unlockAudio } from "@/lib/sound";
+import { MikeCompanion } from "@/components/MikeCompanion";
+import { gameContext, gameReaction } from "@/lib/mike-game";
 
 type Search = { fen?: string | undefined; side: "w" | "b"; elo: number; tc: string; src: string };
 const START = new Chess().fen();
@@ -279,6 +281,11 @@ function PracticeGame() {
   }, [clock, tcCfg, over, player, finish]);
 
   const myTurn = !over && !paused && game.current.turn() === player;
+  const mikeSnap = useMemo(() => ({ fen, moves, player, myClockMs: null }), [fen, moves, player]);
+  const mikeReaction = useMemo(() => gameReaction(mikeSnap), [mikeSnap]);
+  const [mikeLine, setMikeLine] = useState<ReturnType<typeof gameReaction>>(null);
+  useEffect(() => { if (mikeReaction) setMikeLine(mikeReaction); }, [mikeReaction]);
+  const mikeCtx = `${gameContext({ ...mikeSnap, tc: tcCfg ? tc : "no clock" })}\nTraining game against the engine at ${elo}; hints are allowed.${help ? `\nThe trainer's latest help panel said: ${help.title}: ${help.lines.join(" ")}` : ""}`;
   const onMove = (from: string, to: string) => {
     if (!myTurn) return false;
     const isPromo = game.current
@@ -581,6 +588,7 @@ function PracticeGame() {
         </div>
 
         <div className="space-y-4">
+          {!over && <MikeCompanion mode="training" line={mikeLine} context={mikeCtx} compact />}
           {!over && (
             <section className="card-game p-4" aria-label="Trenerhjelp">
               <div className="flex items-center gap-3">

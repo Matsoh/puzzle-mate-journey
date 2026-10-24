@@ -24,6 +24,8 @@ import { applyBadges, type Badge } from "@/lib/badges";
 import { play, unlockAudio } from "@/lib/sound";
 import { rememberLadderWin } from "@/lib/daily-coach";
 import { today } from "@/lib/progress";
+import { MikeCompanion } from "@/components/MikeCompanion";
+import { gameContext, gameReaction, introLine, reviewContext, reviewLine } from "@/lib/mike-game";
 
 type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeControl; color: ColorChoice };
 
@@ -262,6 +264,11 @@ function Game() {
   const oppClockIdx = player === "w" ? 1 : 0;
   const nextOpp = opponent ? OPPONENTS[OPPONENTS.indexOf(opponent) + 1] : undefined;
   const moveListSan = useMemo(() => moves.map((m) => m.san), [moves]);
+  const myClockMs = tcCfg ? clock[player === "w" ? 0 : 1] : null;
+  const snapshot = useMemo(() => ({ fen, moves, player, opponent, myClockMs: tcCfg ? Math.round(myClockMs! / 5000) * 5000 : null, tc }), [fen, moves, player, opponent, tcCfg, myClockMs, tc]);
+  const reaction = useMemo(() => gameReaction(snapshot), [snapshot]);
+  const [lastLine, setLastLine] = useState<ReturnType<typeof gameReaction>>(null);
+  useEffect(() => { if (reaction) setLastLine(reaction); }, [reaction]);
 
   return (
     <main className="page-layout" onPointerDown={unlockAudio}>
@@ -277,6 +284,7 @@ function Game() {
             <h2 className="text-3xl">{opponent.name}</h2>
             <p className="font-medium text-primary">{opponent.elo} · {opponent.style}</p>
             <p className="text-lg italic">«{opponent.line}»</p>
+            <p className="mike-bubble mx-auto max-w-sm text-left text-sm"><span className="mike-bubble__name">Mike</span>{introLine(opponent)}</p>
             <Button
               className=" w-full max-w-sm "
               onClick={() => {
@@ -312,6 +320,7 @@ function Game() {
 
           {phase === "playing" && (
             <>
+              <MikeCompanion mode="game" line={lastLine} context={gameContext(snapshot)} compact />
               <div className="card-game p-3 max-h-64 overflow-y-auto text-sm font-medium leading-7">
                 {moveListSan.length === 0 ? (
                   <span className="text-muted-foreground">{player === "w" ? "Du starter – lykke til! 🍀" : "Motstanderen starter…"}</span>
@@ -355,11 +364,9 @@ function Game() {
                 )}
                 {result.outcome === "win" && nextOpp && <p className="font-medium text-accent pt-1"><LockKeyholeOpen className="inline size-4" /> {nextOpp.name} er låst opp!</p>}
               </div>
-              <CoachBubble>
-                {result.outcome === "win" ? "Rått spilt! " : result.outcome === "draw" ? "Godt kjempet! " : "Ikke gi opp – tap er der vi lærer mest! "}
-                Motoranalysen er ikke kjørt ennå. Trykk under, så ser vi på de viktigste øyeblikkene sammen.
-              </CoachBubble>
-              <Button className=" w-full" disabled={moves.length < 2} onClick={startAnalysis}><Search /> Analyser med treneren</Button>
+              <MikeCompanion mode="review" compact context={`${gameContext(snapshot)}\nResult: Tobias ${result.outcome === "win" ? "won" : result.outcome === "draw" ? "drew" : "lost"} (${result.reason}). The engine analysis has not been run yet.`}
+                line={{ text: result.outcome === "win" ? "That's a win. Say it out loud. Then let's see where it nearly wasn't." : result.outcome === "draw" ? "Draw. Half a point and a full lesson, if we look." : "Lost. Good. Losses are where the XP is. Run the analysis.", mood: result.outcome === "win" ? "happy" : "think" }} />
+              <Button className=" w-full" disabled={moves.length < 2} onClick={startAnalysis}><Search /> Analyser partiet</Button>
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Omkamp</Button>
                 <Link to={opponent ? "/stigen" : "/"} className="btn-game btn-ghost">{opponent ? "<Swords /> Stigen" : "<House /> Oversikt"}</Link>
@@ -377,6 +384,7 @@ function Game() {
 
           {phase === "review" && (
             <>
+              {result && <MikeCompanion mode="review" line={reviewLine(mistakes, result.outcome)} context={reviewContext(mistakes, result.outcome, opponent)} />}
               {result && <CoachDebrief mistakes={mistakes} outcome={result.outcome} orientation={orientation} />}
               <CoachReview mistakes={mistakes} orientation={orientation} />
               <div className="grid grid-cols-2 gap-3">
