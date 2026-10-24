@@ -84,7 +84,7 @@ export function AdaptiveTrainer({ coach, day }: { coach: CoachId; day: string })
           <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground"><Database className="mt-0.5 size-3 shrink-0" />Kilde: Lichess puzzle {item.id} (CC0), fra et ekte parti – <a className="underline" href={item.gameUrl} target="_blank" rel="noopener noreferrer">se partiet</a>. Fasit er Lichess' motorverifiserte løsning, kontrollert med regelmotor her.</p>
         </div>
       )}
-      <p className="mt-2 text-xs text-muted-foreground">{count} oppgaver for denne treneren · 4 temaer · 3 nivåer. Oppgavene gir ikke XP eller rating.</p>
+      <p className="mt-2 text-xs text-muted-foreground">{count} oppgaver · {THEMES.mike.length} temaer · 3 nivåer. Oppgavene gir ikke XP eller rating.</p>
     </section>
   );
 }

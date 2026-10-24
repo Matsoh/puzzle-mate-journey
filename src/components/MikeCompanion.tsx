@@ -6,7 +6,7 @@ import { PlayerAvatar } from "./CoachAvatar";
 import { today, useProgress } from "@/lib/progress";
 import { askMike, loadBrain, mikeContext, type ChatMsg } from "@/lib/mike-brain";
 import { MODE_RULES, type MikeMode } from "@/lib/mike-game";
-import type { MikeLine } from "@/lib/mike";
+import { moodFor, type MikeLine } from "@/lib/mike";
 
 type Props = {
   mode: MikeMode;
@@ -51,7 +51,7 @@ export function MikeCompanion({ mode, line, context, quick, compact = false, cla
   return (
     <section className={`card-game p-3 ${className ?? ""}`} aria-label="Mike">
       <div className="flex items-end gap-3">
-        <Mike mood={busy ? "think" : line?.mood ?? "chill"} className={compact ? "w-11 shrink-0" : "w-14 shrink-0"} animate={false} />
+        <Mike mood={busy ? "think" : msgs.length ? moodFor([...msgs].reverse().find((m) => m.role === "assistant")?.content ?? "") : line?.mood ?? "chill"} className={compact ? "w-11 shrink-0" : "w-14 shrink-0"} animate={false} />
         <div className="mike-bubble min-w-0 flex-1 text-sm">
           <span className="mike-bubble__name">Mike</span>
           {line?.text ?? "Right here. Ask me anything about the position."}
@@ -64,7 +64,7 @@ export function MikeCompanion({ mode, line, context, quick, compact = false, cla
           <div className="chat max-h-64 overflow-y-auto pr-1" aria-live="polite">
             {msgs.map((m, i) => (
               <div key={i} className={`chat__row ${m.role === "user" ? "is-me" : "is-mike"}`}>
-                {m.role === "user" ? <PlayerAvatar className="size-7" /> : <Mike mood="chill" className="w-7" animate={false} />}
+                {m.role === "user" ? <PlayerAvatar className="size-7" /> : <Mike mood={moodFor(m.content)} className="w-7" animate={false} />}
                 <p className="chat__msg text-sm">{m.content}</p>
               </div>
             ))}

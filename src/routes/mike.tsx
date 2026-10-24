@@ -6,7 +6,7 @@ import { Mike } from "@/components/Mike";
 import { PlayerAvatar } from "@/components/CoachAvatar";
 import { today, useProgress } from "@/lib/progress";
 import { askMike, loadBrain, saveBrain, mikeContext, ollamaReachable, MIKE_OPENERS, type BrainSettings, type BrainSource, type ChatMsg } from "@/lib/mike-brain";
-import type { MikeMood } from "@/lib/mike";
+import { moodFor, type MikeMood } from "@/lib/mike";
 
 export const Route = createFileRoute("/mike")({
   head: () => ({ meta: [{ title: "Mike – Goblin Chess" }, { name: "description", content: "Snakk med Mike." }] }),
@@ -25,7 +25,8 @@ function MikeChat() {
   const [brain, setBrain] = useState<BrainSettings>(loadBrain);
   const [showSettings, setShowSettings] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
-  const mood: MikeMood = busy ? "think" : msgs.length === 0 ? "chill" : "happy";
+  const lastMike = [...msgs].reverse().find((m) => m.role === "assistant")?.content;
+  const mood: MikeMood = busy ? "think" : lastMike ? moodFor(lastMike) : "chill";
 
   useEffect(() => { void ollamaReachable(brain).then(setOnline); }, [brain]);
   useEffect(() => { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(msgs.slice(-40))); } catch { /* ignore */ } bottom.current?.scrollIntoView({ block: "end" }); }, [msgs]);
@@ -65,11 +66,11 @@ function MikeChat() {
 
       <section className="chat flex-1" aria-live="polite">
         {msgs.length === 0 && (
-          <div className="chat__row is-mike"><Mike mood="chill" className="w-9" animate={false} /><p className="chat__msg">Mike here. One eye, two horns, infinite chess. What's up?</p></div>
+          <div className="chat__row is-mike"><Mike mood="chill" className="w-9" animate={false} /><p className="chat__msg">Mike here. One eye, two red ears, hand-sewn by you. What are we working on?</p></div>
         )}
         {msgs.map((m, i) => (
           <div key={i} className={`chat__row ${m.role === "user" ? "is-me" : "is-mike"}`}>
-            {m.role === "user" ? <PlayerAvatar className="size-9" /> : <Mike mood="chill" className="w-9" animate={false} />}
+            {m.role === "user" ? <PlayerAvatar className="size-9" /> : <Mike mood={moodFor(m.content)} className="w-9" animate={false} />}
             <p className="chat__msg">{m.content}</p>
           </div>
         ))}

@@ -79,3 +79,8 @@
 - [x] Maia 3 (human-like nevralt nett, ONNX 44 MB, caches i IndexedDB) velger botenes trekk i stigen, fritt parti og treningsparti, betinget på botens og Tobias' rating. Stockfish tar over i sluttspill (≤ 8 brikker) og som reserve.
 - [x] Menneskelig tidsbruk for svake boter: lange pauser på opplagte trekk, blitzing i vanskelige stillinger, tidsnød-spiral.
 - [x] Nedlastingsknapp på stigen/i parti; egen worker (public/maia-worker.js) + vendored onnxruntime-web (MIT). Koding testet; e2e i Chromium.
+
+# Mike er treneren (feedback fra Tobias)
+- [x] Magnus/Hikaru fjernet. Én trener: Mike, med alle 8 temaer (72 oppgaver), alle grunnøvelser og samlede råd. Gammel treningshistorikk flettes inn (trainer v3).
+- [x] Mikes personlighet skrevet om: ører (ikke horn!), sydd av Tobias, hans egen, elsker sjakk, vil se Tobias nå 2000 og vil at han spiller her. Trenerprinsipper i prompten (sjakk/slag/trusler, kandidattrekk, dårligste brikke, sluttspillregler). Mikes ansikt følger det han sier.
+- [x] Bondebytte i parti: velg brikke (som chess.com), aldri automatisk dronning.

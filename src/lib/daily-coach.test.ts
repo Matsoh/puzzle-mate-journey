@@ -13,9 +13,8 @@ describe("daily coach rules", () => {
     expect(dailyFact(day)).toBe(dailyFact("2026-10-21"));
   });
   it("rotates curated per-profile lines deterministically by day", () => {
-    expect(PEPTALKS.magnus).toHaveLength(14);
-    expect(PEPTALKS.hikaru).toHaveLength(14);
-    expect(dailyPeptalk(p(), day, undefined, "magnus").text).not.toBe(dailyPeptalk(p(), day, undefined, "hikaru").text);
+    expect(PEPTALKS.mike).toHaveLength(14);
+    expect(dailyPeptalk(p(), day, undefined, "mike").text).not.toBe(dailyPeptalk(p(), day, undefined, "neutral").text);
     expect(Object.values(PEPTALKS).flat().join(" ")).not.toMatch(/Grrr|Snøft|goblin/i);
     expect(dailyPeptalk(p(), day)).toEqual(dailyPeptalk(p(), day));
     expect(dailyPeptalk(p(), day).text).not.toBe(dailyPeptalk(p(), "2026-10-12").text);

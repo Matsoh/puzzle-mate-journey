@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 /**
  * Mike — drawn from the hand-sewn felt monster: dark green body, two red
- * horns, one blue eye, a big lopsided white grin with stitches, brown feet.
+ * ears (ears! not horns), one blue eye, a big lopsided white grin with stitches, brown feet.
  * Pure SVG so it scales from a 40px bubble icon to a full hero.
  */
 export function Mike({ mood = "chill", className, animate = true }: { mood?: MikeMood | undefined; className?: string | undefined; animate?: boolean }) {
@@ -26,7 +26,7 @@ export function Mike({ mood = "chill", className, animate = true }: { mood?: Mik
           <feBlend in="SourceGraphic" in2="t" mode="multiply" />
         </filter>
       </defs>
-      {/* horns */}
+      {/* ears */}
       <path d="M38 60 L50 12 L80 50 Z" fill="#c8302e" />
       <path d="M162 60 L150 12 L120 50 Z" fill="#d4504f" />
       <path d="M48 30 L58 44 M54 24 L66 40" stroke="#f0a1a0" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />

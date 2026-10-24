@@ -301,7 +301,7 @@ function PracticeGame() {
     return applyMove(from, to);
   };
 
-  const voice = (calm: string, active: string) => (coach === "hikaru" ? active : calm);
+  const voice = (_calm: string, active: string) => active;
   const askHelp = async (kind: "threat" | "hint" | "show") => {
     if (!myTurn) return;
     const id = ++helpReq.current;

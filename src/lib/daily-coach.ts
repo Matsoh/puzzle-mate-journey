@@ -2,11 +2,11 @@ import type { Progress } from "./progress";
 import { OPPONENTS } from "./opponents";
 import { liveStreak } from "./rules";
 
-export type CoachVoice = "magnus" | "hikaru" | "neutral";
+export type CoachVoice = "mike" | "neutral";
 
 /** Curated daily lines per profile voice; inspired by playing style, never quotes. */
 export const PEPTALKS: Record<CoachVoice, readonly string[]> = {
-  magnus: [
+  mike: [
     "Rolig i dag. Før hvert trekk: hvilken brikke din gjør minst? Gi den en bedre plass.",
     "En liten fordel er nok. Gjør stillingen litt bedre, trekk for trekk.",
     "Når dronningene er byttet: spør deg selv om kongen din kan bli mer aktiv.",
@@ -21,22 +21,6 @@ export const PEPTALKS: Record<CoachVoice, readonly string[]> = {
     "Hvilken bonde er svak hos motstanderen? Kan du presse den rolig?",
     "Du kan vinne ved å være litt bedre lenge. Det er helt greit å ta tiden.",
     "Pust, se over hele brettet, og velg trekket som gjør stillingen sunnere.",
-  ],
-  hikaru: [
-    "Før hvert trekk: sjekk alle sjakker, slag og trusler – for begge sider.",
-    "Finn to–tre kandidattrekk før du velger. Det første er ikke alltid best.",
-    "Hva er motstanderens beste svar? Spør det før du flytter.",
-    "Skarpe øyne vinner partier. Se etter brikker som står uten beskyttelse.",
-    "Initiativ betyr å stille spørsmål motstanderen må svare på.",
-    "Hva truet motstanderens siste trekk? Svar på det først, så din plan.",
-    "Et offer må regnes ut. Tre trekk fram for begge sider – så bestemmer du.",
-    "Er kongen din trygg? Sjekk det før du går til angrep.",
-    "Tvingende trekk først: sjakk, slag, trusler. Så de rolige trekkene.",
-    "Du trenger ikke være raskest. Du trenger å se litt mer enn motstanderen.",
-    "Beregning er en muskel. Fem gode pusler i dag gjør den sterkere.",
-    "Før du slår: finnes det et mellomtrekk med sjakk?",
-    "Ta deg tid i de skarpe stillingene. Det er der partiet avgjøres.",
-    "Ett trekk som både utvikler og truer er ofte et godt trekk.",
   ],
   neutral: [
     "Ti minutter med gjennomtenkte trekk er bedre enn en time med hastverk.",
@@ -89,7 +73,7 @@ export function recentLadderWin(day: string): string | undefined {
 }
 
 const VOICE: Record<CoachVoice, { win: (w: string, n?: string) => string; puzzles: string; milestone: (d: number, m: number) => string; badge: (d: number, n: string) => string; streak7: (s: number) => string; streak3: (s: number) => string; back: string; first: string }> = {
-  magnus: {
+  mike: {
     win: (w, n) => n ? `Du slo ${w}. Godt spilt! Neste er ${n}: spill rolig og forbedre brikkene dine.` : `Du slo ${w}, og hele stigen er slått. Tålmodig og sterkt!`,
     puzzles: "Alle fem puslene er ferdige. Rolig og grundig arbeid – nyt pausen.",
     milestone: (d, m) => `${d} poeng til ${m} i appen. Ingen hast – gode trekk kommer av seg selv.`,
@@ -98,16 +82,6 @@ const VOICE: Record<CoachVoice, { win: (w: string, n?: string) => string; puzzle
     streak3: (s) => `${s} dager på rad. Fin vane – vi legger én rolig økt til.`,
     back: "Velkommen tilbake. Start med fem pusler og se etter brikken som gjør minst.",
     first: "Godt å se deg. Fem pusler i dag, så tar vi det rolig derfra.",
-  },
-  hikaru: {
-    win: (w, n) => n ? `Du slo ${w}! Neste er ${n} – sjekk sjakker, slag og trusler hele partiet.` : `Du slo ${w}, og hele stigen er slått. Skarpt spilt!`,
-    puzzles: "Alle fem puslene er ferdige! Skarpe øyne i dag. Godt jobbet.",
-    milestone: (d, m) => `${d} poeng til ${m} i appen! Fortsett å regne nøye – det betaler seg.`,
-    badge: (d, n) => `Bare ${d} løste pusler til merket «${n}». Finn kandidattrekkene!`,
-    streak7: (s) => `${s} dager på rad! Sånn trener man beregning – litt hver dag.`,
-    streak3: (s) => `${s} dager på rad! Fortsett – én skarp økt til.`,
-    back: "Velkommen tilbake! Fem pusler i dag – start med å sjekke alle sjakker.",
-    first: "Godt å se deg! Fem pusler i dag, og husk: sjakk, slag og trusler først.",
   },
   neutral: {
     win: (w, n) => n ? `Du slo ${w}! ${n} står for tur.` : `Du slo ${w}, og hele stigen er slått. Sterkt!`,

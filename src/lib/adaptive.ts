@@ -10,18 +10,16 @@ export const DEFAULT_LEVEL: Level = 1;
 export type Outcome = "good" | "helped" | "fail";
 
 export type BankRow = {
-  id: string; coach: CoachId; theme: string; level: Level; fen: string; moves: string;
+  id: string; coach: string; theme: string; level: Level; fen: string; moves: string;
   rating: number; plays: number; popularity: number; lichessThemes: string[]; gameUrl: string;
 };
 
 export const THEMES: Record<CoachId, { id: string; label: string; goal: string; hint: string }[]> = {
-  magnus: [
+  mike: [
     { id: "pawnEndgame", label: "Bondesluttspill", goal: "Finn trekket som vinner eller redder bondesluttspillet.", hint: "Tell trekk: hvem rekker fram først? Husk opposisjon og aktiv konge." },
     { id: "rookEndgame", label: "Tårnsluttspill", goal: "Finn det beste trekket i tårnsluttspillet.", hint: "Aktive tårn og konger vinner. Se etter sjakker, 7. rad og bønder som henger." },
     { id: "advancedPawn", label: "Fribønder", goal: "Bruk eller stopp den langt framskutte bonden.", hint: "En bonde nær forvandling er like mye verdt som en brikke. Hvem kontrollerer forvandlingsfeltet?" },
     { id: "quietMove", label: "Stille trekk og brikkeaktivitet", goal: "Finn det rolige trekket som forbedrer stillingen.", hint: "Det beste trekket er ikke alltid sjakk eller slag. Hvilken brikke kan få en bedre rute?" },
-  ],
-  hikaru: [
     { id: "fork", label: "Gaffel", goal: "Angrip to ting samtidig og vinn materiale.", hint: "Se etter et felt der én brikke angriper to verdifulle mål." },
     { id: "pin", label: "Binding", goal: "Utnytt eller lag en binding.", hint: "En brikke som står foran kongen eller dronningen kan ikke flytte fritt." },
     { id: "mateIn2", label: "Matt i to", goal: "Sett matt i to trekk.", hint: "Sjekk alle sjakker først – også de som ofrer materiale." },
@@ -29,12 +27,14 @@ export const THEMES: Record<CoachId, { id: string; label: string; goal: string; 
   ],
 };
 
-export type TrainingItem = BankRow & { line: string[]; themeLabel: string };
+export type TrainingItem = Omit<BankRow, "coach"> & { coach: CoachId; line: string[]; themeLabel: string };
 
+// The bank was built for two profiles; Mike is the only trainer now and owns every theme.
 export const BANK: TrainingItem[] = (bank as unknown as BankRow[]).map((r) => ({
   ...r,
+  coach: "mike" as CoachId,
   line: r.moves.split(" "),
-  themeLabel: THEMES[r.coach].find((t) => t.id === r.theme)?.label ?? r.theme,
+  themeLabel: THEMES.mike.find((t) => t.id === r.theme)?.label ?? r.theme,
 }));
 export const getItem = (id: string | null | undefined) => BANK.find((b) => b.id === id);
 export const bankFor = (coach: CoachId) => BANK.filter((b) => b.coach === coach);

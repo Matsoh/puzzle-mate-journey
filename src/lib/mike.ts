@@ -63,3 +63,12 @@ export function mikeLevelLine(xp: number): string {
   if (left <= 20) return `${left} XP to level ${l.level + 1}. One puzzle. Go on.`;
   return `${left} XP to level ${l.level + 1}.`;
 }
+
+/** A mood for a line of Mike's text, so his face follows what he says. */
+export function moodFor(text: string): MikeMood {
+  const t = text.toLowerCase();
+  if (/\b(won|win|nice|yes|great|brilliant|love|best|proud)\b|!/.test(t) && !/\b(lost|blunder|hang|hung)\b/.test(t)) return "happy";
+  if (/\b(blunder|hung|hang|ouch|mate|check|lost|careful|uh)\b/.test(t)) return "shock";
+  if (/\?|\b(think|plan|candidate|why|what)\b/.test(t)) return "think";
+  return "chill";
+}

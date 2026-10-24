@@ -4,7 +4,7 @@ import { updateProgress, withCredit } from "./progress";
 import { emptyCoach, getItem, markSeen, pickNext, recordOutcome, type CoachState, type Outcome } from "./adaptive";
 
 export type TrainerState = {
-  version: 2;
+  version: 3;
   coach: CoachId | null;
   sessions: Record<string, SessionRecord>;
   coaches: Record<CoachId, CoachState>;
@@ -15,18 +15,26 @@ export type TrainerState = {
 };
 const KEY_V1 = "goblin-chess.trainer.v1";
 const KEY = "goblin-chess.trainer.v2";
-export const emptyTrainer = (): TrainerState => ({ version: 2, coach: null, sessions: {}, coaches: { magnus: emptyCoach("magnus"), hikaru: emptyCoach("hikaru") }, daily: {}, drafts: {} });
+export const emptyTrainer = (): TrainerState => ({ version: 3, coach: "mike", sessions: {}, coaches: { mike: emptyCoach("mike") }, daily: {}, drafts: {} });
 
-/** Safe migration: v1 kept coach + sessions; v1 key is left untouched. */
+/** Migration: v2 had two profiles (magnus/hikaru); their task history is merged into Mike's. */
 export function migrate(raw: unknown): TrainerState {
   const base = emptyTrainer();
   if (!raw || typeof raw !== "object") return base;
-  const r = raw as Partial<TrainerState> & { version?: number };
-  const out: TrainerState = { ...base, coach: r.coach === "magnus" || r.coach === "hikaru" ? r.coach : null, sessions: r.sessions && typeof r.sessions === "object" ? r.sessions : {} };
-  if (r.version === 2) {
-    out.daily = r.daily ?? {};
-    out.drafts = r.drafts && typeof r.drafts === "object" ? r.drafts : {};
-    for (const c of ["magnus", "hikaru"] as CoachId[]) if (r.coaches?.[c]) out.coaches[c] = { ...base.coaches[c], ...r.coaches[c] };
+  const r = raw as { version?: number; sessions?: Record<string, SessionRecord>; daily?: Record<string, string>; drafts?: Record<string, string>; coaches?: Record<string, Partial<CoachState>> };
+  const out: TrainerState = { ...base, sessions: r.sessions && typeof r.sessions === "object" ? r.sessions : {} };
+  out.daily = r.daily ?? {};
+  out.drafts = r.drafts && typeof r.drafts === "object" ? r.drafts : {};
+  if (r.version === 3 && r.coaches?.["mike"]) out.coaches.mike = { ...base.coaches.mike, ...r.coaches["mike"] };
+  else if (r.version === 2 && r.coaches) {
+    const mike = base.coaches.mike;
+    for (const old of Object.values(r.coaches)) {
+      if (!old) continue;
+      mike.levels = { ...mike.levels, ...(old.levels ?? {}) };
+      mike.recent = { ...mike.recent, ...(old.recent ?? {}) };
+      mike.items = { ...mike.items, ...(old.items ?? {}) };
+      mike.seq = Math.max(mike.seq, old.seq ?? 0);
+    }
   }
   return out;
 }

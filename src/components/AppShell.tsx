@@ -23,7 +23,7 @@ export const MORE_NAV = [
   { to: "/fremgang", label: "Fremgang", hint: "Ratinggraf, statistikk og merker", icon: ChartNoAxesCombined },
   { to: "/fritt", label: "Fritt parti", hint: "Velg styrke, farge og tempo", icon: Swords },
   { to: "/treningsparti", label: "Treningsparti", hint: "Spill med hjelp underveis", icon: Dumbbell },
-  { to: "/trener", label: "Trener", hint: "Treningsøkt og øvelser", icon: GraduationCap },
+  { to: "/trener", label: "Trening med Mike", hint: "Dagens råd og tilpassede oppgaver", icon: GraduationCap },
   { to: "/turnering", label: "Forberedelse", hint: "Åpninger, taktikk og sluttspill", icon: Trophy },
 ] as const;
 

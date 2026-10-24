@@ -4,8 +4,7 @@ import { EXERCISES, dailyPlan, exercisesFor, checkMove, shouldAwardXp } from "./
 
 describe("trainer exercises", () => {
   it("has at least 3 per profile", () => {
-    expect(exercisesFor("magnus").length).toBeGreaterThanOrEqual(3);
-    expect(exercisesFor("hikaru").length).toBeGreaterThanOrEqual(3);
+    expect(exercisesFor("mike").length).toBeGreaterThanOrEqual(6);
   });
   it.each(EXERCISES)("$id: valid FEN and all accepted moves legal", (ex) => {
     const c = new Chess(ex.fen);
@@ -40,9 +39,9 @@ describe("trainer exercises", () => {
 
 describe("daily plan", () => {
   it("differs between profiles and is deterministic", () => {
-    expect(dailyPlan("magnus", "2026-10-11").advice).not.toBe(dailyPlan("hikaru", "2026-10-11").advice);
-    expect(dailyPlan("magnus", "2026-10-11")).toEqual(dailyPlan("magnus", "2026-10-11"));
-    expect(dailyPlan("hikaru", "2026-10-11").exercise.coach).toBe("hikaru");
+    expect(dailyPlan("mike", "2026-10-11").advice).not.toBe(dailyPlan("mike", "2026-10-12").advice);
+    expect(dailyPlan("mike", "2026-10-11")).toEqual(dailyPlan("mike", "2026-10-11"));
+    expect(dailyPlan("mike", "2026-10-11").exercise.coach).toBe("mike");
   });
   it("awards session XP only once", () => {
     expect(shouldAwardXp({ exercise: true, reflection: "", done: true, xpGiven: false })).toBe(true);

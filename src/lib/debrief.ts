@@ -13,19 +13,12 @@ export function compareDrillMove(m: Pick<Mistake, "bestUci" | "playedUci">, uci:
 
 const pieces = (fen: string) => (fen.split(" ")[0] ?? "").replace(/[^a-zA-Z]/g, "").length;
 
-/** Profile-flavoured question chosen only from facts the analysis actually contains. */
-export function profileFocus(coach: CoachId | null, m: Mistake): string {
+/** Mike's question for the drill, chosen only from facts the analysis actually contains. */
+export function profileFocus(_coach: CoachId | null, m: Mistake): string {
   const f = m.facts;
-  if (coach === "hikaru") {
-    if (f.allowedMateIn) return `Motoren så at trekket i partiet åpnet for matt i ${f.allowedMateIn}. Sjekk kongesikkerheten: hvilke sjakker har motstanderen?`;
-    if (f.missedMateIn) return `Her fantes det matt i ${f.missedMateIn} ifølge motoren. Start med de tvingende trekkene: sjakk, slag og trusler.`;
-    if (f.replyCaptures) return `Etter trekket i partiet kunne motstanderen slå ${f.replyCaptures}. Hva er motstanderens beste svar på kandidattrekkene dine?`;
-    return "Finn to–tre kandidattrekk og spør hva motstanderens beste svar er på hvert av dem.";
-  }
-  if (coach === "magnus") {
-    if (pieces(m.fenBefore) <= 12) return "Det er få brikker igjen. Kan kongen bli mer aktiv, eller finnes det en fribonde å spille på?";
-    if (f.replyCaptures) return `Etter trekket i partiet kunne motstanderen slå ${f.replyCaptures}. Hvilken brikke din står dårligst, og hva er motspillet?`;
-    return "Hvilken brikke gjør minst, og hva er motstanderens motspill?";
-  }
-  return "Sjekk sjakker, slag og trusler for begge sider før du velger.";
+  if (f.allowedMateIn) return `Motoren så at trekket i partiet åpnet for matt i ${f.allowedMateIn}. Sjekk kongesikkerheten: hvilke sjakker har motstanderen?`;
+  if (f.missedMateIn) return `Her fantes det matt i ${f.missedMateIn} ifølge motoren. Start med de tvingende trekkene: sjakk, slag og trusler.`;
+  if (pieces(m.fenBefore) <= 12) return "Det er få brikker igjen. Kan kongen bli mer aktiv, eller finnes det en fribonde å spille på?";
+  if (f.replyCaptures) return `Etter trekket i partiet kunne motstanderen slå ${f.replyCaptures}. Hva er motstanderens beste svar på kandidattrekkene dine?`;
+  return "Finn to–tre kandidattrekk, og spør hva motstanderens beste svar er på hvert av dem. Hvilken brikke din gjør minst?";
 }

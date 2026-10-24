@@ -7,6 +7,6 @@ describe("review drill", () => {
   it("never judges other legal moves as wrong", () => expect(compareDrillMove(m, "d2d4")).toBe("other"));
   it("uses allowed mate fact for Hikaru focus", () => {
     const mk = { fenBefore: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", facts: { allowedMateIn: 2 } } as never;
-    expect(profileFocus("hikaru", mk)).toContain("matt i 2");
+    expect(profileFocus("mike", mk)).toContain("matt i 2");
   });
 });

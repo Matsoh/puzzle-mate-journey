@@ -242,8 +242,12 @@ function Game() {
     else if (clock[pi === 0 ? 1 : 0] <= 0) finish("win", "Motstanderen gikk tom for tid");
   }, [clock, tcCfg, phase, player, finish]);
 
+  const [promo, setPromo] = useState<{ from: string; to: string } | null>(null);
   const onPlayerMove = (from: string, to: string) => {
-    if (phase !== "playing" || game.current.turn() !== player) return false;
+    if (phase !== "playing" || game.current.turn() !== player || promo) return false;
+    // Promotion: let him choose the piece, like on chess.com – never auto-queen.
+    const isPromo = game.current.moves({ verbose: true }).some((m) => m.from === from && m.to === to && m.promotion);
+    if (isPromo) { setPromo({ from, to }); return false; }
     return applyMove(from, to);
   };
 
@@ -306,8 +310,20 @@ function Game() {
         {phase !== "review" && phase !== "analysing" && (
           <section className="space-y-3">
             <PlayerBar name={opponent ? opponent.name : "Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking && phase === "playing" ? "Tenker…" : undefined} />
-            <div className="mx-auto w-full max-w-[min(94vw,68vh)]">
-              <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player} lastMove={lastMove} />
+            <div className="relative mx-auto w-full max-w-[min(94vw,68vh)]">
+              <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player && !promo} lastMove={lastMove} />
+              {promo && (
+                <div role="dialog" aria-label="Velg brikke" className="absolute inset-0 flex items-center justify-center bg-background/70">
+                  <div className="card-game flex gap-2 p-3">
+                    {(["q", "r", "b", "n"] as const).map((pc) => (
+                      <Button key={pc} size="lg" variant="outline" aria-label={{ q: "Dronning", r: "Tårn", b: "Løper", n: "Springer" }[pc]} className="text-2xl"
+                        onClick={() => { applyMove(promo.from, promo.to, pc); setPromo(null); }}>
+                        {player === "w" ? { q: "♕", r: "♖", b: "♗", n: "♘" }[pc] : { q: "♛", r: "♜", b: "♝", n: "♞" }[pc]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <PlayerBar name="Deg" clock={tcCfg ? fmtClock(clock[oppClockIdx === 0 ? 1 : 0]) : null} active={phase === "playing" && game.current.turn() === player} />
           </section>
