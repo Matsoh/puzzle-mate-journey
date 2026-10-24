@@ -15,10 +15,10 @@ import {
 import { AppHeader } from "@/components/AppHeader";
 import { Board } from "@/components/Board";
 import { CoachAvatar, CoachLabel } from "@/components/CoachAvatar";
-import { CoachReview } from "@/components/CoachReview";
+import { GameReview } from "@/components/GameReview";
 import { Button } from "@/components/ui/button";
 import { getEngine } from "@/lib/engine";
-import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
+import { reviewGame, type GameReview as Review, type Mistake, type PlayedMove } from "@/lib/coach";
 import { remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib/think-time";
 import { botMove } from "@/lib/bot";
 import { maiaInit } from "@/lib/maia";
@@ -121,6 +121,7 @@ function PracticeGame() {
   const [restart, setRestart] = useState(0);
   const [phase, setPhase] = useState<"play" | "analysing" | "review">("play");
   const [mistakes, setMistakes] = useState<Mistake[]>([]);
+  const [review, setReview] = useState<Review | null>(null);
   const [pct, setPct] = useState(0);
   const [clock, setClock] = useState<[number, number]>(tcCfg ? [tcCfg[0], tcCfg[0]] : [0, 0]);
   const clockRef = useRef(clock);
@@ -448,11 +449,12 @@ function PracticeGame() {
     setPhase("analysing");
     setPct(0);
     try {
-      const res = await analyseGame(getEngine(), moves, game.current.fen(), player, (d, t) =>
+      const res = await reviewGame(getEngine(), moves, game.current.fen(), player, (d, t) =>
         setPct(Math.round((d / t) * 100)),
       );
       if (mounted.current) {
-        setMistakes(res);
+        setMistakes(res.mistakes);
+        setReview(res);
         setPhase("review");
       }
     } catch {
@@ -680,7 +682,7 @@ function PracticeGame() {
           {phase === "analysing" && (
             <p className="text-sm">Motoren ser gjennom partiet … {pct} %</p>
           )}
-          {phase === "review" && <CoachReview mistakes={mistakes} orientation={orientation} />}
+          {phase === "review" && review && <GameReview review={review} orientation={orientation} startFen={startFen} />}
           {moves.length > 0 && (
             <p className="text-xs text-muted-foreground break-words">
               Trekk: {moves.map((m) => m.san).join(" ")}

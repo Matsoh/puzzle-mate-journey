@@ -89,3 +89,9 @@
 - [x] Egen fane «Avatar»: Avataaars-figur (Pablo Stanley, gratis) rendret lokalt med DiceBear (MIT, vendored i src/vendor/dicebear). 128 deler i 11 kategorier.
 - [x] Opplåsing ved å spille: gratis grunndeler, mynter fra kisten, nivå, dager på rad, slåtte motstandere, motiver, seire, partier. «Neste du kan låse opp» som mål.
 - [x] Avatarnavn kan endres (vises i meny og Mer). Monsterboken ligger under Avatar og i Mer. Mikes monster-avatar fjernet fra spillerens profil.
+
+## Steg 13 – Partianalyse som chess.com
+- `reviewGame` i src/lib/coach.ts: hvert trekk (begge sider) klassifiseres – briljant/flott/best/utmerket/bra/teori/unøyaktig/feil/bom/tabbe – etter tap i vinnsjanse mot motorens beste trekk. Nøyaktighet per side (Lichess-formel), telling per klasse, og de 3 viktigste feilene (samme `Mistake[]` som før, så CoachDebrief/notatboken er uendret).
+- Teori = trekkrekken er et prefiks av en linje i src/data/openings.ts (første 16 halvtrekk).
+- `Board` har fått `badges` (via react-chessboard `squareRenderer`); `GameReview.tsx` viser evalbar, merke på brettet, grønn pil til beste trekk ved feil, trekkliste med merker, bla-knapper og tabell.
+- Brukes i parti, treningsparti og Mine partier (importerte partier).

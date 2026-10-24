@@ -3,12 +3,13 @@ import { useMemo, useState } from "react";
 import { ArrowLeft, Download, ExternalLink, Search, CheckCircle2 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
-import { CoachReview } from "@/components/CoachReview";
+import { GameReview } from "@/components/GameReview";
+import { avatarName } from "@/lib/avatar";
 import { MikeCompanion } from "@/components/MikeCompanion";
 import { Mike } from "@/components/Mike";
 import { today, updateProgress, useProgress, withCredit } from "@/lib/progress";
 import { fetchChesscom, fetchLichess, mergeGames, playedMovesFromSan, TIME_LABEL, type ImportedGame } from "@/lib/games-import";
-import { analyseGame, type Mistake } from "@/lib/coach";
+import { reviewGame, type GameReview as Review, type Mistake } from "@/lib/coach";
 import { getEngine } from "@/lib/engine";
 import { reviewContext, reviewLine } from "@/lib/mike-game";
 import { lessonsFrom, LESSONS, notebookLine, topPatterns, withNotebookEntry } from "@/lib/notebook";
@@ -113,6 +114,7 @@ function ReviewScreen({ game, onBack }: { game: ImportedGame; onBack: () => void
   const [phase, setPhase] = useState<"idle" | "analysing" | "done" | "error">("idle");
   const [pct, setPct] = useState(0);
   const [mistakes, setMistakes] = useState<Mistake[]>([]);
+  const [review, setReview] = useState<Review | null>(null);
   const orientation = game.player === "w" ? "white" : "black";
   const label = `${game.result === "win" ? "Seier" : game.result === "draw" ? "Remis" : "Tap"} mot ${game.opponent}`;
 
@@ -120,8 +122,10 @@ function ReviewScreen({ game, onBack }: { game: ImportedGame; onBack: () => void
     if (!parsed) { setPhase("error"); return; }
     setPhase("analysing"); setPct(0);
     try {
-      const res = await analyseGame(getEngine(), parsed.moves, parsed.finalFen, game.player, (d, t) => setPct(Math.round((d / t) * 100)));
+      const full = await reviewGame(getEngine(), parsed.moves, parsed.finalFen, game.player, (d, t) => setPct(Math.round((d / t) * 100)));
+      const res = full.mistakes;
       setMistakes(res);
+      setReview(full);
       setPhase("done");
       const lessons = lessonsFrom(res, parsed.moves);
       updateProgress((s) => {
@@ -170,7 +174,7 @@ function ReviewScreen({ game, onBack }: { game: ImportedGame; onBack: () => void
               <ul className="space-y-1 text-sm">{lessonsFrom(mistakes).map((l) => <li key={l}><span className="font-semibold">{LESSONS[l].label}</span> <span className="text-muted-foreground">· {LESSONS[l].tip}</span></li>)}</ul>
             </section>
           )}
-          <CoachReview mistakes={mistakes} orientation={orientation} />
+          {review && <GameReview review={review} orientation={orientation} names={game.player === "w" ? { w: avatarName(p), b: game.opponent } : { w: game.opponent, b: avatarName(p) }} />}
           <Button variant="outline" className="w-full" onClick={onBack}>Tilbake til partiene</Button>
         </div>
       )}

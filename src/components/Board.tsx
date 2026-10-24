@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Chessboard } from "react-chessboard";
 import { Chess, type Square } from "chess.js";
 
@@ -11,10 +11,12 @@ type Props = {
   lastMove?: [string, string] | null;
   arrows?: { startSquare: string; endSquare: string; color: string }[];
   shake?: boolean;
+  /** Overlays per square (e.g. move-classification badges in game review). */
+  badges?: Record<string, ReactNode> | undefined;
 };
 
 /** Touch-first board: drag OR tap-tap to move, with legal-move dots. */
-export function Board({ fen, orientation, onMove, canMove = true, lastMove, arrows = [], shake }: Props) {
+export function Board({ fen, orientation, onMove, canMove = true, lastMove, arrows = [], shake, badges }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const chess = useMemo(() => {
     try {
@@ -67,6 +69,7 @@ export function Board({ fen, orientation, onMove, canMove = true, lastMove, arro
           squareStyles: styles,
           arrows,
           allowDrawingArrows: false,
+          ...(badges && Object.keys(badges).length ? { squareRenderer: ({ square, children }: { square: string; children?: ReactNode }) => <div className="board-square">{children}{badges[square] && <span className="board-badge">{badges[square]}</span>}</div> } : {}),
           lightSquareStyle: { backgroundColor: "var(--board-light)" },
           darkSquareStyle: { backgroundColor: "var(--board-dark)" },
           darkSquareNotationStyle: { color: "var(--board-light)", fontSize: "11px", fontWeight: 600 },

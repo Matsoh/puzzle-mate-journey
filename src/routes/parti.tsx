@@ -6,7 +6,8 @@ import { Chess } from "chess.js";
 import { AppHeader } from "@/components/AppHeader";
 import { Board } from "@/components/Board";
 import { CoachBubble } from "@/components/CoachAvatar";
-import { CoachReview } from "@/components/CoachReview";
+import { GameReview } from "@/components/GameReview";
+import { avatarName } from "@/lib/avatar";
 import { CoachDebrief } from "@/components/CoachDebrief";
 import { BossScene } from "@/components/three/Lazy3D";
 import { ChampAvatarScene } from "@/components/ChampAvatarScene";
@@ -17,7 +18,7 @@ import { botMove } from "@/lib/bot";
 import { maiaInit } from "@/lib/maia";
 import { MaiaBrain } from "@/components/MaiaBrain";
 import { OPPONENT_TEMPO, remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib/think-time";
-import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
+import { reviewGame, type GameReview as Review, type Mistake, type PlayedMove } from "@/lib/coach";
 import { ENGINE_ELO_OFFSET, getOpponent, OPPONENTS } from "@/lib/opponents";
 import { getProgress, markActive, updateProgress, withHistoryPoint } from "@/lib/progress";
 import { withDayGame } from "@/lib/quests";
@@ -78,6 +79,7 @@ function Game() {
   const [thinking, setThinking] = useState(false);
   const turnSession = useRef(0);
   const [mistakes, setMistakes] = useState<Mistake[]>([]);
+  const [review, setReview] = useState<Review | null>(null);
   const [analysisPct, setAnalysisPct] = useState(0);
   const [engineError, setEngineError] = useState(false);
   const [retryTick, setRetryTick] = useState(0);
@@ -255,8 +257,9 @@ function Game() {
     setPhase("analysing");
     setAnalysisPct(0);
     try {
-      const res = await analyseGame(getEngine(), moves, game.current.fen(), player, (d, t) => setAnalysisPct(Math.round((d / t) * 100)));
-      setMistakes(res);
+      const res = await reviewGame(getEngine(), moves, game.current.fen(), player, (d, t) => setAnalysisPct(Math.round((d / t) * 100)));
+      setMistakes(res.mistakes);
+      setReview(res);
       setPhase("review");
     } catch {
       setEngineError(true);
@@ -406,7 +409,7 @@ function Game() {
             <>
               {result && <MikeCompanion mode="review" line={reviewLine(mistakes, result.outcome)} context={reviewContext(mistakes, result.outcome, opponent)} />}
               {result && <CoachDebrief mistakes={mistakes} outcome={result.outcome} orientation={orientation} />}
-              <CoachReview mistakes={mistakes} orientation={orientation} />
+              {review && <GameReview review={review} orientation={orientation} names={player === "w" ? { w: avatarName(getProgress()), b: title } : { w: title, b: avatarName(getProgress()) }} />}
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Ny kamp</Button>
                 <Link to="/" className="btn-game btn-ghost"><House /> Oversikt</Link>
