@@ -30,7 +30,6 @@ import {
   gradeDrillMove,
   isDue,
   MAX_OPENINGS,
-  oldNotes,
   pickTopicItem,
   playerMovesAt,
   recordDrill,
@@ -70,82 +69,34 @@ function PlanPicker({
   onSave: (p: Plan) => void;
   onCancel?: (() => void) | undefined;
 }) {
-  const [mode, setMode] = useState<PlanMode>(initial?.mode ?? "one");
-  const [count, setCount] = useState(Math.max(1, initial?.openings.length ?? 3));
   const [ids, setIds] = useState<string[]>(initial?.openings ?? []);
-  const n = mode === "one" ? 1 : count;
-  const slots = Array.from({ length: n }, (_, i) => ids[i] ?? "");
-  const ready = slots.every(Boolean);
-  const set = (i: number, v: string) => {
-    const next = [...slots];
-    next[i] = v;
-    setIds(next);
-  };
+  const toggle = (id: string) =>
+    setIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : cur.length >= MAX_OPENINGS ? cur : [...cur, id]));
+  const has = (g: "white" | "e4" | "d4") => OPENINGS.some((o) => o.group === g && ids.includes(o.id));
+  const ready = has("white") && (has("e4") || has("d4"));
   return (
-    <div className="space-y-4">
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium">Hva vil du spille?</legend>
-        <div className="grid grid-cols-2 gap-2">
-          {(["one", "many"] as const).map((m) => (
-            <Button
-              key={m}
-              type="button"
-              variant="outline"
-              aria-pressed={mode === m}
-              onClick={() => setMode(m)}
-              className={cn("h-12", mode === m && "border-primary bg-primary/10")}
-            >
-              {m === "one" ? "En fast plan" : "Flere åpninger"}
-            </Button>
-          ))}
-        </div>
-      </fieldset>
-      <p className="text-sm text-muted-foreground">
-        Med svart velger du svaret etter hvits første trekk. Motstanderen bestemmer også. Én plan
-        passer derfor ikke i alle partier.
-      </p>
-      {mode === "many" && (
-        <label className="block text-sm font-medium">
-          Antall åpninger
-          <select
-            className={cn(field, "mt-1.5")}
-            value={count}
-            onChange={(e) => setCount(Number(e.target.value))}
-          >
-            {Array.from({ length: MAX_OPENINGS }, (_, i) => (
-              <option key={i} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      {slots.map((v, i) => (
-        <label key={i} className="block text-sm font-medium">
-          {n === 1 ? "Åpning" : `Åpning ${i + 1}`}
-          <select
-            className={cn(field, "mt-1.5")}
-            value={v}
-            onChange={(e) => set(i, e.target.value)}
-          >
-            <option value="">Velg åpning</option>
-            {(["white", "e4", "d4"] as const).map((g) => (
-              <optgroup key={g} label={GROUP_LABEL[g]}>
-                {OPENINGS.filter((o) => o.group === g && (o.id === v || !slots.includes(o.id))).map(
-                  (o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.name}
-                    </option>
-                  ),
-                )}
-              </optgroup>
-            ))}
-          </select>
-        </label>
+    <div className="space-y-5">
+      {(["white", "e4", "d4"] as const).map((g) => (
+        <fieldset key={g}>
+          <legend className="mb-2 text-sm font-bold">{GROUP_LABEL[g]}</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {OPENINGS.filter((o) => o.group === g).map((o) => {
+              const on = ids.includes(o.id);
+              return (
+                <button key={o.id} type="button" aria-pressed={on} onClick={() => toggle(o.id)}
+                  className={cn("quest !grid-cols-[auto_minmax(0,1fr)] text-left", on && "is-done")}>
+                  <span className="quest__check">{on ? <CheckCircle2 className="size-5" /> : <span className="text-base">♟</span>}</span>
+                  <span className="min-w-0"><span className="block font-semibold leading-tight">{o.name}</span><span className="block text-xs text-muted-foreground">{o.summary}</span></span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
       ))}
+      <p className="text-xs text-muted-foreground">Velg én med hvit og minst én med svart. Maks {MAX_OPENINGS} totalt – færre er bedre, du skal kunne dem utenat.</p>
       <div className="flex gap-2">
-        <Button disabled={!ready} onClick={() => onSave(cleanPlan({ mode, openings: slots }))}>
-          Lagre planen
+        <Button size="lg" disabled={!ready} onClick={() => onSave(cleanPlan({ mode: ids.length === 1 ? "one" : "many", openings: ids }))}>
+          Lagre åpningene mine
         </Button>
         {onCancel && (
           <Button variant="ghost" onClick={onCancel}>
@@ -623,7 +574,6 @@ export function PrepPanel({
   const [open, setOpen] = useState<string | null>(null);
   const [extra, setExtra] = useState<"tactic" | "endgame" | null>(null);
   const tc = tournament ? `${tournament.setup.minutes}+${tournament.setup.increment}` : null;
-  const notes = oldNotes(allTournaments);
   const plan = prep.plan;
   const session = prep.session && prep.session.day === day ? prep.session : null;
   const { trained, total } = trainedCount(plan, prep.openings);
@@ -632,10 +582,10 @@ export function PrepPanel({
     return (
       <section className="card-game p-5" aria-labelledby="plan-h">
         <h2 id="plan-h" className="section-title">
-          Åpningsplan
+          Mine åpninger
         </h2>
         <p className="mb-4 mt-1 text-sm text-muted-foreground">
-          Velg åpningene du vil øve på. Hver åpning får sitt eget treningskort.
+          Trykk på de du vil kunne. Hver åpning blir et treningskort.
         </p>
         <PlanPicker
           initial={plan}
@@ -645,7 +595,6 @@ export function PrepPanel({
           }}
           onCancel={plan ? () => setEditing(false) : undefined}
         />
-        {notes.length > 0 && <OldNotes notes={notes} />}
       </section>
     );
   }
@@ -673,13 +622,13 @@ export function PrepPanel({
       <section className="card-game p-5" aria-label="Dagens økt">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="section-title">Dagens økt</h2>
+            <h2 className="section-title">Kjapp økt</h2>
             <p className="text-sm text-muted-foreground">
-              Trent på {trained} av {total} {total === 1 ? "åpning" : "åpninger"}.
+              Åpning + taktikk + sluttspill på 5–15 min. Trent på {trained} av {total} {total === 1 ? "åpning" : "åpninger"}.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-            <Pencil /> Endre planen
+            <Pencil /> Endre åpninger
           </Button>
         </div>
         {!session && <StartSession onStart={startSession} />}
@@ -817,11 +766,6 @@ export function PrepPanel({
           </p>
         </section>
       )}
-      {notes.length > 0 && (
-        <section className="card-game p-5">
-          <OldNotes notes={notes} />
-        </section>
-      )}
     </div>
   );
 }
@@ -929,31 +873,3 @@ function SessionRunner({
   );
 }
 
-function OldNotes({ notes }: { notes: { from: string; label: string; text: string }[] }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="mt-4">
-      <button
-        type="button"
-        className="flex w-full items-center justify-between text-left text-sm font-semibold"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-      >
-        Tidligere notater{" "}
-        <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
-      </button>
-      {open && (
-        <ul className="mt-2 space-y-2 text-sm">
-          {notes.map((n, i) => (
-            <li key={i}>
-              <span className="text-muted-foreground">
-                {n.label} ({n.from}):
-              </span>{" "}
-              {n.text}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}

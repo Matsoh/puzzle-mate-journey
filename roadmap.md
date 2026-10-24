@@ -67,3 +67,6 @@
 - [x] MikeCompanion: Mike med live-replikk + «Spør Mike»-minichat med sidens kontekst, i parti, treningsparti, turneringsdag og trenersiden.
 - [x] Regler per modus: i parti aldri trekkhint (bare vaner og ro); i treningsparti hint tillatt; etter parti kommenterer Mike motorens fakta; turneringsdag = ringside-coach.
 - [x] Deterministiske reaksjoner uten nett (slag, sjakk, materiell, klokke, milepæler) og introreplikk per motstander. Tester.
+
+# Forberedelse (forenklet turnering)
+- [x] «På turneringsdagen» og turneringsoppsett (navn, dato, runder, tidskontroll) fjernet. Siden heter Forberedelse: Mike + åpninger (trykkbare kort, én hvit + én/to svart) + kjapp økt + taktikk/sluttspill + treningsparti.

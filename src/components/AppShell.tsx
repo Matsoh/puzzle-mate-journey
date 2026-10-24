@@ -23,7 +23,7 @@ export const MORE_NAV = [
   { to: "/fritt", label: "Fritt parti", hint: "Velg styrke, farge og tempo", icon: Swords },
   { to: "/treningsparti", label: "Treningsparti", hint: "Spill med hjelp underveis", icon: Dumbbell },
   { to: "/trener", label: "Trener", hint: "Treningsøkt og øvelser", icon: GraduationCap },
-  { to: "/turnering", label: "Turnering", hint: "Forberedelse og turneringsdag", icon: Trophy },
+  { to: "/turnering", label: "Forberedelse", hint: "Åpninger, taktikk og sluttspill", icon: Trophy },
 ] as const;
 
 const MORE_PATHS: readonly string[] = MORE_NAV.map((n) => n.to);
