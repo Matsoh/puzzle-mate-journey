@@ -80,6 +80,30 @@ export async function askOllama(settings: BrainSettings, context: string, histor
   return text;
 }
 
+// ---- Cloud (Lovable AI gateway via the `mike` edge function) ---------------
+
+export type BrainSource = "cloud" | "ollama" | "offline";
+
+/** Ask Mike's cloud brain. Throws on any failure (caller falls back). */
+export async function askCloud(context: string, history: ChatMsg[]): Promise<string> {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const { data, error } = await supabase.functions.invoke<{ text?: string; error?: string }>("mike", {
+    body: { system: MIKE_SYSTEM_PROMPT, context, messages: history.slice(-12) },
+  });
+  if (error) throw error;
+  const text = data?.text?.trim();
+  if (!text) throw new Error(data?.error ?? "empty");
+  return text;
+}
+
+/** Cloud first, then Ollama if the user configured it and it answers, then the built-in Mike. */
+export async function askMike(settings: BrainSettings, context: string, history: ChatMsg[], ollamaOk: boolean): Promise<{ text: string; source: BrainSource }> {
+  const last = history[history.length - 1]?.content ?? "";
+  try { return { text: await askCloud(context, history), source: "cloud" }; } catch { /* fall through */ }
+  if (ollamaOk) { try { return { text: await askOllama(settings, context, history), source: "ollama" }; } catch { /* fall through */ } }
+  return { text: offlineMike(last), source: "offline" };
+}
+
 export async function ollamaReachable(settings: BrainSettings): Promise<boolean> {
   try {
     const r = await fetch(`${settings.url.replace(/\/$/, "")}/api/tags`, { signal: AbortSignal.timeout(2500) });

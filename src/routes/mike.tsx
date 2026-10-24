@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Mike } from "@/components/Mike";
 import { PlayerAvatar } from "@/components/CoachAvatar";
 import { today, useProgress } from "@/lib/progress";
-import { askOllama, loadBrain, saveBrain, mikeContext, offlineMike, ollamaReachable, MIKE_OPENERS, type BrainSettings, type ChatMsg } from "@/lib/mike-brain";
+import { askMike, loadBrain, saveBrain, mikeContext, ollamaReachable, MIKE_OPENERS, type BrainSettings, type BrainSource, type ChatMsg } from "@/lib/mike-brain";
 import type { MikeMood } from "@/lib/mike";
 
 export const Route = createFileRoute("/mike")({
@@ -21,6 +21,7 @@ function MikeChat() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [online, setOnline] = useState<boolean | null>(null);
+  const [source, setSource] = useState<BrainSource | null>(null);
   const [brain, setBrain] = useState<BrainSettings>(loadBrain);
   const [showSettings, setShowSettings] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
@@ -36,14 +37,9 @@ function MikeChat() {
     setMsgs(history);
     setText("");
     setBusy(true);
-    let reply: string;
-    try {
-      reply = online ? await askOllama(brain, mikeContext(p, today()), history) : offlineMike(content);
-    } catch {
-      setOnline(false);
-      reply = offlineMike(content);
-    }
-    setMsgs([...history, { role: "assistant", content: reply }]);
+    const r = await askMike(brain, mikeContext(p, today()), history, online === true);
+    setSource(r.source);
+    setMsgs([...history, { role: "assistant", content: r.text }]);
     setBusy(false);
   }
 
@@ -52,18 +48,18 @@ function MikeChat() {
       <header className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Mike mood={mood} className="w-14" />
-          <div><h1 className="text-xl font-bold leading-tight">Mike</h1><p className="text-xs text-muted-foreground">{online === null ? "…" : online ? "Hjerne: Ollama" : "Hjerne: innebygd"}</p></div>
+          <div><h1 className="text-xl font-bold leading-tight">Mike</h1><p className="text-xs text-muted-foreground">{source === null ? "Hjerne: skyen" : source === "cloud" ? "Hjerne: skyen" : source === "ollama" ? "Hjerne: Ollama" : "Hjerne: innebygd (skyen svarte ikke)"}</p></div>
         </div>
         <Button variant="ghost" size="icon" aria-label="Innstillinger for Mike" onClick={() => setShowSettings((s) => !s)}><Settings2 /></Button>
       </header>
 
       {showSettings && (
         <section className="card-game mb-3 p-4 text-sm" aria-label="Mikes hjerne">
-          <p className="mb-2 font-semibold">Mikes hjerne (Ollama på Macen)</p>
+          <p className="mb-2 font-semibold">Reserve: Ollama på Macen {online ? "(funnet)" : "(ikke funnet)"}</p>
           <label className="block text-xs text-muted-foreground">Adresse<input className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2" value={brain.url} onChange={(e) => setBrain({ ...brain, url: e.target.value })} /></label>
           <label className="mt-2 block text-xs text-muted-foreground">Modell<input className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2" value={brain.model} onChange={(e) => setBrain({ ...brain, model: e.target.value })} /></label>
           <div className="mt-3 flex gap-2"><Button size="sm" onClick={() => { saveBrain(brain); void ollamaReachable(brain).then(setOnline); }}>Lagre og test</Button><Button size="sm" variant="outline" onClick={() => setMsgs([])}>Tøm samtalen</Button></div>
-          <p className="mt-3 text-xs text-muted-foreground">Uten Ollama svarer Mike med innebygde replikker. Oppsett: se README.</p>
+          <p className="mt-3 text-xs text-muted-foreground">Mike bruker skyen først. Ollama brukes bare hvis skyen ikke svarer; innebygde replikker er siste utvei.</p>
         </section>
       )}
 

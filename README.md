@@ -48,16 +48,10 @@ npm i
 npm run dev
 ```
 
-## Mike's brain (Ollama on your Mac)
+## Mike's brain
 
-Mike works without any setup – he answers from a built-in bank of replies. To give him a real brain, run a local model with [Ollama](https://ollama.com):
+Mike answers through a backend function (`supabase/functions/mike`) that calls the Lovable AI gateway with the project's own `LOVABLE_API_KEY` – no setup needed, it works from phones and tablets too. Usage draws on the workspace's AI credits (Lovable includes a monthly grant). Change the model with the `MIKE_MODEL` secret (default `google/gemini-3.7-flash`).
 
-```sh
-brew install ollama
-ollama pull qwen2.5:7b
-OLLAMA_ORIGINS="https://puzzle-mate-journey.lovable.app,http://localhost:5173" ollama serve
-```
+The personality lives in `src/lib/mike-brain.ts` (`MIKE_SYSTEM_PROMPT`); edit it together with Tobias. Only approved players can call the function.
 
-`OLLAMA_ORIGINS` lets the app in the browser talk to Ollama (CORS). The app looks for Ollama at `http://localhost:11434` – change the address or model under Mike → settings icon. The personality lives in `src/lib/mike-brain.ts` (`MIKE_SYSTEM_PROMPT`); edit it together with Tobias.
-
-Note: this works when the app runs on the same computer as Ollama. From a phone, point the address at the Mac's IP on the home network (e.g. `http://192.168.1.20:11434`) and start Ollama with `OLLAMA_HOST=0.0.0.0`; some browsers block that from an https page, in which case Mike falls back to the built-in replies.
+Fallbacks, in order: if the cloud doesn't answer, Mike tries a local Ollama (`http://localhost:11434`, model `qwen2.5:7b`; configurable under Mike → settings icon – note that browsers usually block a published https site from reaching localhost, so this mainly works when running the app locally). Last resort is a built-in bank of replies, so Mike always answers something.
