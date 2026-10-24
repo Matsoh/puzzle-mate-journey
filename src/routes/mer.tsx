@@ -5,7 +5,8 @@ import { MuteToggle } from "@/components/AppHeader";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LogoutButton, SyncStatus } from "@/components/SyncStatus";
 import { PlayerAvatar } from "@/components/CoachAvatar";
-import { COACH_NAME } from "@/lib/coach-config";
+import { avatarName } from "@/lib/avatar";
+import { useProgress } from "@/lib/progress";
 
 export const Route = createFileRoute("/mer")({
   head: () => ({ meta: [{ title: "Mer – Goblin Chess" }] }),
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/mer")({
 });
 
 function More() {
+  const p = useProgress();
   return (
     <main className="page-layout page-narrow">
       <h1 className="page-title mb-5">Mer</h1>
@@ -26,7 +28,7 @@ function More() {
         ))}
       </div>
       <section className="card-game mt-8 p-4" aria-label="Innstillinger">
-        <div className="flex items-center gap-3"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-sm font-medium">{COACH_NAME}</p></div></div>
+        <div className="flex items-center gap-3"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-sm font-medium">{avatarName(p)}</p></div></div>
         <div className="mt-5 flex items-center justify-between gap-2"><span className="text-sm">Tema</span><ThemeToggle /></div>
         <div className="mt-4 flex items-center justify-between"><span className="text-sm">Spilllyd</span><MuteToggle /></div>
         <div className="mt-4 flex items-center justify-between gap-2"><SyncStatus /><LogoutButton /></div>

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_PROGRESS } from "./progress";
 import { MOTIFS, collectionSummary, withMotifs } from "./collection";
 import { CHEST_TABLE, rollChest, withChest, withCoinsSpent } from "./chest";
-import { DEFAULT_AVATAR, PARTS, avatarOf, owns, withPart } from "./avatar";
+import { DEFAULT_AVATAR, PARTS, avatarName, avatarOf, nextUnlocks, owns, unlockLabel, wardrobeSummary, withPart } from "./avatar";
 import { offlineMike, mikeContext, MIKE_SYSTEM_PROMPT } from "./mike-brain";
 import { THEME_LABELS } from "./puzzles";
 
@@ -46,21 +46,32 @@ describe("Skattekisten", () => {
   });
 });
 
-describe("Monsterverkstedet", () => {
-  it("free parts equip at once, paid parts need coins and stay owned", () => {
+describe("Avatarverkstedet", () => {
+  it("free parts equip at once, coin parts need coins, achievement parts need the achievement", () => {
     expect(avatarOf(DEFAULT_PROGRESS)).toEqual(DEFAULT_AVATAR);
-    const p1 = withPart(DEFAULT_PROGRESS, "color", "green")!;
-    expect(avatarOf(p1).color).toBe("green");
-    expect(withPart(p1, "horns", "crown")).toBeNull();
-    const rich = { ...p1, coins: 300 };
-    const p2 = withPart(rich, "horns", "crown")!;
-    expect(p2.coins).toBe(50);
-    expect(owns(p2, "horns", "crown")).toBe(true);
-    const p3 = withPart({ ...p2, avatar: { ...p2.avatar, horns: "red" } }, "horns", "crown")!;
-    expect(p3.coins).toBe(50); // already owned: no second charge
+    const p1 = withPart(DEFAULT_PROGRESS, "hair", "bob")!;
+    expect(avatarOf(p1).hair).toBe("bob");
+    expect(withPart(p1, "hairColor", "c93305")).toBeNull(); // 20 coins
+    const rich = { ...p1, coins: 50 };
+    const p2 = withPart(rich, "hairColor", "c93305")!;
+    expect(p2.coins).toBe(30);
+    expect(owns(p2, "hairColor", "c93305")).toBe(true);
+    expect(withPart({ ...p2, avatar: { ...p2.avatar, hairColor: "2c1b18" } }, "hairColor", "c93305")!.coins).toBe(30); // owned: no second charge
+    expect(withPart(DEFAULT_PROGRESS, "hair", "hat")).toBeNull(); // beat Pelle
+    expect(withPart({ ...DEFAULT_PROGRESS, beaten: ["pelle"] }, "hair", "hat")).not.toBeNull();
+    expect(withPart({ ...DEFAULT_PROGRESS, xp: 100 }, "eyes", "surprised")).not.toBeNull(); // level 2
+    expect(withPart({ ...DEFAULT_PROGRESS, bestStreak: 3 }, "hair", "winterHat1")).not.toBeNull();
   });
-  it("every part has a free default", () => {
-    for (const k of Object.keys(PARTS) as (keyof typeof PARTS)[]) expect(PARTS[k].options.some((o) => o.cost === 0)).toBe(true);
+  it("every part has a free default and lock labels read well", () => {
+    for (const k of Object.keys(PARTS) as (keyof typeof PARTS)[]) expect(PARTS[k].options.some((o) => o.unlock.kind === "free")).toBe(true);
+    expect(unlockLabel({ kind: "beat", opp: "leo" })).toBe("Slå Lynet");
+    expect(unlockLabel({ kind: "level", level: 5 })).toBe("Nivå 5");
+    expect(nextUnlocks(DEFAULT_PROGRESS, 3)).toHaveLength(3);
+    expect(wardrobeSummary(DEFAULT_PROGRESS).unlocked).toBeGreaterThan(30);
+  });
+  it("names fall back to Tobias", () => {
+    expect(avatarName(DEFAULT_PROGRESS)).toBe("Tobias");
+    expect(avatarName({ ...DEFAULT_PROGRESS, avatarName: " Tobi " })).toBe("Tobi");
   });
 });
 

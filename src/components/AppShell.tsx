@@ -1,11 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, Dumbbell, BookOpen, MessageCircle, Wrench, Globe } from "lucide-react";
+import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, Dumbbell, BookOpen, MessageCircle, Globe, UserRound } from "lucide-react";
 import { Celebrations } from "./Celebrations";
 import type { ReactNode } from "react";
 import { MuteToggle } from "./AppHeader";
 import { ThemeToggle } from "./ThemeToggle";
 import { PlayerAvatar } from "./CoachAvatar";
-import { COACH_NAME } from "@/lib/coach-config";
+import { avatarName } from "@/lib/avatar";
+import { useProgress } from "@/lib/progress";
 import { SyncStatus, LogoutButton, MergeNotice } from "./SyncStatus";
 
 /** The four things Tobias does every day + "Mer" for the rest. */
@@ -13,13 +14,13 @@ export const PRIMARY_NAV = [
   { to: "/", label: "Hjem", icon: House },
   { to: "/stigen", label: "Spill", icon: Crown },
   { to: "/pusler", label: "Oppgaver", icon: Puzzle },
-  { to: "/samling", label: "Samling", icon: BookOpen },
+  { to: "/avatar", label: "Avatar", icon: UserRound },
 ] as const;
 
 export const MORE_NAV = [
   { to: "/mike", label: "Snakk med Mike", hint: "Spør om hva som helst (om sjakk)", icon: MessageCircle },
   { to: "/partier", label: "Mine partier", hint: "Hent partier fra chess.com/Lichess – Mike ser på dem", icon: Globe },
-  { to: "/avatar", label: "Monsterverkstedet", hint: "Bygg avataren din for mynter", icon: Wrench },
+  { to: "/samling", label: "Monsterboken", hint: "Motiver og beseirede motstandere", icon: BookOpen },
   { to: "/fremgang", label: "Fremgang", hint: "Ratinggraf, statistikk og merker", icon: ChartNoAxesCombined },
   { to: "/fritt", label: "Fritt parti", hint: "Velg styrke, farge og tempo", icon: Swords },
   { to: "/treningsparti", label: "Treningsparti", hint: "Spill med hjelp underveis", icon: Dumbbell },
@@ -31,7 +32,8 @@ const MORE_PATHS: readonly string[] = MORE_NAV.map((n) => n.to);
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: s => s.location.pathname });
-  const active = (to: string) => path === to || (to === "/mer" && MORE_PATHS.includes(path)) || (to === "/stigen" && path === "/parti") || (to === "/samling" && path === "/avatar");
+  const p = useProgress();
+  const active = (to: string) => path === to || (to === "/mer" && MORE_PATHS.includes(path)) || (to === "/stigen" && path === "/parti") || (to === "/avatar" && path === "/samling");
   const mobileNav = [...PRIMARY_NAV, { to: "/mer", label: "Mer", icon: Ellipsis }] as const;
   return <>
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] flex-col border-r border-border bg-background px-4 py-8 min-[1100px]:flex">
@@ -42,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {MORE_NAV.map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`nav-link${path === n.to ? " is-active" : ""}`}><n.icon className="size-5 shrink-0" />{n.label}</Link>)}
       </nav>
       <div className="mt-auto border-t border-border pt-5">
-        <div className="flex items-center gap-3 px-2"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-xs font-medium">{COACH_NAME}</p></div></div>
+        <div className="flex items-center gap-3 px-2"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-xs font-medium">{avatarName(p)}</p></div></div>
         <div className="mt-5 flex items-center justify-between gap-2 px-2"><span className="text-xs text-muted-foreground">Tema</span><ThemeToggle /></div>
         <div className="mt-4 flex items-center justify-between px-2"><span className="text-xs text-muted-foreground">Spilllyd</span><MuteToggle /></div>
         <div className="mt-4 flex items-center justify-between gap-2 px-2"><SyncStatus /><LogoutButton /></div>

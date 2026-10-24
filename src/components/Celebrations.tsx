@@ -60,8 +60,8 @@ function Body({ c }: { c: Celebration }) {
         <div className={`celebrate__chest is-${c.tier}`}>{c.tier === "jackpot" ? "💎" : c.tier === "stor" ? "🧰" : "📦"}</div>
         <p className="celebrate__eyebrow">{c.tier === "jackpot" ? "JACKPOT!" : c.tier === "stor" ? "Stor kiste!" : "Dagens kiste"}</p>
         <h2 className="celebrate__title">+{c.coins} 🪙</h2>
-        <p className="celebrate__sub">Bruk myntene i Monsterverkstedet.</p>
-        <Link to="/avatar" onClick={shift} className="mt-3 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">Til verkstedet</Link>
+        <p className="celebrate__sub">Bruk myntene på avataren din.</p>
+        <Link to="/avatar" onClick={shift} className="mt-3 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">Til avataren</Link>
       </>;
   }
 }

@@ -1,9 +1,5 @@
 import { cn } from "@/lib/utils";
-import { COACH_NAME } from "@/lib/coach-config";
 import type { CoachId } from "@/lib/trainer";
-import { useProgress } from "@/lib/progress";
-import { avatarOf } from "@/lib/avatar";
-import { MonsterAvatar } from "./MonsterAvatar";
 import { Mike } from "./Mike";
 
 /** The trainer's face: Mike. */
@@ -15,15 +11,7 @@ export function CoachAvatar({ className, size: _size }: { className?: string; co
   );
 }
 
-/** The player's own avatar – the monster built in Monsterverkstedet. Never used as the coach voice. */
-export function PlayerAvatar({ className }: { className?: string }) {
-  const p = useProgress();
-  return (
-    <span className={cn("coach-portrait relative inline-flex shrink-0 overflow-hidden rounded-full bg-muted", className)} aria-label={COACH_NAME}>
-      <MonsterAvatar parts={avatarOf(p)} className="absolute inset-[6%] size-[88%]" />
-    </span>
-  );
-}
+export { PlayerAvatar } from "./PlayerAvatar";
 
 export function CoachLabel({ className }: { className?: string }) {
   return <span className={cn("text-xs font-medium text-muted-foreground", className)}>Mike · treneren din</span>;

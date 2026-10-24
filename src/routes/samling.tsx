@@ -18,7 +18,7 @@ function Collection() {
     <main className="page-layout page-narrow">
       <header className="mb-5 flex items-center justify-between gap-3">
         <div><p className="eyebrow">Samling</p><h1 className="page-title">Monsterboken</h1></div>
-        <Link to="/avatar" className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-semibold"><PlayerAvatar className="size-8" />Verksted <span className="coin-chip">🪙 {p.coins ?? 0}</span></Link>
+        <Link to="/avatar" className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-semibold"><PlayerAvatar className="size-8" />Avatar <span className="coin-chip">🪙 {p.coins ?? 0}</span></Link>
       </header>
 
       <section className="mb-7" aria-labelledby="motif-h">

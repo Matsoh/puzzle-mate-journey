@@ -84,3 +84,8 @@
 - [x] Magnus/Hikaru fjernet. Én trener: Mike, med alle 8 temaer (72 oppgaver), alle grunnøvelser og samlede råd. Gammel treningshistorikk flettes inn (trainer v3).
 - [x] Mikes personlighet skrevet om: ører (ikke horn!), sydd av Tobias, hans egen, elsker sjakk, vil se Tobias nå 2000 og vil at han spiller her. Trenerprinsipper i prompten (sjakk/slag/trusler, kandidattrekk, dårligste brikke, sluttspillregler). Mikes ansikt følger det han sier.
 - [x] Bondebytte i parti: velg brikke (som chess.com), aldri automatisk dronning.
+
+# Avatar (Snapchat-stil) og opplåsing
+- [x] Egen fane «Avatar»: Avataaars-figur (Pablo Stanley, gratis) rendret lokalt med DiceBear (MIT, vendored i src/vendor/dicebear). 128 deler i 11 kategorier.
+- [x] Opplåsing ved å spille: gratis grunndeler, mynter fra kisten, nivå, dager på rad, slåtte motstandere, motiver, seire, partier. «Neste du kan låse opp» som mål.
+- [x] Avatarnavn kan endres (vises i meny og Mer). Monsterboken ligger under Avatar og i Mer. Mikes monster-avatar fjernet fra spillerens profil.

@@ -40,6 +40,7 @@ export type Progress = {
   /** Avatar workshop: chosen parts and owned paid parts. */
   avatar: Record<string, string>;
   avatarOwned: string[];
+  avatarName: string;
   /** Online accounts for importing real games. */
   accounts: { chesscom?: string; lichess?: string };
   /** Imported real games (newest first, capped) and which ones were reviewed. */
@@ -76,6 +77,7 @@ export const DEFAULT_PROGRESS: Progress = {
   chests: {},
   avatar: {},
   avatarOwned: [],
+  avatarName: "",
   accounts: {},
   importedGames: [],
   reviewedGames: [],
