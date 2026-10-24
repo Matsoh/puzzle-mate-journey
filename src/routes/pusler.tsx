@@ -8,6 +8,8 @@ import { Board } from "@/components/Board";
 import { CoachBubble } from "@/components/CoachAvatar";
 import { getPuzzle, pickDaily, PUZZLES, themeLabels, type Puzzle } from "@/lib/puzzles";
 import { getProgress, markActive, today, updateProgress, useProgress, withHistoryPoint } from "@/lib/progress";
+import { withMotifs } from "@/lib/collection";
+import { announceDiscovery, celebrateBadges, celebrateDiff } from "@/lib/celebrate";
 import { K_PUZZLE, newRating, XP } from "@/lib/rules";
 import { applyBadges } from "@/lib/badges";
 import { play, unlockAudio } from "@/lib/sound";
@@ -135,8 +137,16 @@ function PuzzlePlayer({ puzzle, alreadyRated, onNext }: { puzzle: Puzzle; alread
       } as typeof p0;
       const done = p.daily && p.daily.ids.every((id) => p.daily!.results[id]);
       if (done) p.xp += XP.dailyAllDone;
+      if (solved) {
+        const m = withMotifs(p, puzzle.themes);
+        p = m.progress;
+        if (m.discovered.length) announceDiscovery(m.discovered);
+      }
       p = withHistoryPoint(markActive(p));
-      return applyBadges(p).progress;
+      const b = applyBadges(p);
+      celebrateDiff(p0, b.progress);
+      celebrateBadges(b.earned);
+      return b.progress;
     });
   };
 

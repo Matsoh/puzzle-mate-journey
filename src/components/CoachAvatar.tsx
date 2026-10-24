@@ -6,6 +6,9 @@ import { COACH_NAME } from "@/lib/coach-config";
 import { COACH_IDENTITY } from "@/lib/coach-identity";
 import { useTrainer } from "@/lib/trainer-store";
 import type { CoachId } from "@/lib/trainer";
+import { useProgress } from "@/lib/progress";
+import { avatarOf } from "@/lib/avatar";
+import { MonsterAvatar } from "./MonsterAvatar";
 
 /** Selected virtual trainer portrait, head-cropped so the face reads in small circles. */
 export function CoachAvatar({ className, coach: forced, size = "head" }: { className?: string; coach?: CoachId | null; size?: "head" | "portrait" }) {
@@ -25,13 +28,12 @@ export function CoachAvatar({ className, coach: forced, size = "head" }: { class
   );
 }
 
-/** The player's own avatar (straw-hat boy) – never used as the coach voice. */
+/** The player's own avatar – the monster built in Monsterverkstedet. Never used as the coach voice. */
 export function PlayerAvatar({ className }: { className?: string }) {
-  const [ok, setOk] = useState(true);
+  const p = useProgress();
   return (
-    <span className={cn("coach-portrait relative inline-flex shrink-0 overflow-hidden rounded-full bg-muted", className)}>
-      {ok ? <img src="/coach-hero.png" alt={COACH_NAME} onError={() => setOk(false)} className="absolute inset-0 size-full object-cover object-[50%_22%]" />
-        : <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold">T</span>}
+    <span className={cn("coach-portrait relative inline-flex shrink-0 overflow-hidden rounded-full bg-muted", className)} aria-label={COACH_NAME}>
+      <MonsterAvatar parts={avatarOf(p)} className="absolute inset-[6%] size-[88%]" />
     </span>
   );
 }

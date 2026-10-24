@@ -29,6 +29,15 @@ export type Progress = {
   credits: Record<string, number>;
   /** Games played/won per day (last two weeks) — drives "Dagens oppdrag". */
   dayStats: Record<string, { games: number; wins: number }>;
+  /** Monsterboken: solved puzzles per tactical motif (Lichess theme id). */
+  motifs: Record<string, number>;
+  /** Gold coins — earned from the daily chest, spent in the avatar workshop. */
+  coins: number;
+  /** Day → coins won from that day's chest (also marks it as opened). */
+  chests: Record<string, number>;
+  /** Avatar workshop: chosen parts and owned paid parts. */
+  avatar: Record<string, string>;
+  avatarOwned: string[];
 };
 
 export const DEFAULT_PROGRESS: Progress = {
@@ -53,6 +62,11 @@ export const DEFAULT_PROGRESS: Progress = {
   muted: false,
   credits: {},
   dayStats: {},
+  motifs: {},
+  coins: 0,
+  chests: {},
+  avatar: {},
+  avatarOwned: [],
 };
 
 // Old anonymous key — read only for the one-time import offer, never deleted.

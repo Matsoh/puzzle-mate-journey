@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 import type { MikeMood } from "@/lib/mike";
 import type { ReactNode } from "react";
@@ -8,16 +9,17 @@ import type { ReactNode } from "react";
  * Pure SVG so it scales from a 40px bubble icon to a full hero.
  */
 export function Mike({ mood = "chill", className, animate = true }: { mood?: MikeMood | undefined; className?: string | undefined; animate?: boolean }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const eyeR = mood === "shock" ? 30 : mood === "happy" ? 27 : 24;
   const pupil = mood === "think" ? { dx: 7, dy: -7 } : mood === "shock" ? { dx: 0, dy: 0 } : { dx: 2, dy: 1 };
   return (
     <svg viewBox="0 0 200 250" role="img" aria-label={`Mike, ${mood}`} className={cn("mike", animate && "mike--float", className)} data-mood={mood}>
       <defs>
-        <linearGradient id="mike-body" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`mike-body-${uid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#2b6a3b" />
           <stop offset="1" stopColor="#1c4a2a" />
         </linearGradient>
-        <filter id="mike-felt" x="-5%" y="-5%" width="110%" height="110%">
+        <filter id={`mike-felt-${uid}`} x="-5%" y="-5%" width="110%" height="110%">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="n" />
           <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0" result="g" />
           <feComposite in="g" in2="SourceGraphic" operator="in" result="t" />
@@ -30,7 +32,7 @@ export function Mike({ mood = "chill", className, animate = true }: { mood?: Mik
       <path d="M48 30 L58 44 M54 24 L66 40" stroke="#f0a1a0" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
       <path d="M152 30 L142 44 M146 24 L134 40" stroke="#f0a1a0" strokeWidth="2" strokeLinecap="round" strokeDasharray="5 4" />
       {/* body */}
-      <path d="M40 52 Q100 34 160 52 Q172 130 162 206 Q130 224 100 218 Q70 224 38 206 Q28 130 40 52 Z" fill="url(#mike-body)" filter="url(#mike-felt)" />
+      <path d="M40 52 Q100 34 160 52 Q172 130 162 206 Q130 224 100 218 Q70 224 38 206 Q28 130 40 52 Z" fill={`url(#mike-body-${uid})`} filter={`url(#mike-felt-${uid})`} />
       {/* blanket stitch along the edge */}
       <path d="M40 52 Q100 34 160 52 Q172 130 162 206 Q130 224 100 218 Q70 224 38 206 Q28 130 40 52 Z" fill="none" stroke="#0e2a17" strokeWidth="3" strokeDasharray="6 7" strokeLinecap="round" />
       {/* feet */}

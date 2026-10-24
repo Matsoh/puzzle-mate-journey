@@ -296,3 +296,55 @@
 .btn-play svg { width:26px; height:26px; }
 .streak-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--card); border:1px solid var(--border); font-weight:700; font-size:14px; }
 .streak-chip.is-hot { border-color:color-mix(in oklab,var(--gold) 60%,transparent); color:var(--gold); }
+
+/* ---- Celebrations ---- */
+.celebrate { position:fixed; inset:0; z-index:60; display:grid; place-items:center; padding:24px; background:color-mix(in oklab, var(--background) 82%, transparent); backdrop-filter:blur(8px); }
+.celebrate__card { position:relative; width:min(100%, 380px); text-align:center; padding:28px 24px 24px; border-radius:24px; background:var(--card); border:1px solid var(--border); box-shadow:0 30px 80px #0008; }
+.celebrate__eyebrow { margin-top:14px; font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--primary); }
+.celebrate__title { font-size:34px; font-weight:800; line-height:1.1; margin-top:4px; }
+.celebrate__sub { margin-top:8px; color:var(--muted-foreground); font-size:15px; }
+.celebrate__emoji { font-size:72px; line-height:1; animation: pop-in .5s cubic-bezier(.2,.8,.2,1) both; }
+.celebrate__chest { font-size:84px; line-height:1; animation: chest-shake .9s ease-in-out 1, pop-in .4s both; }
+.celebrate__chest.is-jackpot { filter: drop-shadow(0 0 24px var(--gold)); }
+.celebrate__confetti { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.celebrate__confetti i { position:absolute; top:-12px; left:var(--x); width:10px; height:14px; background:var(--c); border-radius:2px; transform:rotate(var(--r)); animation: confetti-fall var(--d) linear infinite; animation-delay:var(--delay); }
+@keyframes confetti-fall { 0% { transform:translateY(-20px) rotate(var(--r)); opacity:1; } 100% { transform:translateY(110vh) rotate(calc(var(--r) + 540deg)); opacity:.6; } }
+@keyframes chest-shake { 0%,100% { transform:rotate(0); } 20% { transform:rotate(-10deg) scale(1.05); } 40% { transform:rotate(10deg) scale(1.08); } 60% { transform:rotate(-6deg) scale(1.1); } 80% { transform:rotate(6deg) scale(1.12); } }
+
+/* ---- Collection ---- */
+.motif { position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; padding:14px 8px 12px; border-radius:16px; border:1px solid var(--border); background:var(--card); text-align:center; min-height:120px; }
+.motif.is-locked { opacity:.55; }
+.motif.is-locked .motif__emoji { filter:grayscale(1) blur(1px); }
+.motif__emoji { font-size:36px; line-height:1; }
+.motif__name { font-size:13px; font-weight:700; line-height:1.15; }
+.motif__count { font-size:11px; color:var(--muted-foreground); }
+.motif[data-rarity="sjelden"] { border-color:color-mix(in oklab,#7fb3e6 55%,transparent); }
+.motif[data-rarity="episk"] { border-color:color-mix(in oklab,#b48ef0 65%,transparent); }
+.motif[data-rarity="legendarisk"] { border-color:var(--gold); box-shadow:0 0 18px color-mix(in oklab,var(--gold) 35%,transparent); }
+.motif.is-locked[data-rarity] { box-shadow:none; }
+
+/* ---- Chest card on home ---- */
+.chest-card { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:14px; padding:14px 16px; border-radius:16px; border:1px solid var(--gold); background:color-mix(in oklab,var(--gold) 10%,var(--card)); }
+.chest-card__icon { font-size:40px; line-height:1; animation: chest-shake 1.2s ease-in-out infinite; }
+.chest-card.is-open .chest-card__icon { animation:none; }
+.coin-chip { display:inline-flex; align-items:center; gap:4px; padding:6px 10px; border-radius:999px; background:color-mix(in oklab,var(--gold) 14%,var(--card)); border:1px solid color-mix(in oklab,var(--gold) 50%,transparent); font-weight:700; font-size:14px; color:var(--gold); }
+
+/* ---- Avatar workshop ---- */
+.part-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:8px; }
+.part { display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 6px; border-radius:14px; border:2px solid var(--border); background:var(--card); font-size:12px; font-weight:600; min-height:74px; }
+.part.is-on { border-color:var(--primary); background:color-mix(in oklab,var(--primary) 10%,var(--card)); }
+.part.is-locked { opacity:.7; }
+.part__cost { font-size:11px; color:var(--gold); font-weight:700; }
+
+/* ---- Mike chat ---- */
+.chat { display:flex; flex-direction:column; gap:10px; }
+.chat__row { display:flex; gap:10px; align-items:flex-end; }
+.chat__row.is-me { flex-direction:row-reverse; }
+.chat__msg { max-width:85%; padding:10px 14px; border-radius:16px; line-height:1.4; font-size:15px; white-space:pre-wrap; }
+.chat__row.is-me .chat__msg { background:var(--primary); color:var(--primary-foreground); border-bottom-right-radius:4px; }
+.chat__row.is-mike .chat__msg { background:var(--card); border:1px solid var(--border); border-bottom-left-radius:4px; }
+.chat__typing i { display:inline-block; width:6px; height:6px; margin-right:3px; border-radius:50%; background:var(--muted-foreground); animation: typing 1s infinite; }
+.chat__typing i:nth-child(2) { animation-delay:.15s } .chat__typing i:nth-child(3) { animation-delay:.3s }
+@keyframes typing { 0%,60%,100% { transform:translateY(0); opacity:.4 } 30% { transform:translateY(-4px); opacity:1 } }
+.chat__chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
+.chat__chips button { white-space:nowrap; }

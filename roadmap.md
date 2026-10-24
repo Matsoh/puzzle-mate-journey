@@ -54,3 +54,11 @@
 - [x] Navigasjon ned til Hjem/Spill/Oppgaver/Fremgang + «Mer» (fritt parti, treningsparti, trener, turnering, innstillinger); forklaringstekster fjernet.
 - [x] Mike tegnet som SVG fra filtfiguren (chill/happy/think/shock/sleep); engelske, tørre replikker i src/lib/mike.ts som senere kan byttes mot en lokal LLM.
 - [x] Dev-modus uten innlogging (VITE_LOCAL_DEV=1, kun `vite dev`); tester for oppdrag, nivåtitler og Mike.
+
+# Monsterboken, kiste, verksted og Mike-chat (steg 2)
+- [x] Monsterboken (/samling): 36 taktiske motiver i fire sjeldenheter låses opp fra løste oppgaver; beseirede motstandere. Feiring når nytt motiv finnes.
+- [x] Feiring: fullskjerm ved nytt nivå (tittel + Mike), nye merker, kiste. Konfetti og lyd.
+- [x] Skattekisten: alle tre oppdrag → én kiste per dag med variabel belønning (70/25/5 %, streak øker oddsen). Mynter i Progress.
+- [x] Monsterverkstedet (/avatar): egen filt-monster-avatar i seks deler, gratis grunndeler, resten kjøpes for mynter. Avataren vises overalt.
+- [x] Snakk med Mike (/mike): systemprompt, kontekst med ekte tall, Ollama lokalt med innebygd reserve. Innstillinger for adresse/modell. README-oppsett.
+- [x] Nav: Samling erstatter Fremgang i hovedmenyen; Mike, verksted og Fremgang under Mer.

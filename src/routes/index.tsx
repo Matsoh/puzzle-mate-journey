@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Flame, Puzzle, Swords, Check, Crown, ChevronRight, Sparkles } from "lucide-react";
+import { Flame, Puzzle, Swords, Check, BookOpen, ChevronRight, Sparkles, MessageCircle } from "lucide-react";
 import { today, updateProgress, useProgress, withCredit } from "@/lib/progress";
 import { levelFromXp, liveStreak } from "@/lib/rules";
 import { OPPONENTS } from "@/lib/opponents";
@@ -9,6 +9,10 @@ import { allQuestsDone, dailyQuests, levelTitle, questCreditId, questDone, QUEST
 import { mikeHomeLine, mikeLevelLine } from "@/lib/mike";
 import { MikeSays } from "@/components/Mike";
 import { PlayerAvatar } from "@/components/CoachAvatar";
+import { chestOpened, rollChest, withChest } from "@/lib/chest";
+import { celebrate, celebrateDiff } from "@/lib/celebrate";
+import { collectionSummary } from "@/lib/collection";
+import { play } from "@/lib/sound";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,8 +48,17 @@ function Home() {
 
   // Bonus for clearing all three quests — paid once per day, also across devices.
   useEffect(() => {
-    if (t && complete) updateProgress((s) => withCredit(s, questCreditId(t), QUEST_BONUS_XP));
+    if (t && complete) updateProgress((s) => { const n = withCredit(s, questCreditId(t), QUEST_BONUS_XP); celebrateDiff(s, n); return n; });
   }, [t, complete]);
+  const opened = t ? chestOpened(p, t) : false;
+  const openChest = () => {
+    if (!t || opened) return;
+    const roll = rollChest(`${t}:${p.games}:${p.puzzlesTried}`, streak);
+    updateProgress((s) => withChest(s, t, roll));
+    play("boss");
+    celebrate({ kind: "chest", coins: roll.coins, tier: roll.tier });
+  };
+  const col = collectionSummary(p);
 
   return (
     <main className="page-layout page-narrow" onPointerDown={unlockAudio}>
@@ -57,10 +70,13 @@ function Home() {
             <p className="truncate text-base font-bold">{levelTitle(lvl.level)}</p>
           </div>
         </div>
-        <span className={`streak-chip ${streak >= 3 ? "is-hot" : ""}`} title="Dager på rad"><Flame className="size-4" />{streak}</span>
+        <div className="flex items-center gap-2">
+          <Link to="/avatar" className="coin-chip" title="Mynter">🪙 {p.coins ?? 0}</Link>
+          <span className={`streak-chip ${streak >= 3 ? "is-hot" : ""}`} title="Dager på rad"><Flame className="size-4" />{streak}</span>
+        </div>
       </header>
 
-      {mike && <MikeSays mood={mike.mood} big className="mb-6">{mike.text}</MikeSays>}
+      {mike && <Link to="/mike" className="block mb-6" aria-label="Snakk med Mike"><MikeSays mood={mike.mood} big>{mike.text}<span className="mt-1 flex items-center gap-1 text-xs font-semibold text-primary"><MessageCircle className="size-3" />Svar Mike</span></MikeSays></Link>}
 
       <section className="xp-big mb-6" aria-label="XP">
         <div className="flex items-baseline justify-between gap-3">
@@ -83,12 +99,20 @@ function Home() {
         <div className="space-y-3">
           {quests.map((q) => <QuestCard key={q.id} q={q} />)}
         </div>
-        {complete && <p className="mt-3 text-center text-sm font-semibold text-primary">+{QUEST_BONUS_XP} XP bonus for alle tre!</p>}
+        {complete && (
+          <button type="button" onClick={openChest} disabled={opened} className={`chest-card mt-3 w-full text-left ${opened ? "is-open" : ""}`}>
+            <span className="chest-card__icon" aria-hidden>{opened ? "📭" : "🎁"}</span>
+            <span className="min-w-0">
+              <span className="block font-bold">{opened ? `Kisten er åpnet: +${p.chests?.[t] ?? 0} 🪙` : "Dagens kiste er klar!"}</span>
+              <span className="block text-xs text-muted-foreground">{opened ? `+${QUEST_BONUS_XP} XP bonus er også på plass. Ny kiste i morgen.` : "Alle tre oppdrag gjort. Trykk for å åpne."}</span>
+            </span>
+          </button>
+        )}
       </section>
 
       <section className="grid grid-cols-2 gap-3" aria-label="Mer">
         <Link to="/fritt" className="quest !grid-cols-[auto_minmax(0,1fr)]"><span className="quest__check"><Swords className="size-5" /></span><span className="font-semibold">Fritt parti</span></Link>
-        <Link to="/fremgang" className="quest !grid-cols-[auto_minmax(0,1fr)]"><span className="quest__check"><Crown className="size-5" /></span><span className="font-semibold">{p.beaten.length}/{OPPONENTS.length} slått</span></Link>
+        <Link to="/samling" className="quest !grid-cols-[auto_minmax(0,1fr)]"><span className="quest__check"><BookOpen className="size-5" /></span><span className="min-w-0"><span className="block font-semibold">Monsterboken</span><span className="block text-xs text-muted-foreground">{col.found}/{col.total} motiver</span></span></Link>
       </section>
     </main>
   );

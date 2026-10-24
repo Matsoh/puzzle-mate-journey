@@ -10,12 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AvatarRouteImport } from './routes/avatar'
 import { Route as FremgangRouteImport } from './routes/fremgang'
 import { Route as FrittRouteImport } from './routes/fritt'
 import { Route as InnloggingRouteImport } from './routes/innlogging'
 import { Route as MerRouteImport } from './routes/mer'
+import { Route as MikeRouteImport } from './routes/mike'
 import { Route as PartiRouteImport } from './routes/parti'
 import { Route as PuslerRouteImport } from './routes/pusler'
+import { Route as SamlingRouteImport } from './routes/samling'
 import { Route as StigenRouteImport } from './routes/stigen'
 import { Route as TilbakestillPassordRouteImport } from './routes/tilbakestill-passord'
 import { Route as TrenerRouteImport } from './routes/trener'
@@ -25,6 +28,11 @@ import { Route as TurneringRouteImport } from './routes/turnering'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvatarRoute = AvatarRouteImport.update({
+  id: '/avatar',
+  path: '/avatar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FremgangRoute = FremgangRouteImport.update({
@@ -47,6 +55,11 @@ const MerRoute = MerRouteImport.update({
   path: '/mer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MikeRoute = MikeRouteImport.update({
+  id: '/mike',
+  path: '/mike',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PartiRoute = PartiRouteImport.update({
   id: '/parti',
   path: '/parti',
@@ -55,6 +68,11 @@ const PartiRoute = PartiRouteImport.update({
 const PuslerRoute = PuslerRouteImport.update({
   id: '/pusler',
   path: '/pusler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SamlingRoute = SamlingRouteImport.update({
+  id: '/samling',
+  path: '/samling',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StigenRoute = StigenRouteImport.update({
@@ -85,12 +103,15 @@ const TurneringRoute = TurneringRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/avatar': typeof AvatarRoute
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
   '/mer': typeof MerRoute
+  '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
+  '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
   '/tilbakestill-passord': typeof TilbakestillPassordRoute
   '/trener': typeof TrenerRoute
@@ -99,12 +120,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/avatar': typeof AvatarRoute
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
   '/mer': typeof MerRoute
+  '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
+  '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
   '/tilbakestill-passord': typeof TilbakestillPassordRoute
   '/trener': typeof TrenerRoute
@@ -114,12 +138,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/avatar': typeof AvatarRoute
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
   '/mer': typeof MerRoute
+  '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
   '/pusler': typeof PuslerRoute
+  '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
   '/tilbakestill-passord': typeof TilbakestillPassordRoute
   '/trener': typeof TrenerRoute
@@ -130,12 +157,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/avatar'
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
     | '/mer'
+    | '/mike'
     | '/parti'
     | '/pusler'
+    | '/samling'
     | '/stigen'
     | '/tilbakestill-passord'
     | '/trener'
@@ -144,12 +174,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/avatar'
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
     | '/mer'
+    | '/mike'
     | '/parti'
     | '/pusler'
+    | '/samling'
     | '/stigen'
     | '/tilbakestill-passord'
     | '/trener'
@@ -158,12 +191,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/avatar'
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
     | '/mer'
+    | '/mike'
     | '/parti'
     | '/pusler'
+    | '/samling'
     | '/stigen'
     | '/tilbakestill-passord'
     | '/trener'
@@ -173,12 +209,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AvatarRoute: typeof AvatarRoute
   FremgangRoute: typeof FremgangRoute
   FrittRoute: typeof FrittRoute
   InnloggingRoute: typeof InnloggingRoute
   MerRoute: typeof MerRoute
+  MikeRoute: typeof MikeRoute
   PartiRoute: typeof PartiRoute
   PuslerRoute: typeof PuslerRoute
+  SamlingRoute: typeof SamlingRoute
   StigenRoute: typeof StigenRoute
   TilbakestillPassordRoute: typeof TilbakestillPassordRoute
   TrenerRoute: typeof TrenerRoute
@@ -193,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avatar': {
+      id: '/avatar'
+      path: '/avatar'
+      fullPath: '/avatar'
+      preLoaderRoute: typeof AvatarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fremgang': {
@@ -223,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mike': {
+      id: '/mike'
+      path: '/mike'
+      fullPath: '/mike'
+      preLoaderRoute: typeof MikeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/parti': {
       id: '/parti'
       path: '/parti'
@@ -235,6 +288,13 @@ declare module '@tanstack/react-router' {
       path: '/pusler'
       fullPath: '/pusler'
       preLoaderRoute: typeof PuslerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/samling': {
+      id: '/samling'
+      path: '/samling'
+      fullPath: '/samling'
+      preLoaderRoute: typeof SamlingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stigen': {
@@ -277,12 +337,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AvatarRoute: AvatarRoute,
   FremgangRoute: FremgangRoute,
   FrittRoute: FrittRoute,
   InnloggingRoute: InnloggingRoute,
   MerRoute: MerRoute,
+  MikeRoute: MikeRoute,
   PartiRoute: PartiRoute,
   PuslerRoute: PuslerRoute,
+  SamlingRoute: SamlingRoute,
   StigenRoute: StigenRoute,
   TilbakestillPassordRoute: TilbakestillPassordRoute,
   TrenerRoute: TrenerRoute,
