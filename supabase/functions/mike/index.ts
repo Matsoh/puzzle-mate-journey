@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       headers: { Authorization: `Bearer ${key}`, "content-type": "application/json" },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 220,
+        max_tokens: 1500,
         temperature: 0.9,
         messages: [{ role: "system", content: `${body.system}\n\nContext:\n${body.context ?? ""}` }, ...history],
       }),
