@@ -81,6 +81,15 @@ export function thinkTimeMs(i: ThinkInput, rng: Rng = Math.random): number {
     else if (roll < impulse + overthink) t *= 2.2 + 1.3 * rng();
   }
 
+  // Weaker players use time badly: a long stare at an obvious recapture, blitzing out
+  // the hard decision, and a time-trouble spiral late in the game.
+  if (skill < 0.45) {
+    const waste = rng();
+    if (cat === "forced" && waste < 0.18) t = 3_500 + 4_000 * rng();
+    else if (cat === "complex" && waste < 0.35) t = 900 + 1_200 * rng();
+  }
+  if (i.remainingMs != null && i.initialMs != null && i.remainingMs < i.initialMs * 0.15 && skill < 0.6) t = 400 + 700 * rng();
+
   t *= TEMPO_MULT[i.tempo ?? "steady"];
 
   if (i.remainingMs != null && i.initialMs != null) {

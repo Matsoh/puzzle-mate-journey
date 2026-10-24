@@ -20,6 +20,9 @@ import { Button } from "@/components/ui/button";
 import { getEngine } from "@/lib/engine";
 import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
 import { remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib/think-time";
+import { botMove } from "@/lib/bot";
+import { maiaInit } from "@/lib/maia";
+import { getProgress } from "@/lib/progress";
 import { parseTimeControl, tcToMs } from "@/lib/tournament";
 import { BOT_LEVELS, forkAfter, threats, type TrainingGame } from "@/lib/prep";
 import { updatePrep } from "@/lib/prep-store";
@@ -126,6 +129,7 @@ function PracticeGame() {
   const helpReq = useRef(0);
   const saved = useRef(false);
   const mounted = useRef(true);
+  useEffect(() => { maiaInit(); }, []);
   useEffect(() => {
     mounted.current = true;
     const h = helpReq,
@@ -230,9 +234,8 @@ function PracticeGame() {
       initialMs: tcCfg ? tcCfg[0] : null,
       incrementMs: tcCfg ? tcCfg[1] : 0,
     });
-    getEngine()
-      .bestMove(fenNow, searchTimeMs(remaining, target))
-      .then((uci) => {
+    botMove(fenNow, elo, getProgress().rating, searchTimeMs(remaining, target))
+      .then(({ uci }) => {
         if (!alive() || game.current.fen() !== fenNow || !uci || uci === "(none)") return;
         timer = setTimeout(
           () => {

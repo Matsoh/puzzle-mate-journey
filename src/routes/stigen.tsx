@@ -7,6 +7,7 @@ import { isUnlocked, OPPONENTS } from "@/lib/opponents";
 import { useProgress } from "@/lib/progress";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { MaiaBrain } from "@/components/MaiaBrain";
 
 export const Route = createFileRoute("/stigen")({
   head: () => ({
@@ -34,6 +35,7 @@ function Ladder() {
         <p className="text-sm text-muted-foreground">
           {beatenCount}/10 slått. Slå en motstander for å låse opp den neste.
         </p>
+        <MaiaBrain />
         {OPPONENTS.map((o) => {
           const idx = OPPONENTS.indexOf(o);
           const unlocked = isUnlocked(idx, p.beaten);

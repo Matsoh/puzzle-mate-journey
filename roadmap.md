@@ -74,3 +74,8 @@
 # Mine partier og Mikes notatbok
 - [x] /partier: hent ekte partier fra chess.com og Lichess (offentlige API-er, kun brukernavn), liste, Stockfish-analyse, Mike-gjennomgang + trenerens gjennomgang. +25 XP per parti første gang; teller som dagens parti-oppdrag.
 - [x] Mikes notatbok: motorfakta → lærdommer (hengende brikker, tillot/oversett matt, åpning, sluttspill, taktikk). Mønstre telles over tid, vises på /partier og gis Mike som kontekst; Mike nevner det på forsiden annenhver dag.
+
+# Ekte motstandere (Maia 3)
+- [x] Maia 3 (human-like nevralt nett, ONNX 44 MB, caches i IndexedDB) velger botenes trekk i stigen, fritt parti og treningsparti, betinget på botens og Tobias' rating. Stockfish tar over i sluttspill (≤ 8 brikker) og som reserve.
+- [x] Menneskelig tidsbruk for svake boter: lange pauser på opplagte trekk, blitzing i vanskelige stillinger, tidsnød-spiral.
+- [x] Nedlastingsknapp på stigen/i parti; egen worker (public/maia-worker.js) + vendored onnxruntime-web (MIT). Koding testet; e2e i Chromium.

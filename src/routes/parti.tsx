@@ -13,10 +13,13 @@ import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import type { ColorChoice, TimeControl } from "@/components/GameSetup";
 import { parseTimeControl, tcToMs } from "@/lib/tournament";
 import { getEngine } from "@/lib/engine";
+import { botMove } from "@/lib/bot";
+import { maiaInit } from "@/lib/maia";
+import { MaiaBrain } from "@/components/MaiaBrain";
 import { OPPONENT_TEMPO, remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib/think-time";
 import { analyseGame, type Mistake, type PlayedMove } from "@/lib/coach";
 import { ENGINE_ELO_OFFSET, getOpponent, OPPONENTS } from "@/lib/opponents";
-import { markActive, updateProgress, withHistoryPoint } from "@/lib/progress";
+import { getProgress, markActive, updateProgress, withHistoryPoint } from "@/lib/progress";
 import { withDayGame } from "@/lib/quests";
 import { celebrateBadges, celebrateDiff } from "@/lib/celebrate";
 import { K_GAME, levelFromXp, newRating, XP } from "@/lib/rules";
@@ -87,6 +90,7 @@ function Game() {
 
   const lastMove = moves.length ? ([moves[moves.length - 1]!.uci.slice(0, 2), moves[moves.length - 1]!.uci.slice(2, 4)] as [string, string]) : null;
 
+  useEffect(() => { maiaInit(); }, []);
   // Engine setup
   useEffect(() => {
     const e = getEngine();
@@ -191,9 +195,8 @@ function Game() {
       initialMs: tcCfg ? tcCfg[0] : null,
       incrementMs: tcCfg ? tcCfg[1] : 0,
     });
-    getEngine()
-      .bestMove(fenNow, searchTimeMs(remaining, target))
-      .then((uci) => {
+    botMove(fenNow, engineElo, getProgress().rating, searchTimeMs(remaining, target))
+      .then(({ uci }) => {
         if (!alive() || game.current.fen() !== fenNow || !uci || uci === "(none)") return;
         timer = setTimeout(() => {
           if (!alive() || game.current.fen() !== fenNow || game.current.turn() === player) return;
@@ -320,6 +323,7 @@ function Game() {
 
           {phase === "playing" && (
             <>
+              <MaiaBrain compact />
               <MikeCompanion mode="game" line={lastLine} context={gameContext(snapshot)} compact />
               <div className="card-game p-3 max-h-64 overflow-y-auto text-sm font-medium leading-7">
                 {moveListSan.length === 0 ? (
