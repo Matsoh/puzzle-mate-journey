@@ -1,6 +1,8 @@
 import { createSyncedStore } from "./cloud-sync";
 import { dedupeCredits } from "./sync-merge";
 import { dayKey, nextStreak } from "./rules";
+import type { ImportedGame } from "./games-import";
+import type { Notebook } from "./notebook";
 
 export type RatingPoint = { t: number; game: number; puzzle: number };
 export type DailyState = { day: string; ids: string[]; results: Record<string, "solved" | "failed"> };
@@ -38,6 +40,13 @@ export type Progress = {
   /** Avatar workshop: chosen parts and owned paid parts. */
   avatar: Record<string, string>;
   avatarOwned: string[];
+  /** Online accounts for importing real games. */
+  accounts: { chesscom?: string; lichess?: string };
+  /** Imported real games (newest first, capped) and which ones were reviewed. */
+  importedGames: ImportedGame[];
+  reviewedGames: string[];
+  /** Mikes notatbok. */
+  notebook: Notebook;
 };
 
 export const DEFAULT_PROGRESS: Progress = {
@@ -67,6 +76,10 @@ export const DEFAULT_PROGRESS: Progress = {
   chests: {},
   avatar: {},
   avatarOwned: [],
+  accounts: {},
+  importedGames: [],
+  reviewedGames: [],
+  notebook: { entries: [], patterns: {} },
 };
 
 // Old anonymous key — read only for the one-time import offer, never deleted.

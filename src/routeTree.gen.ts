@@ -17,6 +17,7 @@ import { Route as InnloggingRouteImport } from './routes/innlogging'
 import { Route as MerRouteImport } from './routes/mer'
 import { Route as MikeRouteImport } from './routes/mike'
 import { Route as PartiRouteImport } from './routes/parti'
+import { Route as PartierRouteImport } from './routes/partier'
 import { Route as PuslerRouteImport } from './routes/pusler'
 import { Route as SamlingRouteImport } from './routes/samling'
 import { Route as StigenRouteImport } from './routes/stigen'
@@ -65,6 +66,11 @@ const PartiRoute = PartiRouteImport.update({
   path: '/parti',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartierRoute = PartierRouteImport.update({
+  id: '/partier',
+  path: '/partier',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PuslerRoute = PuslerRouteImport.update({
   id: '/pusler',
   path: '/pusler',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
+  '/partier': typeof PartierRoute
   '/pusler': typeof PuslerRoute
   '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
+  '/partier': typeof PartierRoute
   '/pusler': typeof PuslerRoute
   '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
+  '/partier': typeof PartierRoute
   '/pusler': typeof PuslerRoute
   '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/mer'
     | '/mike'
     | '/parti'
+    | '/partier'
     | '/pusler'
     | '/samling'
     | '/stigen'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/mer'
     | '/mike'
     | '/parti'
+    | '/partier'
     | '/pusler'
     | '/samling'
     | '/stigen'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/mer'
     | '/mike'
     | '/parti'
+    | '/partier'
     | '/pusler'
     | '/samling'
     | '/stigen'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   MerRoute: typeof MerRoute
   MikeRoute: typeof MikeRoute
   PartiRoute: typeof PartiRoute
+  PartierRoute: typeof PartierRoute
   PuslerRoute: typeof PuslerRoute
   SamlingRoute: typeof SamlingRoute
   StigenRoute: typeof StigenRoute
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/partier': {
+      id: '/partier'
+      path: '/partier'
+      fullPath: '/partier'
+      preLoaderRoute: typeof PartierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pusler': {
       id: '/pusler'
       path: '/pusler'
@@ -344,6 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   MerRoute: MerRoute,
   MikeRoute: MikeRoute,
   PartiRoute: PartiRoute,
+  PartierRoute: PartierRoute,
   PuslerRoute: PuslerRoute,
   SamlingRoute: SamlingRoute,
   StigenRoute: StigenRoute,

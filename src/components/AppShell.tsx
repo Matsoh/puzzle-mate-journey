@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, Dumbbell, BookOpen, MessageCircle, Wrench } from "lucide-react";
+import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, Dumbbell, BookOpen, MessageCircle, Wrench, Globe } from "lucide-react";
 import { Celebrations } from "./Celebrations";
 import type { ReactNode } from "react";
 import { MuteToggle } from "./AppHeader";
@@ -18,6 +18,7 @@ export const PRIMARY_NAV = [
 
 export const MORE_NAV = [
   { to: "/mike", label: "Snakk med Mike", hint: "Spør om hva som helst (om sjakk)", icon: MessageCircle },
+  { to: "/partier", label: "Mine partier", hint: "Hent partier fra chess.com/Lichess – Mike ser på dem", icon: Globe },
   { to: "/avatar", label: "Monsterverkstedet", hint: "Bygg avataren din for mynter", icon: Wrench },
   { to: "/fremgang", label: "Fremgang", hint: "Ratinggraf, statistikk og merker", icon: ChartNoAxesCombined },
   { to: "/fritt", label: "Fritt parti", hint: "Velg styrke, farge og tempo", icon: Swords },

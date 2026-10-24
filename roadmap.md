@@ -70,3 +70,7 @@
 
 # Forberedelse (forenklet turnering)
 - [x] «På turneringsdagen» og turneringsoppsett (navn, dato, runder, tidskontroll) fjernet. Siden heter Forberedelse: Mike + åpninger (trykkbare kort, én hvit + én/to svart) + kjapp økt + taktikk/sluttspill + treningsparti.
+
+# Mine partier og Mikes notatbok
+- [x] /partier: hent ekte partier fra chess.com og Lichess (offentlige API-er, kun brukernavn), liste, Stockfish-analyse, Mike-gjennomgang + trenerens gjennomgang. +25 XP per parti første gang; teller som dagens parti-oppdrag.
+- [x] Mikes notatbok: motorfakta → lærdommer (hengende brikker, tillot/oversett matt, åpning, sluttspill, taktikk). Mønstre telles over tid, vises på /partier og gis Mike som kontekst; Mike nevner det på forsiden annenhver dag.

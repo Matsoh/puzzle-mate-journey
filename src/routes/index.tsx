@@ -13,6 +13,8 @@ import { chestOpened, rollChest, withChest } from "@/lib/chest";
 import { celebrate, celebrateDiff } from "@/lib/celebrate";
 import { collectionSummary } from "@/lib/collection";
 import { play } from "@/lib/sound";
+import { notebookLine } from "@/lib/notebook";
+import { Globe } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,7 +46,9 @@ function Home() {
   const done = quests.filter(questDone).length;
   const complete = quests.length > 0 && allQuestsDone(quests);
   const nextOpp = OPPONENTS.find((o) => !p.beaten.includes(o.id));
-  const mike = t ? mikeHomeLine(p, quests, t, streak) : null;
+  const base = t ? mikeHomeLine(p, quests, t, streak) : null;
+  const nb = notebookLine(p);
+  const mike = base && nb && !complete && t.endsWith("1") === false && (Number(t.slice(-2)) % 2 === 0) ? { text: nb, mood: "think" as const } : base;
 
   // Bonus for clearing all three quests — paid once per day, also across devices.
   useEffect(() => {
@@ -113,6 +117,7 @@ function Home() {
       <section className="grid grid-cols-2 gap-3" aria-label="Mer">
         <Link to="/fritt" className="quest !grid-cols-[auto_minmax(0,1fr)]"><span className="quest__check"><Swords className="size-5" /></span><span className="font-semibold">Fritt parti</span></Link>
         <Link to="/samling" className="quest !grid-cols-[auto_minmax(0,1fr)]"><span className="quest__check"><BookOpen className="size-5" /></span><span className="min-w-0"><span className="block font-semibold">Monsterboken</span><span className="block text-xs text-muted-foreground">{col.found}/{col.total} motiver</span></span></Link>
+        <Link to="/partier" className="quest !grid-cols-[auto_minmax(0,1fr)] col-span-2"><span className="quest__check"><Globe className="size-5" /></span><span className="min-w-0"><span className="block font-semibold">Mine partier</span><span className="block text-xs text-muted-foreground">{(p.importedGames ?? []).length ? `${(p.importedGames ?? []).length} hentet · ${(p.reviewedGames ?? []).length} sett av Mike` : "Hent partiene dine fra chess.com – Mike ser på dem"}</span></span></Link>
       </section>
     </main>
   );

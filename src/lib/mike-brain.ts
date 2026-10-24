@@ -7,6 +7,7 @@ import { levelFromXp, liveStreak } from "./rules";
 import { dailyQuests, levelTitle, questDone } from "./quests";
 import { collectionSummary } from "./collection";
 import { OPPONENTS } from "./opponents";
+import { notebookContext } from "./notebook";
 
 export type ChatMsg = { role: "user" | "assistant"; content: string };
 
@@ -43,6 +44,7 @@ export function mikeContext(p: Progress, day: string): string {
     `Today's quests: ${q.map((x) => `${x.title} (${questDone(x) ? "done" : `${x.done}/${x.goal}`})`).join("; ")}.`,
     `Ladder: beaten ${p.beaten.length}/${OPPONENTS.length}${next ? `; next opponent is ${next.name} (${next.elo}, ${next.style})` : "; ladder complete"}.`,
     `Collection: ${s.found}/${s.total} tactical motifs found. Coins: ${p.coins ?? 0}.`,
+    notebookContext(p),
   ].join("\n");
 }
 
