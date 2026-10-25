@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { GameRow } from "@/components/GameRow";
 import { useEffect, useState } from "react";
 import { Flame, Puzzle, Swords, Check, ChevronRight, Sparkles, MessageCircle } from "lucide-react";
 import { today, updateProgress, useProgress, withCredit } from "@/lib/progress";
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const p = useProgress();
+  const navigate = useNavigate();
   const lvl = levelFromXp(p.xp);
   const [t, setT] = useState("");
   useEffect(() => {
@@ -114,10 +116,22 @@ function Home() {
         )}
       </section>
 
+      {(p.importedGames ?? []).length > 0 && (
+        <section className="mb-6" aria-labelledby="games-h">
+          <div className="mb-3 flex items-end justify-between">
+            <h2 id="games-h" className="text-lg font-bold">Siste partier</h2>
+            <Link to="/partier" className="text-sm font-semibold text-primary">Alle partier →</Link>
+          </div>
+          <div className="space-y-2">
+            {(p.importedGames ?? []).slice(0, 3).map((g) => <GameRow key={g.id} g={g} reviewed={(p.reviewedGames ?? []).includes(g.id)} onOpen={() => void navigate({ to: "/partier", search: { open: g.id } })} />)}
+          </div>
+        </section>
+      )}
+
       <section className="grid grid-cols-2 gap-3" aria-label="Mer">
         <Link to="/fritt" className="quest !grid-cols-[auto_minmax(0,1fr)]"><span className="quest__check"><Swords className="size-5" /></span><span className="font-semibold">Fritt parti</span></Link>
         <Link to="/avatar" className="quest !grid-cols-[auto_minmax(0,1fr)]"><span className="quest__check"><PlayerAvatar className="size-9" /></span><span className="min-w-0"><span className="block font-semibold">Avatar</span><span className="block text-xs text-muted-foreground">{col.found}/{col.total} motiver i boken</span></span></Link>
-        <Link to="/partier" className="quest !grid-cols-[auto_minmax(0,1fr)] col-span-2"><span className="quest__check"><Globe className="size-5" /></span><span className="min-w-0"><span className="block font-semibold">Mine partier</span><span className="block text-xs text-muted-foreground">{(p.importedGames ?? []).length ? `${(p.importedGames ?? []).length} hentet · ${(p.reviewedGames ?? []).length} sett av Mike` : "Hent partiene dine fra chess.com – Mike ser på dem"}</span></span></Link>
+        <Link to="/partier" className="quest !grid-cols-[auto_minmax(0,1fr)] col-span-2"><span className="quest__check"><Globe className="size-5" /></span><span className="min-w-0"><span className="block font-semibold">Mine partier</span><span className="block text-xs text-muted-foreground">{(p.importedGames ?? []).length ? `${(p.importedGames ?? []).length} partier · ${(p.reviewedGames ?? []).length} analysert av Mike` : "Alle partier du spiller samles her – Mike ser på dem"}</span></span></Link>
       </section>
     </main>
   );

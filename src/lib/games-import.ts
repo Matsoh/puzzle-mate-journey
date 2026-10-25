@@ -5,7 +5,7 @@ import { Chess } from "chess.js";
 import type { PlayedMove } from "./coach";
 import { dayKey } from "./rules";
 
-export type Source = "chesscom" | "lichess";
+export type Source = "chesscom" | "lichess" | "app" | "venn";
 export type ImportedGame = {
   id: string; // `${source}:${gameId}`
   source: Source;
@@ -20,7 +20,7 @@ export type ImportedGame = {
   url: string;
 };
 
-export const MAX_STORED_GAMES = 40;
+export const MAX_STORED_GAMES = 80;
 
 /** SAN list → PlayedMove[] with FENs (what the analyser needs). Returns null when the moves don't parse. */
 export function playedMovesFromSan(sans: string[]): { moves: PlayedMove[]; finalFen: string } | null {
@@ -137,4 +137,5 @@ export function mergeGames(stored: ImportedGame[], incoming: ImportedGame[]): Im
   return [...fresh, ...stored].sort((a, b) => b.playedAt - a.playedAt).slice(0, MAX_STORED_GAMES);
 }
 
-export const TIME_LABEL: Record<string, string> = { bullet: "Bullet", blitz: "Blitz", rapid: "Hurtig", classical: "Langsjakk", daily: "Daglig", correspondence: "Daglig", ultraBullet: "Bullet" };
+export const TIME_LABEL: Record<string, string> = { bullet: "Bullet", blitz: "Blitz", rapid: "Hurtig", classical: "Langsjakk", daily: "Daglig", correspondence: "Daglig", ultraBullet: "Bullet", none: "Uten klokke", trening: "Treningsparti" };
+export const SOURCE_LABEL: Record<Source, string> = { chesscom: "chess.com", lichess: "Lichess", app: "Bot", venn: "Venn" };

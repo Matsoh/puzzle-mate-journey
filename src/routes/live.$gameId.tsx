@@ -13,6 +13,7 @@ import { reviewGame, type GameReview as Review, type PlayedMove } from "@/lib/co
 import { gameContext, gameReaction, reviewContext, reviewLine } from "@/lib/mike-game";
 import { markActive, today, updateProgress, withCredit, withHistoryPoint, useProgress } from "@/lib/progress";
 import { withDayGame } from "@/lib/quests";
+import { withAppGame, tcClass } from "@/lib/game-log";
 import { celebrateBadges, celebrateDiff } from "@/lib/celebrate";
 import { applyBadges } from "@/lib/badges";
 import { XP } from "@/lib/rules";
@@ -158,6 +159,7 @@ function LivePage() {
       const xp = o === "win" ? XP.gameWin + 20 : o === "draw" ? XP.gameDraw + 10 : XP.gameLoss + 10;
       let n = { ...p0, rating: p0.rating + delta, games: p0.games + 1, wins: p0.wins + (o === "win" ? 1 : 0), draws: p0.draws + (o === "draw" ? 1 : 0) };
       n = withCredit(withDayGame(withHistoryPoint(markActive(n)), today(), o === "win"), id, xp);
+      n = withAppGame(n, { id: `venn:${g.id}`, source: "venn", opponent: profiles[oppId]?.name ?? "Venn", opponentRating: theirs, player: color, result: o, moves: g.sans, timeClass: tcClass(g.initial_ms, g.inc_ms), playedAt: new Date(g.created_at).getTime() });
       const b = applyBadges(n);
       celebrateDiff(p0, b.progress); celebrateBadges(b.earned);
       setReward({ delta, xp });

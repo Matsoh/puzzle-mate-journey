@@ -105,3 +105,20 @@ describe("Skoleuka", () => {
     expect(withLesson(p, "2026-10-25", "drill").coins).toBe(p.coins); // no double pay
   });
 });
+
+describe("Partiarkiv", () => {
+  it("stores app games as archive entries, newest first, and finds the final position", async () => {
+    const { DEFAULT_PROGRESS } = await import("./progress");
+    const { withAppGame, finalFen, tcClass } = await import("./game-log");
+    let p = withAppGame(DEFAULT_PROGRESS, { id: "app:1", source: "app", opponent: "Pelle", opponentRating: 1400, player: "w", result: "win", moves: ["e4", "e5", "Qh5", "Nc6", "Bc4", "Nf6", "Qxf7#"], timeClass: "none", playedAt: 1000 });
+    p = withAppGame(p, { id: "venn:2", source: "venn", opponent: "Pappa", opponentRating: 1500, player: "b", result: "loss", moves: ["e4", "e5"], timeClass: "blitz", playedAt: 2000 });
+    expect(p.importedGames.map((g) => g.id)).toEqual(["venn:2", "app:1"]);
+    expect(withAppGame(p, { id: "app:1", source: "app", opponent: "x", opponentRating: null, player: "w", result: "win", moves: ["e4", "e5"], timeClass: "none" }).importedGames).toHaveLength(2); // no duplicates
+    expect(withAppGame(p, { id: "app:3", source: "app", opponent: "x", opponentRating: null, player: "w", result: "win", moves: ["e4"], timeClass: "none" }).importedGames).toHaveLength(2); // too short
+    expect(finalFen(p.importedGames[1]!.moves)).toMatch(/^r1bqkb1r\/pppp1Qpp/);
+    expect(finalFen(["e5"])).toBeNull();
+    expect(tcClass(180_000, 2_000)).toBe("blitz");
+    expect(tcClass(60_000, 0)).toBe("bullet");
+    expect(tcClass(600_000, 0)).toBe("rapid");
+  });
+});

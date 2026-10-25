@@ -32,6 +32,7 @@ import { dayKey } from "@/lib/rules";
 import { play, unlockAudio } from "@/lib/sound";
 import { MikeCompanion } from "@/components/MikeCompanion";
 import { withLesson } from "@/lib/school";
+import { withAppGame } from "@/lib/game-log";
 import { celebrateDiff } from "@/lib/celebrate";
 import { updateProgress } from "@/lib/progress";
 import { gameContext, gameReaction } from "@/lib/mike-game";
@@ -169,6 +170,8 @@ function PracticeGame() {
         helpUsed,
       };
       updatePrep((s) => ({ ...s, games: [...s.games, rec].slice(-30) }));
+      const res = o.result;
+      if (res !== "stopped") updateProgress((s) => withAppGame(s, { id: `app:${rec.id}`, source: "app", opponent: `Bot ${elo} (trening)`, opponentRating: elo, player, result: res, moves: game.current.history(), timeClass: "trening" }));
       if (game.current.history().length >= 10) updateProgress((s) => { const n = withLesson(s, rec.day, "game"); celebrateDiff(s, n); return n; });
     },
     [search.src, elo, helpUsed],

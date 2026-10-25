@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowLeft, Download, ExternalLink, Search, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, Search } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { GameReview } from "@/components/GameReview";
@@ -8,7 +8,8 @@ import { avatarName } from "@/lib/avatar";
 import { MikeCompanion } from "@/components/MikeCompanion";
 import { Mike } from "@/components/Mike";
 import { today, updateProgress, useProgress, withCredit } from "@/lib/progress";
-import { fetchChesscom, fetchLichess, mergeGames, playedMovesFromSan, TIME_LABEL, type ImportedGame } from "@/lib/games-import";
+import { fetchChesscom, fetchLichess, mergeGames, playedMovesFromSan, SOURCE_LABEL, TIME_LABEL, type ImportedGame } from "@/lib/games-import";
+import { GameRow } from "@/components/GameRow";
 import { reviewGame, type GameReview as Review, type Mistake } from "@/lib/coach";
 import { getEngine } from "@/lib/engine";
 import { reviewContext, reviewLine } from "@/lib/mike-game";
@@ -19,6 +20,7 @@ import { play } from "@/lib/sound";
 
 export const Route = createFileRoute("/partier")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>): { open?: string } => (typeof s["open"] === "string" ? { open: s["open"] } : {}),
   head: () => ({ meta: [{ title: "Mine partier – Goblin Chess" }, { name: "description", content: "Hent partiene dine fra chess.com og Lichess, og la Mike se på dem." }] }),
   component: GamesPage,
 });
@@ -31,9 +33,11 @@ function GamesPage() {
   const [li, setLi] = useState(p.accounts?.lichess ?? "");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const [open, setOpen] = useState<ImportedGame | null>(null);
+  const search = Route.useSearch();
+  const [open, setOpen] = useState<ImportedGame | null>(() => (p.importedGames ?? []).find((g) => g.id === search.open) ?? null);
   const hasAccount = !!(p.accounts?.chesscom || p.accounts?.lichess);
-  const [editing, setEditing] = useState(!hasAccount);
+  const [editing, setEditing] = useState(false);
+  const [filter, setFilter] = useState<"alle" | "venn" | "app" | "nett">("alle");
 
   async function fetchAll() {
     setBusy(true); setMsg(null);
@@ -52,15 +56,21 @@ function GamesPage() {
 
   if (open) return <ReviewScreen game={open} onBack={() => setOpen(null)} />;
 
-  const games = p.importedGames ?? [];
+  const all = p.importedGames ?? [];
+  const games = all.filter((g) => filter === "alle" ? true : filter === "nett" ? g.source === "chesscom" || g.source === "lichess" : g.source === filter);
+  const counts = { alle: all.length, venn: all.filter((g) => g.source === "venn").length, app: all.filter((g) => g.source === "app").length, nett: all.filter((g) => g.source === "chesscom" || g.source === "lichess").length };
   const nbLine = notebookLine(p);
   const pats = topPatterns(p);
   return (
     <main className="page-layout page-narrow">
       <AppHeader title="Mine partier" />
       <div className="space-y-5">
-        <MikeCompanion mode="review" context={`Imported games: ${games.length}, reviewed: ${(p.reviewedGames ?? []).length}.`}
-          line={{ text: nbLine ?? (games.length ? "Pick a game. I've got one eye and it's free." : "Give me your chess.com or Lichess name and I'll watch your real games. The ones that count."), mood: nbLine ? "think" : "chill" }} />
+        <MikeCompanion mode="review" context={`Archive: ${all.length} games (${counts.venn} vs friends, ${counts.app} vs bots, ${counts.nett} imported), reviewed: ${(p.reviewedGames ?? []).length}.`}
+          line={{ text: nbLine ?? (all.length ? "Every game you play lands here. Pick one – I've got one eye and it's free." : "Play a game, or give me your chess.com name, and this fills up."), mood: nbLine ? "think" : "chill" }} />
+
+        <div className="chat__chips" role="tablist" aria-label="Filter">
+          {([["alle", "Alle"], ["venn", "Venner"], ["app", "Bots"], ["nett", "chess.com / Lichess"]] as const).map(([k, l]) => <button key={k} role="tab" aria-selected={filter === k} onClick={() => setFilter(k)} className={`chip min-h-10 px-4 text-sm ${filter === k ? "border-primary text-primary" : ""}`}>{l} <span className="text-muted-foreground">{counts[k]}</span></button>)}
+        </div>
 
         {pats.length > 0 && (
           <section className="card-game p-4" aria-label="Mikes notatbok">
@@ -71,7 +81,7 @@ function GamesPage() {
           </section>
         )}
 
-        {editing ? (
+        {filter === "nett" && (editing ? (
           <section className="card-game p-4" aria-label="Kontoer">
             <p className="font-semibold">Brukernavn</p>
             <label className="mt-2 block text-sm">chess.com<input value={cc} onChange={(e) => setCc(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2" autoCapitalize="none" autoCorrect="off" placeholder="f.eks. tobias2015" /></label>
@@ -81,27 +91,15 @@ function GamesPage() {
           </section>
         ) : (
           <div className="flex flex-wrap items-center gap-2">
-            <Button disabled={busy} onClick={() => void fetchAll()}><Download />{busy ? "Henter…" : "Hent nye partier"}</Button>
-            <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>Endre brukernavn</Button>
+            <Button disabled={busy || !hasAccount} onClick={() => void fetchAll()}><Download />{busy ? "Henter…" : "Hent nye partier"}</Button>
+            <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>{hasAccount ? "Endre brukernavn" : "Legg til chess.com / Lichess"}</Button>
           </div>
-        )}
+        ))}
         {msg && <p role="status" className="text-sm text-muted-foreground">{msg}</p>}
 
         <section className="space-y-2" aria-label="Partier">
-          {games.map((g) => {
-            const reviewed = (p.reviewedGames ?? []).includes(g.id);
-            return (
-              <button key={g.id} type="button" onClick={() => setOpen(g)} className={`quest w-full text-left ${reviewed ? "is-done" : ""}`}>
-                <span className="quest__check">{reviewed ? <CheckCircle2 className="size-5" /> : g.result === "win" ? "W" : g.result === "draw" ? "½" : "L"}</span>
-                <span className="min-w-0">
-                  <span className="block font-semibold leading-tight">{g.result === "win" ? "Seier" : g.result === "draw" ? "Remis" : "Tap"} mot {g.opponent}{g.opponentRating ? ` (${g.opponentRating})` : ""}</span>
-                  <span className="block text-xs text-muted-foreground">{g.day} · {TIME_LABEL[g.timeClass] ?? g.timeClass} · {g.source === "chesscom" ? "chess.com" : "Lichess"} · {Math.ceil(g.moves.length / 2)} trekk</span>
-                </span>
-                <span className="quest__xp">{reviewed ? "Sett" : `+${REVIEW_XP} XP`}</span>
-              </button>
-            );
-          })}
-          {games.length === 0 && !editing && <p className="text-sm text-muted-foreground">Ingen partier ennå. Trykk «Hent nye partier».</p>}
+          {games.map((g) => <GameRow key={g.id} g={g} reviewed={(p.reviewedGames ?? []).includes(g.id)} onOpen={() => setOpen(g)} />)}
+          {games.length === 0 && !editing && <p className="text-sm text-muted-foreground">{filter === "nett" ? "Legg til brukernavn og hent partier." : "Ingen partier her ennå. Spill ett, så dukker det opp."}</p>}
         </section>
       </div>
     </main>
@@ -146,7 +144,7 @@ function ReviewScreen({ game, onBack }: { game: ImportedGame; onBack: () => void
     <main className="page-layout page-narrow">
       <header className="mb-4 flex items-center gap-3">
         <button type="button" onClick={onBack} aria-label="Tilbake" className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground"><ArrowLeft className="size-4" /></button>
-        <div className="min-w-0"><h1 className="truncate text-xl font-bold">{label}</h1><p className="text-xs text-muted-foreground">{game.day} · {TIME_LABEL[game.timeClass] ?? game.timeClass} · <a href={game.url} target="_blank" rel="noopener noreferrer" className="underline">Åpne på {game.source === "chesscom" ? "chess.com" : "Lichess"} <ExternalLink className="inline size-3" /></a></p></div>
+        <div className="min-w-0"><h1 className="truncate text-xl font-bold">{label}</h1><p className="text-xs text-muted-foreground">{game.day} · {TIME_LABEL[game.timeClass] ?? game.timeClass} · {game.url ? <a href={game.url} target="_blank" rel="noopener noreferrer" className="underline">Åpne på {SOURCE_LABEL[game.source]} <ExternalLink className="inline size-3" /></a> : SOURCE_LABEL[game.source]}</p></div>
       </header>
 
       {phase === "idle" && (

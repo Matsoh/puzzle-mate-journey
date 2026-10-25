@@ -117,3 +117,7 @@
 ## Steg 18 – Skoleuka med premie
 - Øverst på Mike Skolen: Man–Søn-stripe (`weekStatus` i school.ts) med hake per fullført skoledag og dagens dag markert. Feiring «Skoledag fullført!» når alle tre leksjoner er gjort.
 - Full uke (7/7 skoledager, mandag–søndag) gir premie én gang per uke (`school:week:<mandag>`): +100 mynter, +100 XP og feiring. Nye avatar-deler med lås «Full skoleuke» / «N fulle skoleuker» (Unlock kind `weeks` i avatar.ts: Afro med bånd, Resist-trykk, Trist munn ved 1 uke; Dreads deluxe og Skråbryn ved 2; Halvlangt hår ved 3).
+
+## Steg 19 – Partiarkiv som chess.com
+- Alle partier i appen lagres nå i samme arkiv som importerte partier (`Progress.importedGames`, Source utvidet med `app` og `venn`, tak 80): bot-partier (parti.tsx), treningspartier (treningsparti.tsx, ikke avbrutte) og venne-partier (live.$gameId.tsx) via `withAppGame` i src/lib/game-log.ts.
+- `GameRow` (resultatmerke W/½/L, `MiniBoard` med sluttstilling, motstander/rating, farge, kilde, tid, trekk, «x siden») brukes på Hjem («Siste partier», tre nyeste, lenke «Alle partier») og på /partier med filter Alle / Venner / Bots / chess.com-Lichess. Trykk åpner samme analyse (reviewGame + GameReview + Mike + notatbok, +25 XP første gang). /partier?open=<id> dyplenker til et parti.

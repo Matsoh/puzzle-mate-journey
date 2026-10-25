@@ -411,3 +411,19 @@
 .week__day.is-done { background: color-mix(in oklab, var(--primary) 18%, var(--background)); border-color: var(--primary); color: var(--foreground); }
 .week__day.is-done .week__mark { background: var(--primary); color: var(--primary-foreground); }
 .week__day.is-future { opacity: 0.55; }
+
+/* ---- Mini board + game archive ---- */
+.miniboard { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; width: 64px; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgb(0 0 0 / 0.35); flex-shrink: 0; }
+.miniboard__sq { display: grid; place-items: center; background: var(--board-light); font-size: 7px; line-height: 1; }
+.miniboard__sq.is-dark { background: var(--board-dark); }
+.miniboard__sq.is-white { color: #fff; text-shadow: 0 0 1px #000, 0 0 1px #000; }
+.miniboard__sq.is-black { color: #111; }
+.game-row { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); text-align: left; }
+.game-row:hover { border-color: var(--primary); }
+.game-row__res { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; font-weight: 900; font-size: 13px; color: #fff; }
+.game-row__res.is-win { background: #81b64c; }
+.game-row__res.is-loss { background: #ca3431; }
+.game-row__res.is-draw { background: #7a8599; }
+.game-row__dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; border: 1px solid var(--muted-foreground); vertical-align: -1px; margin-right: 4px; }
+.game-row__dot.is-w { background: #f1f1f1; }
+.game-row__dot.is-b { background: #2b2b2b; }

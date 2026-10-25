@@ -114,7 +114,7 @@ function FriendsPage() {
         ))}
       </section>
 
-      <Link to="/partier" className="quest mt-2"><span className="quest__check"><ChevronRight className="size-5" /></span><span className="min-w-0"><span className="block font-semibold">Mine partier</span><span className="block text-xs text-muted-foreground">Importerte partier med full analyse</span></span></Link>
+      <Link to="/partier" className="quest mt-2"><span className="quest__check"><ChevronRight className="size-5" /></span><span className="min-w-0"><span className="block font-semibold">Mine partier</span><span className="block text-xs text-muted-foreground">Alle partier – venner, bots og importerte – med full analyse</span></span></Link>
 
       <div className="mt-6 flex items-end gap-3">
         <Mike mood="chill" className="w-14" animate={false} />
