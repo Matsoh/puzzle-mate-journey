@@ -310,7 +310,8 @@ alter publication supabase_realtime add table public.game_chat;
 grant execute on function public.ensure_profile(text), public.send_friend_request(text), public.respond_friend_request(uuid, boolean),
   public.create_challenge(uuid, integer, integer, text), public.answer_challenge(uuid, text),
   public.play_move(uuid, text, text, text, integer, text, text), public.game_action(uuid, text), public.are_friends(uuid, uuid)
-  to authenticated;revoke execute on function public.ensure_profile(text), public.send_friend_request(text), public.respond_friend_request(uuid, boolean),
+  to authenticated;
+revoke execute on function public.ensure_profile(text), public.send_friend_request(text), public.respond_friend_request(uuid, boolean),
   public.create_challenge(uuid, integer, integer, text), public.answer_challenge(uuid, text),
   public.play_move(uuid, text, text, text, integer, text, text), public.game_action(uuid, text), public.are_friends(uuid, uuid), public.gen_friend_code()
   from public, anon;
