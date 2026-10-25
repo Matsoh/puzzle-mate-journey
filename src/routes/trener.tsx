@@ -8,7 +8,7 @@ import { AdaptiveTrainer } from "@/components/AdaptiveTrainer";
 import { MikeCompanion } from "@/components/MikeCompanion";
 import { dailyPlan, exercisesFor } from "@/lib/trainer";
 import { today, updateProgress, useProgress } from "@/lib/progress";
-import { LESSONS_PLAN, LESSON_XP, SCHOOL_BONUS_XP, lessonDone, schoolDays, schoolDone, withLesson } from "@/lib/school";
+import { LESSONS_PLAN, LESSON_XP, SCHOOL_BONUS_XP, WEEK_COINS, lessonDone, schoolDays, schoolDone, schoolWeeks, weekStatus, withLesson } from "@/lib/school";
 import { celebrateDiff } from "@/lib/celebrate";
 import { Check } from "lucide-react";
 
@@ -42,6 +42,23 @@ function TrainerPage() {
     <main className="page-layout page-narrow">
       <AppHeader title="Mike Skolen" />
       <p className="-mt-2 mb-4 text-sm text-muted-foreground">Mikes egen sjakkskole: én leksjon om dagen, et treningsparti med hjelp underveis, og grunnoppgavene. Alt her er trening – ratingen er trygg.</p>
+      {day && (
+        <section className="card-game mb-4 p-4" aria-label="Skoleuka">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <p className="eyebrow">Skoleuka</p>
+            <span className="chip">{weekStatus(p, day).filter((d) => d.done).length}/7 · premie: {WEEK_COINS} 🪙 + avatar-deler</span>
+          </div>
+          <ol className="week" aria-label="Ukedager">
+            {weekStatus(p, day).map((d) => (
+              <li key={d.day} className={`week__day ${d.done ? "is-done" : ""} ${d.isToday ? "is-today" : ""} ${d.isFuture ? "is-future" : ""}`} aria-label={`${d.label}: ${d.done ? "fullført" : d.isFuture ? "kommer" : d.isToday ? "i dag" : "ikke fullført"}`}>
+                <span className="week__label">{d.label}</span>
+                <span className="week__mark" aria-hidden>{d.done ? "✓" : d.isToday ? "•" : ""}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-2 text-xs text-muted-foreground">Fullfør alle tre leksjoner hver dag mandag–søndag. Fulle skoleuker: <strong>{schoolWeeks(p)}</strong>.</p>
+        </section>
+      )}
       {day && (
         <section className="card-game mb-4 p-4" aria-label="Dagens timeplan">
           <div className="mb-3 flex items-center justify-between gap-2">

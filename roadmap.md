@@ -113,3 +113,7 @@
 ## Steg 17 – Premoves (uendelig kø)
 - src/lib/premove.ts (rene regler, testet) + src/components/usePremoves.ts (kø-hook). `Board` tar `premove={queue,onAdd,onClear}`: når det ikke er spillerens tur kan egne brikker (og brikker som allerede ligger i køen) dras; trekkene legges i kø og feltene markeres med `--board-premove`. Første trekk i køen utføres automatisk når det blir hans tur; ulovlig trekk tømmer køen; høyreklikk/trykk på tomt felt tømmer. Forvandling i premove blir dronning.
 - Aktivt i parti (bots/stigen), treningsparti og live-partier mot venner.
+
+## Steg 18 – Skoleuka med premie
+- Øverst på Mike Skolen: Man–Søn-stripe (`weekStatus` i school.ts) med hake per fullført skoledag og dagens dag markert. Feiring «Skoledag fullført!» når alle tre leksjoner er gjort.
+- Full uke (7/7 skoledager, mandag–søndag) gir premie én gang per uke (`school:week:<mandag>`): +100 mynter, +100 XP og feiring. Nye avatar-deler med lås «Full skoleuke» / «N fulle skoleuker» (Unlock kind `weeks` i avatar.ts: Afro med bånd, Resist-trykk, Trist munn ved 1 uke; Dreads deluxe og Skråbryn ved 2; Halvlangt hår ved 3).

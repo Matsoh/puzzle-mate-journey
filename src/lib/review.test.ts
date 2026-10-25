@@ -82,3 +82,26 @@ describe("Mike Skolen", () => {
     expect(schoolDone(p, "2026-10-26")).toBe(false);
   });
 });
+
+describe("Skoleuka", () => {
+  it("knows the week, and pays the prize once when all seven days are done", async () => {
+    const { DEFAULT_PROGRESS } = await import("./progress");
+    const { weekDays, weekStatus, withLesson, schoolWeeks, weekComplete, WEEK_COINS } = await import("./school");
+    const { owns } = await import("./avatar");
+    expect(weekDays("2026-10-25")[0]).toBe("2026-10-19"); // Sunday → Monday of that week
+    expect(weekDays("2026-10-19")[6]).toBe("2026-10-25");
+    let p = DEFAULT_PROGRESS;
+    for (const d of weekDays("2026-10-21").slice(0, 6)) for (const l of ["lesson", "game", "drill"] as const) p = withLesson(p, d, l);
+    expect(weekStatus(p, "2026-10-25").filter((d) => d.done)).toHaveLength(6);
+    expect(weekComplete(p, "2026-10-25")).toBe(false);
+    expect(owns(p, "hair", "froBand")).toBe(false);
+    const coins = p.coins;
+    for (const l of ["lesson", "game", "drill"] as const) p = withLesson(p, "2026-10-25", l);
+    expect(weekComplete(p, "2026-10-25")).toBe(true);
+    expect(schoolWeeks(p)).toBe(1);
+    expect(p.coins).toBe(coins + WEEK_COINS);
+    expect(owns(p, "hair", "froBand")).toBe(true);
+    expect(owns(p, "hair", "dreads02")).toBe(false);
+    expect(withLesson(p, "2026-10-25", "drill").coins).toBe(p.coins); // no double pay
+  });
+});

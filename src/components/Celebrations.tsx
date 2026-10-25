@@ -55,6 +55,22 @@ function Body({ c }: { c: Celebration }) {
         <p className="celebrate__sub">{c.motifs[0]!.hint}</p>
         <Link to="/samling" onClick={shift} className="mt-3 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">Åpne Monsterboken</Link>
       </>;
+    case "schoolday":
+      return <>
+        <Mike mood="happy" className="mx-auto w-32" />
+        <p className="celebrate__eyebrow">Mike Skolen</p>
+        <h2 className="celebrate__title">Skoledag fullført!</h2>
+        <p className="celebrate__sub">Alle tre leksjoner i dag. Skoledager totalt: <strong>{c.days}</strong>.</p>
+        <p className="mike-bubble mt-4 text-sm">Class dismissed. Same time tomorrow – a full week unlocks something special.</p>
+      </>;
+    case "week":
+      return <>
+        <div className="celebrate__emoji">🎓</div>
+        <p className="celebrate__eyebrow">Full skoleuke!</p>
+        <h2 className="celebrate__title">Premie: +{c.coins} 🪙</h2>
+        <p className="celebrate__sub">Sju av sju dager på Mike Skolen. Nye avatar-deler er låst opp ({c.weeks === 1 ? "første" : `${c.weeks}.`} skoleuke).</p>
+        <Link to="/avatar" onClick={shift} className="mt-3 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">Se premien i avataren</Link>
+      </>;
     case "chest":
       return <>
         <div className={`celebrate__chest is-${c.tier}`}>{c.tier === "jackpot" ? "💎" : c.tier === "stor" ? "🧰" : "📦"}</div>

@@ -6,12 +6,15 @@ import type { Motif } from "./collection";
 import type { Progress } from "./progress";
 import { levelFromXp } from "./rules";
 import { levelTitle } from "./quests";
+import { WEEK_COINS } from "./school";
 
 export type Celebration =
   | { kind: "level"; level: number; title: string }
   | { kind: "badge"; badge: Badge }
   | { kind: "motif"; motifs: Motif[] }
-  | { kind: "chest"; coins: number; tier: ChestTier };
+  | { kind: "chest"; coins: number; tier: ChestTier }
+  | { kind: "schoolday"; days: number }
+  | { kind: "week"; coins: number; weeks: number };
 
 export type ChestTier = "vanlig" | "stor" | "jackpot";
 
@@ -26,6 +29,12 @@ export function announceDiscovery(motifs: Motif[]) { if (motifs.length) celebrat
 export function celebrateDiff(before: Progress, after: Progress) {
   const a = levelFromXp(before.xp).level, b = levelFromXp(after.xp).level;
   if (b > a) celebrate({ kind: "level", level: b, title: levelTitle(b) });
+  // Mike Skolen: a finished school day, and the full-week prize.
+  const newKeys = Object.keys(after.credits).filter((k) => before.credits[k] === undefined);
+  const dayDone = newKeys.filter((k) => /^school:\d{4}-\d{2}-\d{2}:done$/.test(k)).length;
+  const weeks = newKeys.filter((k) => k.startsWith("school:week:"));
+  if (weeks.length) celebrate({ kind: "week", coins: WEEK_COINS, weeks: Object.keys(after.credits).filter((k) => k.startsWith("school:week:")).length });
+  else if (dayDone) celebrate({ kind: "schoolday", days: Object.keys(after.credits).filter((k) => /^school:\d{4}-\d{2}-\d{2}:done$/.test(k)).length });
 }
 export function celebrateBadges(badges: Badge[]) { for (const b of badges) celebrate({ kind: "badge", badge: b }); }
 
