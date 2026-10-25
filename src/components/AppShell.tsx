@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, BookOpen, MessageCircle, Globe } from "lucide-react";
+import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, BookOpen, MessageCircle, Globe, Users } from "lucide-react";
 import { Celebrations } from "./Celebrations";
 import type { ReactNode } from "react";
 import { MuteToggle } from "./AppHeader";
@@ -14,6 +14,7 @@ export const PRIMARY_NAV = [
   { to: "/", label: "Hjem", icon: House },
   { to: "/stigen", label: "Spill", icon: Crown },
   { to: "/pusler", label: "Oppgaver", icon: Puzzle },
+  { to: "/venner", label: "Venner", icon: Users },
 ] as const;
 
 export const MORE_NAV = [
@@ -31,7 +32,7 @@ const MORE_PATHS: readonly string[] = MORE_NAV.map((n) => n.to);
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: s => s.location.pathname });
   const p = useProgress();
-  const active = (to: string) => path === to || (to === "/mer" && MORE_PATHS.includes(path)) || (to === "/stigen" && path === "/parti") || (to === "/mer" && path === "/avatar") || (to === "/mer" && path === "/treningsparti");
+  const active = (to: string) => path === to || (to === "/mer" && MORE_PATHS.includes(path)) || (to === "/stigen" && path === "/parti") || (to === "/mer" && path === "/avatar") || (to === "/venner" && path.startsWith("/live/")) || (to === "/mer" && path === "/treningsparti");
   const mobileNav = [...PRIMARY_NAV, { to: "/mer", label: "Mer", icon: Ellipsis }] as const;
   return <>
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] flex-col border-r border-border bg-background px-4 py-8 min-[1100px]:flex">
@@ -54,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     </header>
     <div className="app-content"><MergeNotice />{children}</div>
     <Celebrations />
-    <nav aria-label="Mobilnavigasjon" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-border bg-background/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg min-[1100px]:hidden">
+    <nav aria-label="Mobilnavigasjon" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-background/95 px-1 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg min-[1100px]:hidden">
       {mobileNav.map(n => <Link key={n.to} to={n.to} aria-current={active(n.to) ? "page" : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-lg py-2 text-[11px] font-semibold transition-colors ${active(n.to) ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}><n.icon className="size-6 shrink-0" /><span className="truncate max-w-full">{n.label}</span></Link>)}
     </nav>
   </>;

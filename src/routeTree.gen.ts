@@ -25,6 +25,8 @@ import { Route as TilbakestillPassordRouteImport } from './routes/tilbakestill-p
 import { Route as TrenerRouteImport } from './routes/trener'
 import { Route as TreningspartiRouteImport } from './routes/treningsparti'
 import { Route as TurneringRouteImport } from './routes/turnering'
+import { Route as VennerRouteImport } from './routes/venner'
+import { Route as LiveGameIdRouteImport } from './routes/live.$gameId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -106,6 +108,16 @@ const TurneringRoute = TurneringRouteImport.update({
   path: '/turnering',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VennerRoute = VennerRouteImport.update({
+  id: '/venner',
+  path: '/venner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveGameIdRoute = LiveGameIdRouteImport.update({
+  id: '/live/$gameId',
+  path: '/live/$gameId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +136,8 @@ export interface FileRoutesByFullPath {
   '/trener': typeof TrenerRoute
   '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
+  '/venner': typeof VennerRoute
+  '/live/$gameId': typeof LiveGameIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +156,8 @@ export interface FileRoutesByTo {
   '/trener': typeof TrenerRoute
   '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
+  '/venner': typeof VennerRoute
+  '/live/$gameId': typeof LiveGameIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +177,8 @@ export interface FileRoutesById {
   '/trener': typeof TrenerRoute
   '/treningsparti': typeof TreningspartiRoute
   '/turnering': typeof TurneringRoute
+  '/venner': typeof VennerRoute
+  '/live/$gameId': typeof LiveGameIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,6 +199,8 @@ export interface FileRouteTypes {
     | '/trener'
     | '/treningsparti'
     | '/turnering'
+    | '/venner'
+    | '/live/$gameId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -199,6 +219,8 @@ export interface FileRouteTypes {
     | '/trener'
     | '/treningsparti'
     | '/turnering'
+    | '/venner'
+    | '/live/$gameId'
   id:
     | '__root__'
     | '/'
@@ -217,6 +239,8 @@ export interface FileRouteTypes {
     | '/trener'
     | '/treningsparti'
     | '/turnering'
+    | '/venner'
+    | '/live/$gameId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,6 +260,8 @@ export interface RootRouteChildren {
   TrenerRoute: typeof TrenerRoute
   TreningspartiRoute: typeof TreningspartiRoute
   TurneringRoute: typeof TurneringRoute
+  VennerRoute: typeof VennerRoute
+  LiveGameIdRoute: typeof LiveGameIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -352,6 +378,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TurneringRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/venner': {
+      id: '/venner'
+      path: '/venner'
+      fullPath: '/venner'
+      preLoaderRoute: typeof VennerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live/$gameId': {
+      id: '/live/$gameId'
+      path: '/live/$gameId'
+      fullPath: '/live/$gameId'
+      preLoaderRoute: typeof LiveGameIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -372,6 +412,8 @@ const rootRouteChildren: RootRouteChildren = {
   TrenerRoute: TrenerRoute,
   TreningspartiRoute: TreningspartiRoute,
   TurneringRoute: TurneringRoute,
+  VennerRoute: VennerRoute,
+  LiveGameIdRoute: LiveGameIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

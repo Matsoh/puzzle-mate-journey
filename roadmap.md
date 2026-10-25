@@ -104,3 +104,8 @@
 
 ## Steg 15 – Avatar via profilbildet
 - «Avatar» er fjernet fra hovedmenyen (4 valg: Hjem, Spill, Oppgaver, Mer). Profilbildet i toppfeltet (mobil), i sidemenyen (desktop), på Hjem og på Mer-siden åpner /avatar.
+
+## Steg 16 – Spill mot venner (runde 1)
+- Database (supabase/migrations/20261025120000_online_play.sql): `profiles` (navn, vennekode, avatar, rating, nivå, streak), `friendships`, `challenges`, `live_games`, `game_chat`. Alt bak RLS + `is_approved_player()`. Spill kun mellom venner (`are_friends`). RPC-er: ensure_profile, send_friend_request, respond_friend_request, create_challenge, answer_challenge, play_move (server styrer tur, rekkefølge og klokker), game_action (gi opp, remis, tidsklage, avbryt). Realtime på live_games/game_chat/challenges/friendships.
+- Klient: src/lib/online.ts (API + rene hjelpere, testet), src/lib/online-store.ts (venner/utfordringer/pålogget), OnlineHub.tsx (profilspeil, innboks, presence, utfordringspopup, «parti pågår»-banner), /venner (vennekode, legg til, utfordre med tid og farge), /live/$gameId (brett, klokker, remis/gi opp, chat, Mike ved brettet, resultat → rating/XP én gang, analyse med merker, revansj).
+- Migrasjonen må kjøres i Lovable (Supabase) – ikke automatisk fra GitHub. types.ts er håndredigert; Lovable regenererer den.

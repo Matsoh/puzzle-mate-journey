@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { signOutSafely, activateUser, activateLocalDev, isLocalDev, deactivate, decideImport, importDecided, importLegacy, legacySnapshot } from "@/lib/cloud-sync";
 import { AppShell } from "./AppShell";
+import { OnlineHub } from "./OnlineHub";
 import { AuthScreen } from "./AuthScreen";
 import { Button } from "@/components/ui/button";
 
@@ -98,7 +99,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     <AuthScreen title="Goblin Chess"><p role="status" className="text-sm text-muted-foreground">Laster…</p></AuthScreen>
   );
   if (offer) return <ImportOffer offer={offer} onDone={() => setOffer(null)} />;
-  return <AppShell>{children}</AppShell>;
+  return <AppShell>{current.current && <OnlineHub uid={current.current} />}{children}</AppShell>;
 }
 
 function ImportOffer({ offer, onDone }: { offer: { uid: string; snap: Record<string, unknown> }; onDone: () => void }) {

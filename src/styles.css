@@ -386,3 +386,18 @@
 .review__counts th, .review__counts td { padding: 4px 6px; text-align: center; }
 .review__counts th[scope="row"] { text-align: left; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 .review__counts tbody tr + tr { border-top: 1px solid var(--border); }
+
+/* ---- Online play ---- */
+.online-banner { position: fixed; left: 50%; top: max(8px, env(safe-area-inset-top)); z-index: 40; translate: -50% 0; display: inline-flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px); padding: 8px 14px; border-radius: 999px; background: var(--primary); color: var(--primary-foreground); font-size: 13px; font-weight: 700; box-shadow: 0 6px 20px rgb(0 0 0 / 0.35); }
+.online-banner.is-muted { background: var(--card); color: var(--foreground); border: 1px solid var(--border); font-weight: 500; }
+@media (min-width: 1100px) { .online-banner { left: calc(50% + 116px); } }
+.friend { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); }
+.friend__dot { display: inline-block; width: 9px; height: 9px; border-radius: 999px; background: var(--muted-foreground); margin-right: 6px; }
+.friend__dot.is-on { background: #4ade80; box-shadow: 0 0 0 3px rgb(74 222 128 / 0.25); }
+.live-clock { font-variant-numeric: tabular-nums; font-size: 1.5rem; font-weight: 800; padding: 4px 12px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); }
+.live-clock.is-active { background: var(--primary); color: var(--primary-foreground); }
+.live-clock.is-low { background: #ca3431; color: #fff; }
+.live-chat { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow: auto; padding: 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); font-size: 13px; }
+.live-chat__msg { max-width: 85%; padding: 6px 10px; border-radius: 12px; background: var(--muted); }
+.live-chat__msg.is-me { align-self: flex-end; background: var(--primary); color: var(--primary-foreground); }
+.live-chat__msg small { display: block; opacity: 0.7; font-size: 10px; }
