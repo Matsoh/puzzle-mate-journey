@@ -101,3 +101,6 @@
 - Dagens timeplan (src/lib/school.ts): tre leksjoner om dagen – adaptiv oppgave, treningsparti (≥10 halvtrekk) og grunnoppgave – +15 XP hver, +40 XP bonus når alle tre er gjort samme dag. Betales én gang per dag via `credits` (`school:<dag>:<leksjon>`), og teller skoledager.
 - Treningsparti startes fra skolen i tre nivåer (Lett/Jevn/Tøff = rating −150/0/+150).
 - Monsterboken forklart: intro-kort øverst på /samling («Pokédex for sjakk»), tydeligere hint i menyen og på avatar-siden.
+
+## Steg 15 – Avatar via profilbildet
+- «Avatar» er fjernet fra hovedmenyen (4 valg: Hjem, Spill, Oppgaver, Mer). Profilbildet i toppfeltet (mobil), i sidemenyen (desktop), på Hjem og på Mer-siden åpner /avatar.

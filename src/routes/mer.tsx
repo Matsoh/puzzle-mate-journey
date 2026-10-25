@@ -28,7 +28,7 @@ function More() {
         ))}
       </div>
       <section className="card-game mt-8 p-4" aria-label="Innstillinger">
-        <div className="flex items-center gap-3"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-sm font-medium">{avatarName(p)}</p></div></div>
+        <Link to="/avatar" className="flex items-center gap-3 rounded-xl py-1 pr-2 transition-colors hover:bg-muted" aria-label="Åpne avataren din"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-sm font-medium">{avatarName(p)} · bygg og lås opp</p></div></Link>
         <div className="mt-5 flex items-center justify-between gap-2"><span className="text-sm">Tema</span><ThemeToggle /></div>
         <div className="mt-4 flex items-center justify-between"><span className="text-sm">Spilllyd</span><MuteToggle /></div>
         <div className="mt-4 flex items-center justify-between gap-2"><SyncStatus /><LogoutButton /></div>

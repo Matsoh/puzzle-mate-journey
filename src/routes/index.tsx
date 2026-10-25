@@ -68,7 +68,7 @@ function Home() {
     <main className="page-layout page-narrow" onPointerDown={unlockAudio}>
       <header className="mb-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <PlayerAvatar className="size-11" />
+          <Link to="/avatar" aria-label="Åpne avataren din" className="rounded-full ring-2 ring-transparent transition hover:ring-primary"><PlayerAvatar className="size-11" /></Link>
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">Nivå {lvl.level}</p>
             <p className="truncate text-base font-bold">{levelTitle(lvl.level)}</p>
