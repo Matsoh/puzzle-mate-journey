@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { AppHeader } from "@/components/AppHeader";
 import { Board } from "@/components/Board";
+import { usePremoves } from "@/components/usePremoves";
 import { CoachBubble } from "@/components/CoachAvatar";
 import { GameReview } from "@/components/GameReview";
 import { avatarName } from "@/lib/avatar";
@@ -253,6 +254,8 @@ function Game() {
     return applyMove(from, to);
   };
 
+  const premoves = usePremoves({ fen, myTurn: game.current.turn() === player && !promo && !thinking, active: phase === "playing", play: (f, t, pr) => applyMove(f, t, pr ?? "q") });
+
   const startAnalysis = async () => {
     setPhase("analysing");
     setAnalysisPct(0);
@@ -314,7 +317,7 @@ function Game() {
           <section className="space-y-3">
             <PlayerBar name={opponent ? opponent.name : "Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking && phase === "playing" ? "Tenker…" : undefined} />
             <div className="relative mx-auto w-full max-w-[min(94vw,68vh)]">
-              <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player && !promo} lastMove={lastMove} />
+              <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player && !promo} lastMove={lastMove} premove={phase === "playing" ? premoves : undefined} />
               {promo && (
                 <div role="dialog" aria-label="Velg brikke" className="absolute inset-0 flex items-center justify-center bg-background/70">
                   <div className="card-game flex gap-2 p-3">

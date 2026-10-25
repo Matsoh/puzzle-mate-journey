@@ -4,6 +4,7 @@ import { Chess } from "chess.js";
 import { Flag, Handshake, Search, Send, Swords, House, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Board } from "@/components/Board";
+import { usePremoves } from "@/components/usePremoves";
 import { GameReview } from "@/components/GameReview";
 import { MikeCompanion } from "@/components/MikeCompanion";
 import { AvatarImage } from "@/components/PlayerAvatar";
@@ -129,6 +130,8 @@ function LivePage() {
     return true;
   }, [g, color, toMove]);
 
+  const premoves = usePremoves({ fen: g?.fen ?? "", myTurn: !!g && !!color && toMove === color && !promo, active: playing && !!color, play: (f, t, pr) => submit(f, t, pr) });
+
   const onMove = (from: string, to: string) => {
     if (!g || !color || toMove !== color || promo) return false;
     const c = new Chess(g.fen);
@@ -210,7 +213,7 @@ function LivePage() {
         <section className="space-y-2" aria-label="Brett">
           {bar(top)}
           <div className="relative mx-auto w-full max-w-[min(94vw,68vh)]">
-            <Board fen={g.fen} orientation={orientation} onMove={onMove} canMove={playing && !spectating && toMove === color && !promo} lastMove={lastMove} />
+            <Board fen={g.fen} orientation={orientation} onMove={onMove} canMove={playing && !spectating && toMove === color && !promo} lastMove={lastMove} premove={playing && !spectating ? premoves : undefined} />
             {promo && (
               <div role="dialog" aria-label="Velg brikke" className="absolute inset-0 flex items-center justify-center bg-background/70">
                 <div className="card-game flex gap-2 p-3">

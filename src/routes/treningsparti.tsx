@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Board } from "@/components/Board";
+import { usePremoves } from "@/components/usePremoves";
 import { CoachAvatar, CoachLabel } from "@/components/CoachAvatar";
 import { GameReview } from "@/components/GameReview";
 import { Button } from "@/components/ui/button";
@@ -289,6 +290,7 @@ function PracticeGame() {
   }, [clock, tcCfg, over, player, finish]);
 
   const myTurn = !over && !paused && game.current.turn() === player;
+  const premoves = usePremoves({ fen, myTurn: myTurn && !promo, active: !over && !paused, play: (f, t, pr) => applyMove(f, t, pr ?? "q") });
   const mikeSnap = useMemo(() => ({ fen, moves, player, myClockMs: null }), [fen, moves, player]);
   const mikeReaction = useMemo(() => gameReaction(mikeSnap), [mikeSnap]);
   const [mikeLine, setMikeLine] = useState<ReturnType<typeof gameReaction>>(null);
@@ -511,6 +513,7 @@ function PracticeGame() {
               orientation={orientation}
               onMove={onMove}
               canMove={myTurn && !promo}
+              premove={!over && !paused ? premoves : undefined}
               lastMove={last}
               arrows={
                 help?.arrow

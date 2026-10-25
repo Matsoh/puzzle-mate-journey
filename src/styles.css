@@ -71,6 +71,7 @@
   --board-select: oklch(0.88 0.22 126 / 0.6);
   --board-dot: oklch(0.22 0.04 135 / 0.5);
   --board-check: oklch(0.65 0.25 25 / 0.75);
+  --board-premove: oklch(0.62 0.2 25 / 0.55);
   --arrow-good: oklch(0.8 0.2 150 / 0.85);
   --arrow-bad: oklch(0.65 0.23 25 / 0.85);
 

@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Chessboard } from "react-chessboard";
 import { Chess, type Square } from "chess.js";
+import { canPremoveFrom, premoveSquares, type Premove } from "@/lib/premove";
 
 type Props = {
   fen: string;
@@ -13,10 +14,12 @@ type Props = {
   shake?: boolean;
   /** Overlays per square (e.g. move-classification badges in game review). */
   badges?: Record<string, ReactNode> | undefined;
+  /** Premove queue: when it is not the player's turn, drags are queued instead of rejected. */
+  premove?: { queue: Premove[]; onAdd: (from: string, to: string) => void; onClear: () => void } | undefined;
 };
 
 /** Touch-first board: drag OR tap-tap to move, with legal-move dots. */
-export function Board({ fen, orientation, onMove, canMove = true, lastMove, arrows = [], shake, badges }: Props) {
+export function Board({ fen, orientation, onMove, canMove = true, lastMove, arrows = [], shake, badges, premove }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const chess = useMemo(() => {
     try {
@@ -33,6 +36,8 @@ export function Board({ fen, orientation, onMove, canMove = true, lastMove, arro
   }, [selected, chess]);
 
   const styles: Record<string, React.CSSProperties> = {};
+  const premoving = !!premove && !canMove;
+  if (premove) for (const sq of premoveSquares(premove.queue)) styles[sq] = { background: "var(--board-premove)" };
   if (lastMove) {
     styles[lastMove[0]] = { background: "var(--board-highlight)" };
     styles[lastMove[1]] = { background: "var(--board-highlight)" };
@@ -54,6 +59,7 @@ export function Board({ fen, orientation, onMove, canMove = true, lastMove, arro
 
   const tryMove = (from: string, to: string) => {
     setSelected(null);
+    if (premoving) { if (from !== to) premove.onAdd(from, to); return false; }
     if (!canMove || !onMove) return false;
     return onMove(from, to);
   };
@@ -64,7 +70,7 @@ export function Board({ fen, orientation, onMove, canMove = true, lastMove, arro
         options={{
           position: fen,
           boardOrientation: orientation,
-          allowDragging: canMove,
+          allowDragging: canMove || premoving,
           animationDurationInMs: 200,
           squareStyles: styles,
           arrows,
@@ -75,9 +81,16 @@ export function Board({ fen, orientation, onMove, canMove = true, lastMove, arro
           darkSquareNotationStyle: { color: "var(--board-light)", fontSize: "11px", fontWeight: 600 },
           lightSquareNotationStyle: { color: "var(--board-dot)", fontSize: "11px", fontWeight: 600 },
           boardStyle: { borderRadius: "var(--board-radius)", overflow: "hidden", boxShadow: "var(--board-shadow)" },
-          canDragPiece: ({ piece }) => canMove && piece.pieceType[0] === myColor,
+          canDragPiece: ({ piece, square }) => (canMove && piece.pieceType[0] === myColor) || (premoving && !!square && canPremoveFrom(fen, myColor, premove.queue, square)),
           onPieceDrop: ({ sourceSquare, targetSquare }) => (targetSquare ? tryMove(sourceSquare, targetSquare) : false),
+          onSquareRightClick: () => { if (premove) premove.onClear(); setSelected(null); },
           onSquareClick: ({ square, piece }) => {
+            if (premoving) {
+              if (selected) { tryMove(selected, square); return; }
+              if (canPremoveFrom(fen, myColor, premove.queue, square)) setSelected(square);
+              else premove.onClear();
+              return;
+            }
             if (!canMove) return;
             if (selected && targets.includes(square)) {
               tryMove(selected, square);
