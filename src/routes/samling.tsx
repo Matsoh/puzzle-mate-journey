@@ -25,7 +25,7 @@ function Collection() {
         <div className="flex items-start gap-3">
           <Mike mood="happy" className="w-14 shrink-0" animate={false} />
           <div className="text-sm">
-            <p className="font-semibold">Dette er samlingen din – som en Pokédex for sjakk.</p>
+            <p className="font-semibold">Dette er samlingen din – som en dex for sjakk.</p>
             <p className="mt-1 text-muted-foreground">Hver gang du løser en oppgave med et nytt taktisk motiv (gaffel, binding, kvelermatt …) havner det her. Sjeldne motiver dukker bare opp i vanskelige oppgaver. Nederst står alle botene på stigen – de du har slått får merke. Full bok låser opp avatar-deler.</p>
           </div>
         </div>

@@ -15,6 +15,7 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 alter table public.profiles enable row level security;
+grant select, update on public.profiles to authenticated;
 
 create or replace function public.gen_friend_code() returns text
 language plpgsql as $$
@@ -40,13 +41,26 @@ language plpgsql security definer set search_path = public as $$
 declare
   r public.profiles;
 begin
-  if not public.is_approved_player() then raise exception 'not approved'; end if;
+  if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   insert into public.profiles (user_id, name, friend_code)
   values (auth.uid(), coalesce(nullif(trim(p_name), ''), 'Spiller'), public.gen_friend_code())
   on conflict (user_id) do update set last_seen = now()
   returning * into r;
   return r;
 end $$;
+
+-- ---------- friendships ----------
+create table if not exists public.friendships (
+  id uuid primary key default gen_random_uuid(),
+  requester uuid not null references public.profiles(user_id) on delete cascade,
+  addressee uuid not null references public.profiles(user_id) on delete cascade,
+  status text not null default 'pending' check (status in ('pending', 'accepted')),
+  created_at timestamptz not null default now(),
+  unique (requester, addressee),
+  check (requester <> addressee)
+);
+alter table public.friendships enable row level security;
+grant select, delete on public.friendships to authenticated;
 
 create or replace function public.are_friends(a uuid, b uuid) returns boolean
 language sql stable security definer set search_path = public as $$
@@ -57,17 +71,6 @@ language sql stable security definer set search_path = public as $$
   );
 $$;
 
--- ---------- friendships ----------
-create table if not exists public.friendships (
-  id uuid primary key default gen_random_uuid(),
-  requester uuid not null references auth.users(id) on delete cascade,
-  addressee uuid not null references auth.users(id) on delete cascade,
-  status text not null default 'pending' check (status in ('pending', 'accepted')),
-  created_at timestamptz not null default now(),
-  unique (requester, addressee),
-  check (requester <> addressee)
-);
-alter table public.friendships enable row level security;
 
 create policy "profiles: approved players read all" on public.profiles
   for select to authenticated using (public.is_approved_player());
@@ -86,7 +89,7 @@ declare
   target uuid;
   r public.friendships;
 begin
-  if not public.is_approved_player() then raise exception 'not approved'; end if;
+  if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   select user_id into target from public.profiles where friend_code = upper(trim(p_code));
   if target is null then raise exception 'unknown code'; end if;
   if target = auth.uid() then raise exception 'own code'; end if;
@@ -105,6 +108,7 @@ create or replace function public.respond_friend_request(p_id uuid, p_accept boo
 returns void
 language plpgsql security definer set search_path = public as $$
 begin
+  if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   if p_accept then
     update public.friendships set status = 'accepted' where id = p_id and addressee = auth.uid();
   else
@@ -115,8 +119,8 @@ end $$;
 -- ---------- challenges ----------
 create table if not exists public.challenges (
   id uuid primary key default gen_random_uuid(),
-  from_user uuid not null references auth.users(id) on delete cascade,
-  to_user uuid not null references auth.users(id) on delete cascade,
+  from_user uuid not null references public.profiles(user_id) on delete cascade,
+  to_user uuid not null references public.profiles(user_id) on delete cascade,
   initial_ms integer not null default 600000,
   inc_ms integer not null default 0,
   color text not null default 'random' check (color in ('w', 'b', 'random')),
@@ -125,14 +129,15 @@ create table if not exists public.challenges (
   created_at timestamptz not null default now()
 );
 alter table public.challenges enable row level security;
+grant select on public.challenges to authenticated;
 create policy "challenges: mine" on public.challenges
   for select to authenticated using (from_user = auth.uid() or to_user = auth.uid());
 
 -- ---------- live games ----------
 create table if not exists public.live_games (
   id uuid primary key default gen_random_uuid(),
-  white uuid not null references auth.users(id) on delete cascade,
-  black uuid not null references auth.users(id) on delete cascade,
+  white uuid not null references public.profiles(user_id) on delete cascade,
+  black uuid not null references public.profiles(user_id) on delete cascade,
   initial_ms integer not null,
   inc_ms integer not null default 0,
   moves text[] not null default '{}',
@@ -149,6 +154,7 @@ create table if not exists public.live_games (
   finished_at timestamptz
 );
 alter table public.live_games enable row level security;
+grant select on public.live_games to authenticated;
 -- players, and their friends (so friends can look at each other's games)
 create policy "live_games: players and friends" on public.live_games
   for select to authenticated using (
@@ -163,7 +169,7 @@ returns public.challenges
 language plpgsql security definer set search_path = public as $$
 declare r public.challenges;
 begin
-  if not public.is_approved_player() then raise exception 'not approved'; end if;
+  if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   if not public.are_friends(auth.uid(), p_to) then raise exception 'not friends'; end if;
   if p_initial_ms < 60000 or p_initial_ms > 3600000 or p_inc_ms < 0 or p_inc_ms > 60000 then raise exception 'bad time control'; end if;
   -- one open challenge per pair at a time
@@ -182,14 +188,15 @@ declare
   g uuid;
   w uuid; b uuid;
 begin
+  if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   select * into c from public.challenges where id = p_id for update;
   if c.id is null then raise exception 'no challenge'; end if;
   if p_action = 'cancel' then
-    if c.from_user <> auth.uid() then raise exception 'not yours'; end if;
+    if c.from_user is distinct from auth.uid() then raise exception 'not yours'; end if;
     update public.challenges set status = 'cancelled' where id = p_id and status = 'pending';
     return null;
   end if;
-  if c.to_user <> auth.uid() then raise exception 'not yours'; end if;
+  if c.to_user is distinct from auth.uid() then raise exception 'not yours'; end if;
   if c.status <> 'pending' then raise exception 'not pending'; end if;
   if p_action = 'decline' then
     update public.challenges set status = 'declined' where id = p_id;
@@ -217,12 +224,13 @@ declare
   elapsed integer;
   remaining integer;
 begin
+  if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   select * into g from public.live_games where id = p_game for update;
   if g.id is null then raise exception 'no game'; end if;
   if g.status <> 'playing' then return g; end if;
   if coalesce(array_length(g.moves, 1), 0) <> p_plies then return g; end if; -- stale client; it will resync
   mover_white := (p_plies % 2 = 0);
-  if (mover_white and g.white <> auth.uid()) or (not mover_white and g.black <> auth.uid()) then raise exception 'not your turn'; end if;
+  if auth.uid() is distinct from (case when mover_white then g.white else g.black end) then raise exception 'not your turn'; end if;
   elapsed := case when p_plies < 2 then 0 else greatest(0, (extract(epoch from (now() - g.last_move_at)) * 1000)::integer) end;
   remaining := (case when mover_white then g.white_ms else g.black_ms end) - elapsed;
   if remaining <= 0 then
@@ -260,9 +268,10 @@ declare
   elapsed integer;
   remaining integer;
 begin
+  if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   select * into g from public.live_games where id = p_game for update;
   if g.id is null then raise exception 'no game'; end if;
-  if g.white <> auth.uid() and g.black <> auth.uid() then raise exception 'not your game'; end if;
+  if auth.uid() is distinct from g.white and auth.uid() is distinct from g.black then raise exception 'not your game'; end if;
   if g.status <> 'playing' then return g; end if;
   me_white := (g.white = auth.uid());
   plies := coalesce(array_length(g.moves, 1), 0);
@@ -273,7 +282,7 @@ begin
   elsif p_action = 'offer_draw' then
     update public.live_games set draw_offer = auth.uid() where id = p_game returning * into g;
   elsif p_action = 'accept_draw' then
-    if g.draw_offer is not null and g.draw_offer <> auth.uid() then
+    if g.draw_offer is not null and g.draw_offer is distinct from auth.uid() then
       update public.live_games set status = 'finished', result = 'd', reason = 'Remis avtalt.', finished_at = now() where id = p_game returning * into g;
     end if;
   elsif p_action = 'claim_timeout' then
@@ -295,11 +304,12 @@ end $$;
 create table if not exists public.game_chat (
   id bigint generated always as identity primary key,
   game_id uuid not null references public.live_games(id) on delete cascade,
-  user_id uuid not null references auth.users(id) on delete cascade,
+  user_id uuid not null references public.profiles(user_id) on delete cascade,
   text text not null check (char_length(text) between 1 and 300),
   created_at timestamptz not null default now()
 );
 alter table public.game_chat enable row level security;
+grant select, insert on public.game_chat to authenticated;
 create policy "game_chat: participants read" on public.game_chat
   for select to authenticated using (exists (select 1 from public.live_games g where g.id = game_id and (g.white = auth.uid() or g.black = auth.uid())));
 create policy "game_chat: participants write" on public.game_chat
@@ -319,3 +329,7 @@ grant execute on function public.ensure_profile(text), public.send_friend_reques
   public.create_challenge(uuid, integer, integer, text), public.answer_challenge(uuid, text),
   public.play_move(uuid, text, text, text, integer, text, text), public.game_action(uuid, text), public.are_friends(uuid, uuid)
   to authenticated;
+revoke execute on function public.ensure_profile(text), public.send_friend_request(text), public.respond_friend_request(uuid, boolean),
+  public.create_challenge(uuid, integer, integer, text), public.answer_challenge(uuid, text),
+  public.play_move(uuid, text, text, text, integer, text, text), public.game_action(uuid, text), public.are_friends(uuid, uuid), public.gen_friend_code()
+  from public, anon;
