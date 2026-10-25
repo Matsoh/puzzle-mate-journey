@@ -15,7 +15,7 @@ export const Route = createFileRoute("/stigen")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "Motstanderstigen – Goblin Chess" },
-      { name: "description", content: "Slå 10 motstandere fra 1500 til 2000+ og bli Stormkongen." },
+      { name: "description", content: "Slå 10 motstandere fra 1500 til 2000+ – helt opp til ET." },
       { property: "og:title", content: "Motstanderstigen – Goblin Chess" },
       { property: "og:description", content: "10 bosser fra 1500 til 2000+. Klarer du toppen?" },
     ],
@@ -44,8 +44,9 @@ function Ladder() {
           return (
             <div key={o.id} className={cn("card-game overflow-hidden transition", isOpen && "border-primary")}>
               <Button variant="ghost" disabled={!unlocked} aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : o.id)} className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-none p-4 text-left disabled:opacity-100 sm:gap-4 sm:p-5">
-                <div className="opp-avatar grid size-12 shrink-0 place-items-center rounded-xl" >
-                  {beaten ? <CheckCircle2 className="size-5 text-primary" /> : unlocked ? <ChessKnight className="size-5" /> : <Lock className="size-5" />}
+                <div className="relative size-16 shrink-0">
+                  <img src={o.portrait} alt="" className={`opp-card ${unlocked ? "" : "grayscale opacity-40"}`} draggable={false} />
+                  <span className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full border border-border bg-card">{beaten ? <CheckCircle2 className="size-4 text-primary" /> : unlocked ? <ChessKnight className="size-3.5" /> : <Lock className="size-3.5" />}</span>
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">

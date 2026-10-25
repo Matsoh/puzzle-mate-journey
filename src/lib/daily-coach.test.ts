@@ -41,7 +41,7 @@ describe("daily coach rules", () => {
   it("uses confirmed ladder wins and targets the next opponent", () => {
     const pep = dailyPeptalk(p({ beaten: ["pelle"] }), day, "pelle");
     expect(pep.kind).toBe("win");
-    expect(pep.goal).toBe("Kaptein Kaos · 1560 i rating");
+    expect(pep.goal).toBe("Bill Board · 1560 i rating");
     expect(dailyPeptalk(p(), day, "pelle").kind).not.toBe("win");
   });
   it("approaches rating milestones within 25 points", () => {

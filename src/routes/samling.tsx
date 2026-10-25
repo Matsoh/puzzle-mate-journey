@@ -69,7 +69,7 @@ function Collection() {
             const got = p.beaten.includes(o.id);
             return (
               <Link to="/stigen" key={o.id} className={`motif ${got ? "" : "is-locked"}`} data-rarity={o.elo >= 2000 ? "legendarisk" : o.elo >= 1850 ? "episk" : o.elo >= 1700 ? "sjelden" : "vanlig"}>
-                <span className="motif__emoji" aria-hidden>{o.emoji}</span>
+                <img src={o.portrait} alt="" className={`mx-auto size-10 object-contain ${got ? "" : "grayscale opacity-60"}`} draggable={false} />
                 <span className="motif__name">{o.name.split(" ")[0]}</span>
                 <span className="motif__count">{got ? "Slått" : o.elo}</span>
               </Link>

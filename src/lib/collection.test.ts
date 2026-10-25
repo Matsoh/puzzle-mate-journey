@@ -64,7 +64,7 @@ describe("Avatarverkstedet", () => {
   });
   it("every part has a free default and lock labels read well", () => {
     for (const k of Object.keys(PARTS) as (keyof typeof PARTS)[]) expect(PARTS[k].options.some((o) => o.unlock.kind === "free")).toBe(true);
-    expect(unlockLabel({ kind: "beat", opp: "leo" })).toBe("Slå Lynet");
+    expect(unlockLabel({ kind: "beat", opp: "leo" })).toBe("Slå Ida");
     expect(unlockLabel({ kind: "level", level: 5 })).toBe("Nivå 5");
     expect(nextUnlocks(DEFAULT_PROGRESS, 3)).toHaveLength(3);
     expect(wardrobeSummary(DEFAULT_PROGRESS).unlocked).toBeGreaterThan(30);

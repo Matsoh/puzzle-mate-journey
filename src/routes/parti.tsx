@@ -6,11 +6,10 @@ import { Chess } from "chess.js";
 import { AppHeader } from "@/components/AppHeader";
 import { Board } from "@/components/Board";
 import { usePremoves } from "@/components/usePremoves";
-import { CoachBubble } from "@/components/CoachAvatar";
+import { CoachBubble, PlayerAvatar } from "@/components/CoachAvatar";
 import { GameReview } from "@/components/GameReview";
 import { avatarName } from "@/lib/avatar";
 import { CoachDebrief } from "@/components/CoachDebrief";
-import { BossScene } from "@/components/three/Lazy3D";
 import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import type { ColorChoice, TimeControl } from "@/components/GameSetup";
 import { parseTimeControl, tcToMs } from "@/lib/tournament";
@@ -31,6 +30,8 @@ import { play, unlockAudio } from "@/lib/sound";
 import { rememberLadderWin } from "@/lib/daily-coach";
 import { today } from "@/lib/progress";
 import { MikeCompanion } from "@/components/MikeCompanion";
+import { BotAvatar } from "@/components/BotAvatar";
+import { botMood } from "@/lib/bot-mood";
 import { gameContext, gameReaction, introLine, reviewContext, reviewLine } from "@/lib/mike-game";
 
 type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeControl; color: ColorChoice };
@@ -282,6 +283,7 @@ function Game() {
   const myClockMs = tcCfg ? clock[player === "w" ? 0 : 1] : null;
   const snapshot = useMemo(() => ({ fen, moves, player, opponent, myClockMs: tcCfg ? Math.round(myClockMs! / 5000) * 5000 : null, tc }), [fen, moves, player, opponent, tcCfg, myClockMs, tc]);
   const reaction = useMemo(() => gameReaction(snapshot), [snapshot]);
+  const mood = useMemo(() => botMood({ fen, moves, player, outcome: phase === "playing" || phase === "intro" ? null : result?.outcome, thinking }), [fen, moves, player, phase, result, thinking]);
   const [lastLine, setLastLine] = useState<ReturnType<typeof gameReaction>>(null);
   useEffect(() => { if (reaction) setLastLine(reaction); }, [reaction]);
 
@@ -291,8 +293,8 @@ function Game() {
 
       {phase === "intro" && opponent && (
         <div className="fixed inset-0 z-40 flex flex-col bg-background/95">
-          <div className="relative flex-1">
-            <BossScene hue={opponent.hue} />
+          <div className="relative flex flex-1 items-center justify-center" style={{ background: `radial-gradient(circle at 50% 60%, oklch(0.45 0.12 ${opponent.hue} / 0.55), transparent 60%)` }}>
+            <BotAvatar opponent={opponent} mood="smug" size={200} quips={false} />
           </div>
           <div className="p-6 text-center space-y-3 safe-bottom animate-pop">
             <p className="text-3xl font-semibold text-primary">Neste utfordring</p>
@@ -317,7 +319,14 @@ function Game() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         {phase !== "review" && phase !== "analysing" && (
           <section className="space-y-3">
-            <PlayerBar name={opponent ? opponent.name : "Stockfish"} rating={engineElo} clock={tcCfg ? fmtClock(clock[oppClockIdx]) : null} active={phase === "playing" && game.current.turn() !== player} note={thinking && phase === "playing" ? "Tenker…" : undefined} />
+            <div className={`bot-bar ${phase === "playing" && game.current.turn() !== player ? "is-active" : ""}`}>
+              <BotAvatar opponent={opponent} name={opponent ? opponent.name : "Stockfish"} mood={mood} size={opponent ? 84 : 56} />
+              <span className="min-w-0">
+                <span className="bot-bar__name truncate">{opponent ? opponent.name : "Stockfish"}</span>
+                <span className="bot-bar__sub">{engineElo}{opponent ? ` · ${opponent.style}` : ""}{thinking && phase === "playing" ? " · tenker…" : ""}</span>
+              </span>
+              {tcCfg && <span className="bot-bar__clock">{fmtClock(clock[oppClockIdx])}</span>}
+            </div>
             <div className="relative mx-auto w-full max-w-[min(94vw,68vh)]">
               <Board fen={fen} orientation={orientation} onMove={onPlayerMove} canMove={phase === "playing" && game.current.turn() === player && !promo} lastMove={lastMove} premove={phase === "playing" ? premoves : undefined} />
               {promo && (
@@ -333,7 +342,11 @@ function Game() {
                 </div>
               )}
             </div>
-            <PlayerBar name="Deg" clock={tcCfg ? fmtClock(clock[oppClockIdx === 0 ? 1 : 0]) : null} active={phase === "playing" && game.current.turn() === player} />
+            <div className={`bot-bar ${phase === "playing" && game.current.turn() === player ? "is-active" : ""}`}>
+              <PlayerAvatar className="size-14" />
+              <span className="min-w-0"><span className="bot-bar__name truncate">{avatarName(getProgress())}</span><span className="bot-bar__sub">{getProgress().rating}{phase === "playing" && game.current.turn() === player ? " · ditt trekk" : ""}</span></span>
+              {tcCfg && <span className="bot-bar__clock">{fmtClock(clock[oppClockIdx === 0 ? 1 : 0])}</span>}
+            </div>
           </section>
         )}
 
@@ -427,13 +440,3 @@ function Game() {
   );
 }
 
-function PlayerBar({ name, rating, clock, active, note }: { name: string; rating?: number | undefined; clock: string | null; active: boolean; note?: string | undefined }) {
-  return (
-    <div className={`mx-auto grid grid-cols-[minmax(0,1fr)_auto] gap-3 w-full max-w-[min(94vw,68vh)] items-center justify-between rounded-xl px-4 py-2 border transition ${active ? "border-primary bg-primary/15" : "border-border bg-card/60"}`}>
-      <span className="font-medium truncate">
-        {name} {rating && <span className="text-muted-foreground">({rating})</span>} {note && <span className="text-primary animate-pulse">{note}</span>}
-      </span>
-      {clock && <span className={`text-xl font-semibold tabular-nums ${active ? "neon-text" : ""}`}>{clock}</span>}
-    </div>
-  );
-}

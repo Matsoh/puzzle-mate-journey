@@ -71,16 +71,16 @@ export function gameReaction(s: GameSnapshot): MikeLine | null {
 
 export function introLine(o: Opponent): string {
   const lines: Record<string, string> = {
-    pelle: "Pelle. Pushes pawns like it's his job. Let him over-extend, then punish.",
-    kaos: "Kaptein Kaos sacrifices everything. Take the material, defend calmly, win the endgame.",
-    mia: "Muren Mia. Solid as a brick. Be patient – walls have cracks.",
-    leo: "Lynet Leo sees every fork. So should you. Check every capture twice.",
-    pling: "Professor Pling plays positions, not tricks. Keep your pieces active and don't drift.",
-    dina: "Dronning Dina loves her queen. Trade it off and watch her mood drop.",
-    sigurd: "Sluttspill-Sigurd wants an endgame. Don't give him a quiet one.",
-    nora: "Ninja Nora sets traps. If a move looks free, it isn't.",
-    ivar: "Isdragen Ivar calculates. Make it messy – calculation hates mess.",
-    storm: "Stormkongen. The final boss. You've beaten nine. He's just number ten.",
+    pelle: "Neil Down. Pushes pawns like it's his job. Let him over-extend, then punish.",
+    kaos: "Bill Board sacrifices everything. Take the material, defend calmly, win the endgame.",
+    mia: "Chris P. Bacon. Solid as a brick. Be patient – walls have cracks.",
+    leo: "Ida Know sees every fork. So should you. Check every capture twice.",
+    pling: "Hugh Jass plays positions, not tricks. Keep your pieces active and don't drift.",
+    dina: "Jack Pott loves his queen. Trade it off and watch his mood drop.",
+    sigurd: "Phil Landers wants an endgame. Don't give him a quiet one.",
+    nora: "Heidi Claire sets traps. If a move looks free, it isn't.",
+    ivar: "Robin Banks calculates. Make it messy – calculation hates mess.",
+    storm: "ET. The final boss. Not from this planet. You've beaten nine – he's just number ten.",
   };
   return lines[o.id] ?? `${o.name}. ${o.style}. You've got this.`;
 }

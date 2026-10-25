@@ -427,3 +427,50 @@
 .game-row__dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; border: 1px solid var(--muted-foreground); vertical-align: -1px; margin-right: 4px; }
 .game-row__dot.is-w { background: #f1f1f1; }
 .game-row__dot.is-b { background: #2b2b2b; }
+
+/* ---- Living bot avatar ---- */
+.bot { position: relative; display: inline-flex; flex-direction: column; align-items: center; }
+.bot__face { position: relative; width: var(--bot-size, 84px); height: var(--bot-size, 84px); transform-origin: 50% 90%; will-change: transform, filter; }
+.bot__face img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.45)); transition: filter 0.4s ease; }
+.bot__mood { position: absolute; right: -6px; bottom: -2px; font-size: calc(var(--bot-size, 84px) * 0.3); line-height: 1; animation: bot-pop 0.4s cubic-bezier(0.2, 1.6, 0.4, 1) both; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.5)); }
+.bot__bubble { position: absolute; top: calc(var(--bot-size, 84px) - 8px); left: 50%; translate: -50% 0; z-index: 5; max-width: 220px; padding: 6px 10px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--foreground); font-size: 12px; font-weight: 600; white-space: nowrap; box-shadow: 0 6px 18px rgb(0 0 0 / 0.35); animation: bot-pop 0.35s cubic-bezier(0.2, 1.6, 0.4, 1) both; pointer-events: none; }
+.bot__bubble::before { content: ""; position: absolute; top: -6px; left: 50%; width: 10px; height: 10px; translate: -50% 0; rotate: 45deg; background: var(--card); border-left: 1px solid var(--border); border-top: 1px solid var(--border); }
+
+.bot__face.is-idle { animation: bot-breathe 3.2s ease-in-out infinite; }
+.bot__face.is-think { animation: bot-think 2.4s ease-in-out infinite; }
+.bot__face.is-happy { animation: bot-bounce 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) 1, bot-breathe 3.2s ease-in-out 0.7s infinite; }
+.bot__face.is-smug { animation: bot-smug 2.8s ease-in-out infinite; }
+.bot__face.is-smug img { filter: drop-shadow(0 0 14px oklch(0.85 0.2 126 / 0.7)) drop-shadow(0 4px 10px rgb(0 0 0 / 0.45)); }
+.bot__face.is-angry { animation: bot-shake 0.6s ease-in-out 2, bot-fume 1.6s ease-in-out 1.2s infinite; }
+.bot__face.is-angry img { filter: drop-shadow(0 0 16px oklch(0.6 0.25 25 / 0.9)) drop-shadow(0 4px 10px rgb(0 0 0 / 0.45)) saturate(1.3); }
+.bot__face.is-worried { animation: bot-wobble 0.9s ease-in-out infinite; }
+.bot__face.is-worried img { filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.45)) saturate(0.7) brightness(1.08); }
+.bot__face.is-sad { animation: bot-droop 1.2s ease-out forwards, bot-sigh 4s ease-in-out 1.2s infinite; }
+.bot__face.is-sad img { filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.45)) grayscale(0.6) brightness(0.85); }
+.bot__face.is-win { animation: bot-jump 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) 2, bot-breathe 2s ease-in-out 1.8s infinite; }
+.bot__face.is-win img { filter: drop-shadow(0 0 22px var(--gold, #f5c542)) drop-shadow(0 4px 10px rgb(0 0 0 / 0.45)); }
+.bot__face.is-lose { animation: bot-droop 1.4s ease-out forwards; }
+.bot__face.is-lose img { filter: grayscale(0.85) brightness(0.7) drop-shadow(0 4px 10px rgb(0 0 0 / 0.45)); }
+.bot__face.is-draw { animation: bot-breathe 3.2s ease-in-out infinite; }
+
+@keyframes bot-pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes bot-breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.025); } }
+@keyframes bot-think { 0%, 100% { transform: rotate(-4deg) translateY(0); } 50% { transform: rotate(4deg) translateY(-3px); } }
+@keyframes bot-bounce { 0% { transform: translateY(0) scale(1); } 35% { transform: translateY(-14px) scale(1.08, 0.94); } 70% { transform: translateY(0) scale(0.96, 1.06); } 100% { transform: translateY(0) scale(1); } }
+@keyframes bot-smug { 0%, 100% { transform: rotate(0) scale(1.03); } 50% { transform: rotate(3deg) scale(1.06); } }
+@keyframes bot-shake { 0%, 100% { transform: translateX(0) rotate(0); } 20% { transform: translateX(-6px) rotate(-5deg); } 40% { transform: translateX(6px) rotate(5deg); } 60% { transform: translateX(-5px) rotate(-4deg); } 80% { transform: translateX(5px) rotate(4deg); } }
+@keyframes bot-fume { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes bot-wobble { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes bot-droop { to { transform: translateY(6px) rotate(8deg) scale(0.94); } }
+@keyframes bot-sigh { 0%, 100% { transform: translateY(6px) rotate(8deg) scale(0.94); } 50% { transform: translateY(8px) rotate(9deg) scale(0.92); } }
+@keyframes bot-jump { 0% { transform: translateY(0) scale(1); } 40% { transform: translateY(-20px) scale(1.1, 0.92) rotate(-4deg); } 70% { transform: translateY(0) scale(0.95, 1.08); } 100% { transform: translateY(0) scale(1); } }
+
+@media (prefers-reduced-motion: reduce) { .bot__face { animation: none !important; } }
+
+.bot-bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; max-width: min(94vw, 68vh); margin: 0 auto; padding: 8px 14px 8px 8px; border-radius: 16px; border: 1px solid var(--border); background: var(--card); transition: border-color 0.2s; }
+.bot-bar.is-active { border-color: var(--primary); background: color-mix(in oklab, var(--primary) 12%, var(--card)); }
+.bot-bar__name { display: block; font-size: 14px; font-weight: 700; line-height: 1.1; }
+.bot-bar__sub { display: block; font-size: 11px; color: var(--muted-foreground); margin-top: 2px; }
+.bot-bar__clock { font-size: 1.4rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.bot-bar.is-active .bot-bar__clock { color: var(--primary); }
+.opp-card { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; }

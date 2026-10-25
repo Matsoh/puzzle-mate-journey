@@ -121,3 +121,8 @@
 ## Steg 19 – Partiarkiv som chess.com
 - Alle partier i appen lagres nå i samme arkiv som importerte partier (`Progress.importedGames`, Source utvidet med `app` og `venn`, tak 80): bot-partier (parti.tsx), treningspartier (treningsparti.tsx, ikke avbrutte) og venne-partier (live.$gameId.tsx) via `withAppGame` i src/lib/game-log.ts.
 - `GameRow` (resultatmerke W/½/L, `MiniBoard` med sluttstilling, motstander/rating, farge, kilde, tid, trekk, «x siden») brukes på Hjem («Siste partier», tre nyeste, lenke «Alle partier») og på /partier med filter Alle / Venner / Bots / chess.com-Lichess. Trykk åpner samme analyse (reviewGame + GameReview + Mike + notatbok, +25 XP første gang). /partier?open=<id> dyplenker til et parti.
+
+## Steg 20 – Levende bot-avatarer
+- Nye navn og portretter (public/bots/1–10.png): Neil Down, Bill Board, Chris P. Bacon, Ida Know, Hugh Jass, Jack Pott, Phil Landers, Heidi Claire, Robin Banks, ET. Ids (pelle, kaos …) er beholdt så `beaten` og avatar-låser virker.
+- src/lib/bot-mood.ts (rent, testet): humør fra stillingen og siste trekk sett fra boten – idle/think/happy/smug/angry/worried/sad/win/lose/draw – og replikker med personlighet. `BotAvatar` animerer portrettet med CSS (puster, svaier når den tenker, hopper ved slag, rister med rød glød når den mister brikker, henger med hodet og blir grå når den taper, hopper med gull-glød når den vinner), humør-emoji og snakkeboble ved humørskifte.
+- Partiet: toppfelt med stort portrett, navn litt mindre, rating/stil, klokke; eget felt med Tobias sin avatar nederst. Intro-skjermen viser portrettet i stedet for 3D-scenen. Stigen og Monsterboken bruker portrettene.
