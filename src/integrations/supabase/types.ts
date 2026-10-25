@@ -32,6 +32,249 @@ export type Database = {
         }
         Relationships: []
       }
+      challenges: {
+        Row: {
+          color: string
+          created_at: string
+          from_user: string
+          game_id: string | null
+          id: string
+          inc_ms: number
+          initial_ms: number
+          status: string
+          to_user: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          from_user: string
+          game_id?: string | null
+          id?: string
+          inc_ms?: number
+          initial_ms?: number
+          status?: string
+          to_user: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          from_user?: string
+          game_id?: string | null
+          id?: string
+          inc_ms?: number
+          initial_ms?: number
+          status?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenges_from_user_fkey"
+            columns: ["from_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "challenges_to_user_fkey"
+            columns: ["to_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      friendships: {
+        Row: {
+          addressee: string
+          created_at: string
+          id: string
+          requester: string
+          status: string
+        }
+        Insert: {
+          addressee: string
+          created_at?: string
+          id?: string
+          requester: string
+          status?: string
+        }
+        Update: {
+          addressee?: string
+          created_at?: string
+          id?: string
+          requester?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friendships_addressee_fkey"
+            columns: ["addressee"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "friendships_requester_fkey"
+            columns: ["requester"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      game_chat: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: number
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: never
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: never
+          text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_chat_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "live_games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_chat_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      live_games: {
+        Row: {
+          black: string
+          black_ms: number
+          created_at: string
+          draw_offer: string | null
+          fen: string
+          finished_at: string | null
+          id: string
+          inc_ms: number
+          initial_ms: number
+          last_move_at: string
+          moves: string[]
+          reason: string | null
+          result: string | null
+          sans: string[]
+          status: string
+          white: string
+          white_ms: number
+        }
+        Insert: {
+          black: string
+          black_ms: number
+          created_at?: string
+          draw_offer?: string | null
+          fen?: string
+          finished_at?: string | null
+          id?: string
+          inc_ms?: number
+          initial_ms: number
+          last_move_at?: string
+          moves?: string[]
+          reason?: string | null
+          result?: string | null
+          sans?: string[]
+          status?: string
+          white: string
+          white_ms: number
+        }
+        Update: {
+          black?: string
+          black_ms?: number
+          created_at?: string
+          draw_offer?: string | null
+          fen?: string
+          finished_at?: string | null
+          id?: string
+          inc_ms?: number
+          initial_ms?: number
+          last_move_at?: string
+          moves?: string[]
+          reason?: string | null
+          result?: string | null
+          sans?: string[]
+          status?: string
+          white?: string
+          white_ms?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_games_black_fkey"
+            columns: ["black"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "live_games_white_fkey"
+            columns: ["white"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar: Json | null
+          friend_code: string
+          games: number
+          last_seen: string
+          level: number
+          name: string
+          rating: number
+          streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar?: Json | null
+          friend_code: string
+          games?: number
+          last_seen?: string
+          level?: number
+          name?: string
+          rating?: number
+          streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar?: Json | null
+          friend_code?: string
+          games?: number
+          last_seen?: string
+          level?: number
+          name?: string
+          rating?: number
+          streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_state: {
         Row: {
           data: Json
@@ -61,7 +304,127 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      answer_challenge: {
+        Args: { p_action: string; p_id: string }
+        Returns: string
+      }
+      are_friends: { Args: { a: string; b: string }; Returns: boolean }
+      create_challenge: {
+        Args: {
+          p_color: string
+          p_inc_ms: number
+          p_initial_ms: number
+          p_to: string
+        }
+        Returns: {
+          color: string
+          created_at: string
+          from_user: string
+          game_id: string | null
+          id: string
+          inc_ms: number
+          initial_ms: number
+          status: string
+          to_user: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "challenges"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      ensure_profile: {
+        Args: { p_name?: string }
+        Returns: {
+          avatar: Json | null
+          friend_code: string
+          games: number
+          last_seen: string
+          level: number
+          name: string
+          rating: number
+          streak: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      game_action: {
+        Args: { p_action: string; p_game: string }
+        Returns: {
+          black: string
+          black_ms: number
+          created_at: string
+          draw_offer: string | null
+          fen: string
+          finished_at: string | null
+          id: string
+          inc_ms: number
+          initial_ms: number
+          last_move_at: string
+          moves: string[]
+          reason: string | null
+          result: string | null
+          sans: string[]
+          status: string
+          white: string
+          white_ms: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "live_games"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      gen_friend_code: { Args: never; Returns: string }
       is_approved_player: { Args: never; Returns: boolean }
+      play_move: {
+        Args: {
+          p_fen: string
+          p_game: string
+          p_plies: number
+          p_reason?: string
+          p_result?: string
+          p_san: string
+          p_uci: string
+        }
+        Returns: {
+          black: string
+          black_ms: number
+          created_at: string
+          draw_offer: string | null
+          fen: string
+          finished_at: string | null
+          id: string
+          inc_ms: number
+          initial_ms: number
+          last_move_at: string
+          moves: string[]
+          reason: string | null
+          result: string | null
+          sans: string[]
+          status: string
+          white: string
+          white_ms: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "live_games"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      respond_friend_request: {
+        Args: { p_accept: boolean; p_id: string }
+        Returns: undefined
+      }
       save_user_state: {
         Args: { p_data: Json; p_expected: number; p_key: string }
         Returns: number
@@ -74,6 +437,22 @@ export type Database = {
           p_user: string
         }
         Returns: number
+      }
+      send_friend_request: {
+        Args: { p_code: string }
+        Returns: {
+          addressee: string
+          created_at: string
+          id: string
+          requester: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "friendships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
