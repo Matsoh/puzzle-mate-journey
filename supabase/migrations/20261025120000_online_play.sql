@@ -1,7 +1,3 @@
--- Online play for family and club friends: profiles, friends, challenges, live games and chat.
--- Only approved players (is_approved_player()) can use any of it. Play is only possible between friends.
-
--- ---------- profiles ----------
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   name text not null default 'Spiller',
@@ -34,7 +30,6 @@ begin
   return code;
 end $$;
 
--- Creates the caller's profile on first use and returns it.
 create or replace function public.ensure_profile(p_name text default null)
 returns public.profiles
 language plpgsql security definer set search_path = public as $$
@@ -49,7 +44,6 @@ begin
   return r;
 end $$;
 
--- ---------- friendships ----------
 create table if not exists public.friendships (
   id uuid primary key default gen_random_uuid(),
   requester uuid not null references public.profiles(user_id) on delete cascade,
@@ -70,7 +64,6 @@ language sql stable security definer set search_path = public as $$
       and ((f.requester = a and f.addressee = b) or (f.requester = b and f.addressee = a))
   );
 $$;
-
 
 create policy "profiles: approved players read all" on public.profiles
   for select to authenticated using (public.is_approved_player());
@@ -93,7 +86,6 @@ begin
   select user_id into target from public.profiles where friend_code = upper(trim(p_code));
   if target is null then raise exception 'unknown code'; end if;
   if target = auth.uid() then raise exception 'own code'; end if;
-  -- the other side already asked us: accept straight away
   update public.friendships set status = 'accepted'
     where requester = target and addressee = auth.uid() and status = 'pending'
     returning * into r;
@@ -116,7 +108,6 @@ begin
   end if;
 end $$;
 
--- ---------- challenges ----------
 create table if not exists public.challenges (
   id uuid primary key default gen_random_uuid(),
   from_user uuid not null references public.profiles(user_id) on delete cascade,
@@ -133,7 +124,6 @@ grant select on public.challenges to authenticated;
 create policy "challenges: mine" on public.challenges
   for select to authenticated using (from_user = auth.uid() or to_user = auth.uid());
 
--- ---------- live games ----------
 create table if not exists public.live_games (
   id uuid primary key default gen_random_uuid(),
   white uuid not null references public.profiles(user_id) on delete cascade,
@@ -155,7 +145,6 @@ create table if not exists public.live_games (
 );
 alter table public.live_games enable row level security;
 grant select on public.live_games to authenticated;
--- players, and their friends (so friends can look at each other's games)
 create policy "live_games: players and friends" on public.live_games
   for select to authenticated using (
     white = auth.uid() or black = auth.uid()
@@ -172,14 +161,12 @@ begin
   if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   if not public.are_friends(auth.uid(), p_to) then raise exception 'not friends'; end if;
   if p_initial_ms < 60000 or p_initial_ms > 3600000 or p_inc_ms < 0 or p_inc_ms > 60000 then raise exception 'bad time control'; end if;
-  -- one open challenge per pair at a time
   update public.challenges set status = 'cancelled' where from_user = auth.uid() and to_user = p_to and status = 'pending';
   insert into public.challenges (from_user, to_user, initial_ms, inc_ms, color)
     values (auth.uid(), p_to, p_initial_ms, p_inc_ms, p_color) returning * into r;
   return r;
 end $$;
 
--- p_action: accept | decline | cancel. Accept creates the game and returns its id.
 create or replace function public.answer_challenge(p_id uuid, p_action text)
 returns uuid
 language plpgsql security definer set search_path = public as $$
@@ -212,9 +199,6 @@ begin
   return g;
 end $$;
 
--- Play a move. The client validates legality with chess.js and sends the resulting FEN;
--- the server enforces whose turn it is, move ordering and the clocks.
--- p_result/p_reason are set by the client when the move ends the game (mate, stalemate, ...).
 create or replace function public.play_move(p_game uuid, p_uci text, p_san text, p_fen text, p_plies integer, p_result text default null, p_reason text default null)
 returns public.live_games
 language plpgsql security definer set search_path = public as $$
@@ -227,8 +211,9 @@ begin
   if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   select * into g from public.live_games where id = p_game for update;
   if g.id is null then raise exception 'no game'; end if;
+  if auth.uid() is distinct from g.white and auth.uid() is distinct from g.black then raise exception 'not your game'; end if;
   if g.status <> 'playing' then return g; end if;
-  if coalesce(array_length(g.moves, 1), 0) <> p_plies then return g; end if; -- stale client; it will resync
+  if coalesce(array_length(g.moves, 1), 0) <> p_plies then return g; end if;
   mover_white := (p_plies % 2 = 0);
   if auth.uid() is distinct from (case when mover_white then g.white else g.black end) then raise exception 'not your turn'; end if;
   elapsed := case when p_plies < 2 then 0 else greatest(0, (extract(epoch from (now() - g.last_move_at)) * 1000)::integer) end;
@@ -256,7 +241,6 @@ begin
   return g;
 end $$;
 
--- p_action: resign | offer_draw | accept_draw | claim_timeout | abort
 create or replace function public.game_action(p_game uuid, p_action text)
 returns public.live_games
 language plpgsql security definer set search_path = public as $$
@@ -300,7 +284,6 @@ begin
   return g;
 end $$;
 
--- ---------- chat ----------
 create table if not exists public.game_chat (
   id bigint generated always as identity primary key,
   game_id uuid not null references public.live_games(id) on delete cascade,
@@ -316,7 +299,6 @@ create policy "game_chat: participants write" on public.game_chat
   for insert to authenticated with check (user_id = auth.uid() and exists (select 1 from public.live_games g where g.id = game_id and (g.white = auth.uid() or g.black = auth.uid())));
 create index if not exists game_chat_game_idx on public.game_chat (game_id, id);
 
--- ---------- realtime ----------
 alter table public.live_games replica identity full;
 alter table public.challenges replica identity full;
 alter table public.friendships replica identity full;
