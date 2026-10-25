@@ -2,20 +2,19 @@
 // live games and chat on Supabase. Pure helpers live at the bottom (tested);
 // everything that talks to the server is thin and typed.
 import { Chess } from "chess.js";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import type { Database, Json } from "@/integrations/supabase/types";
+import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
+import { supabase as authenticatedClient } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+import type { OnlineDatabase, Profile, Friendship, Challenge, LiveGame, ChatMessage } from "./online-contract";
 import { isLocalDev } from "./cloud-sync";
 import { expectedScore } from "./rules";
 import type { Progress } from "./progress";
 import { avatarOf, avatarName } from "./avatar";
 import { levelFromXp } from "./rules";
 
-export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-export type Friendship = Database["public"]["Tables"]["friendships"]["Row"];
-export type Challenge = Database["public"]["Tables"]["challenges"]["Row"];
-export type LiveGame = Database["public"]["Tables"]["live_games"]["Row"];
-export type ChatMessage = Database["public"]["Tables"]["game_chat"]["Row"];
+export type { Profile, Friendship, Challenge, LiveGame, ChatMessage } from "./online-contract";
+// Same authenticated instance; the contract does not install the pending schema.
+const supabase = authenticatedClient as unknown as SupabaseClient<OnlineDatabase>;
 
 export const K_LIVE = 24;
 export const TIME_CONTROLS = [
@@ -142,7 +141,7 @@ export async function sendChat(gameId: string, text: string): Promise<void> {
 }
 
 // ---------- realtime ----------
-type Row<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];
+type Row<T extends keyof OnlineDatabase["public"]["Tables"]> = OnlineDatabase["public"]["Tables"][T]["Row"];
 export function subscribeGame(gameId: string, onGame: (g: LiveGame) => void, onChat: (m: ChatMessage) => void): RealtimeChannel {
   return supabase
     .channel(`game:${gameId}`)

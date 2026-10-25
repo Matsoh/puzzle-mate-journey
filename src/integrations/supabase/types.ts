@@ -14,36 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
-        Row: { user_id: string; name: string; friend_code: string; avatar: Json | null; rating: number; level: number; streak: number; games: number; last_seen: string; updated_at: string }
-        Insert: { user_id: string; name?: string; friend_code: string; avatar?: Json | null; rating?: number; level?: number; streak?: number; games?: number; last_seen?: string; updated_at?: string }
-        Update: { user_id?: string; name?: string; friend_code?: string; avatar?: Json | null; rating?: number; level?: number; streak?: number; games?: number; last_seen?: string; updated_at?: string }
-        Relationships: []
-      }
-      friendships: {
-        Row: { id: string; requester: string; addressee: string; status: string; created_at: string }
-        Insert: { id?: string; requester: string; addressee: string; status?: string; created_at?: string }
-        Update: { id?: string; requester?: string; addressee?: string; status?: string; created_at?: string }
-        Relationships: []
-      }
-      challenges: {
-        Row: { id: string; from_user: string; to_user: string; initial_ms: number; inc_ms: number; color: string; status: string; game_id: string | null; created_at: string }
-        Insert: { id?: string; from_user: string; to_user: string; initial_ms?: number; inc_ms?: number; color?: string; status?: string; game_id?: string | null; created_at?: string }
-        Update: { id?: string; from_user?: string; to_user?: string; initial_ms?: number; inc_ms?: number; color?: string; status?: string; game_id?: string | null; created_at?: string }
-        Relationships: []
-      }
-      live_games: {
-        Row: { id: string; white: string; black: string; initial_ms: number; inc_ms: number; moves: string[]; sans: string[]; fen: string; status: string; result: string | null; reason: string | null; white_ms: number; black_ms: number; last_move_at: string; draw_offer: string | null; created_at: string; finished_at: string | null }
-        Insert: { id?: string; white: string; black: string; initial_ms: number; inc_ms?: number; moves?: string[]; sans?: string[]; fen?: string; status?: string; result?: string | null; reason?: string | null; white_ms: number; black_ms: number; last_move_at?: string; draw_offer?: string | null; created_at?: string; finished_at?: string | null }
-        Update: { id?: string; white?: string; black?: string; initial_ms?: number; inc_ms?: number; moves?: string[]; sans?: string[]; fen?: string; status?: string; result?: string | null; reason?: string | null; white_ms?: number; black_ms?: number; last_move_at?: string; draw_offer?: string | null; created_at?: string; finished_at?: string | null }
-        Relationships: []
-      }
-      game_chat: {
-        Row: { id: number; game_id: string; user_id: string; text: string; created_at: string }
-        Insert: { id?: never; game_id: string; user_id: string; text: string; created_at?: string }
-        Update: { id?: never; game_id?: string; user_id?: string; text?: string; created_at?: string }
-        Relationships: []
-      }
       approved_players: {
         Row: {
           approved_at: string
@@ -92,14 +62,6 @@ export type Database = {
     }
     Functions: {
       is_approved_player: { Args: never; Returns: boolean }
-      ensure_profile: { Args: { p_name?: string | null }; Returns: Database["public"]["Tables"]["profiles"]["Row"] }
-      are_friends: { Args: { a: string; b: string }; Returns: boolean }
-      send_friend_request: { Args: { p_code: string }; Returns: Database["public"]["Tables"]["friendships"]["Row"] }
-      respond_friend_request: { Args: { p_id: string; p_accept: boolean }; Returns: undefined }
-      create_challenge: { Args: { p_to: string; p_initial_ms: number; p_inc_ms: number; p_color: string }; Returns: Database["public"]["Tables"]["challenges"]["Row"] }
-      answer_challenge: { Args: { p_id: string; p_action: string }; Returns: string | null }
-      play_move: { Args: { p_game: string; p_uci: string; p_san: string; p_fen: string; p_plies: number; p_result?: string | null; p_reason?: string | null }; Returns: Database["public"]["Tables"]["live_games"]["Row"] }
-      game_action: { Args: { p_game: string; p_action: string }; Returns: Database["public"]["Tables"]["live_games"]["Row"] }
       save_user_state: {
         Args: { p_data: Json; p_expected: number; p_key: string }
         Returns: number
