@@ -44,7 +44,6 @@ begin
   return r;
 end $$;
 
-
 create table if not exists public.friendships (
   id uuid primary key default gen_random_uuid(),
   requester uuid not null references public.profiles(user_id) on delete cascade,
@@ -87,7 +86,6 @@ begin
   select user_id into target from public.profiles where friend_code = upper(trim(p_code));
   if target is null then raise exception 'unknown code'; end if;
   if target = auth.uid() then raise exception 'own code'; end if;
-  -- the other side already asked us: accept straight away
   update public.friendships set status = 'accepted'
     where requester = target and addressee = auth.uid() and status = 'pending'
     returning * into r;
@@ -163,7 +161,6 @@ begin
   if auth.uid() is null or not public.is_approved_player() then raise exception 'not approved'; end if;
   if not public.are_friends(auth.uid(), p_to) then raise exception 'not friends'; end if;
   if p_initial_ms < 60000 or p_initial_ms > 3600000 or p_inc_ms < 0 or p_inc_ms > 60000 then raise exception 'bad time control'; end if;
-  -- one open challenge per pair at a time
   update public.challenges set status = 'cancelled' where from_user = auth.uid() and to_user = p_to and status = 'pending';
   insert into public.challenges (from_user, to_user, initial_ms, inc_ms, color)
     values (auth.uid(), p_to, p_initial_ms, p_inc_ms, p_color) returning * into r;
