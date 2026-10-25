@@ -21,6 +21,15 @@ function Collection() {
         <Link to="/avatar" className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-semibold"><PlayerAvatar className="size-8" />Avatar <span className="coin-chip">🪙 {p.coins ?? 0}</span></Link>
       </header>
 
+      <section className="card-game mb-6 p-4" aria-label="Hva er Monsterboken">
+        <div className="flex items-start gap-3">
+          <Mike mood="happy" className="w-14 shrink-0" animate={false} />
+          <div className="text-sm">
+            <p className="font-semibold">Dette er samlingen din – som en Pokédex for sjakk.</p>
+            <p className="mt-1 text-muted-foreground">Hver gang du løser en oppgave med et nytt taktisk motiv (gaffel, binding, kvelermatt …) havner det her. Sjeldne motiver dukker bare opp i vanskelige oppgaver. Nederst står alle botene på stigen – de du har slått får merke. Full bok låser opp avatar-deler.</p>
+          </div>
+        </div>
+      </section>
       <section className="mb-7" aria-labelledby="motif-h">
         <div className="mb-3 flex items-end justify-between">
           <h2 id="motif-h" className="text-lg font-bold">Taktiske motiver</h2>

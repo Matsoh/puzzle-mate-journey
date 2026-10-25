@@ -1,3 +1,6 @@
+import { updateProgress } from "@/lib/progress";
+import { withLesson } from "@/lib/school";
+import { celebrateDiff } from "@/lib/celebrate";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Gauge, Repeat, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +45,7 @@ export function AdaptiveTrainer({ coach, day }: { coach: CoachId; day: string })
 
   return (
     <section className="mt-6" aria-label="Adaptiv trening">
-      <h2 className="section-title mb-3">Adaptiv trening</h2>
+      <h2 className="section-title mb-3">Dagens leksjon</h2>
       <div className="card-game mb-3 space-y-3 p-4">
         <div className="flex flex-wrap items-center gap-2">
           <Gauge className="size-5 text-primary" aria-hidden />
@@ -80,7 +83,7 @@ export function AdaptiveTrainer({ coach, day }: { coach: CoachId; day: string })
         </div>
       ) : item && (
         <div className="card-game p-5">
-          <AdaptivePuzzle key={`${item.id}:${back}`} item={item} onResult={back > 0 ? undefined : (o, h) => recordAttempt(coach, item.id, o, h, day)} />
+          <AdaptivePuzzle key={`${item.id}:${back}`} item={item} onResult={back > 0 ? undefined : (o, h) => { recordAttempt(coach, item.id, o, h, day); if (o !== "fail") updateProgress((s) => { const n = withLesson(s, day, "lesson"); celebrateDiff(s, n); return n; }); }} />
           <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground"><Database className="mt-0.5 size-3 shrink-0" />Kilde: Lichess puzzle {item.id} (CC0), fra et ekte parti – <a className="underline" href={item.gameUrl} target="_blank" rel="noopener noreferrer">se partiet</a>. Fasit er Lichess' motorverifiserte løsning, kontrollert med regelmotor her.</p>
         </div>
       )}

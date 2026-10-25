@@ -67,3 +67,18 @@ describe("reviewGame", () => {
     expect(moveAccuracy(50)).toBeLessThan(10);
   });
 });
+
+describe("Mike Skolen", () => {
+  it("pays each lesson once and a bonus when the day is complete", async () => {
+    const { DEFAULT_PROGRESS } = await import("./progress");
+    const { withLesson, lessonDone, schoolDone, schoolDays, LESSON_XP, SCHOOL_BONUS_XP } = await import("./school");
+    let p = withLesson(DEFAULT_PROGRESS, "2026-10-25", "lesson");
+    expect(lessonDone(p, "2026-10-25", "lesson")).toBe(true);
+    expect(withLesson(p, "2026-10-25", "lesson").xp).toBe(p.xp);
+    p = withLesson(withLesson(p, "2026-10-25", "game"), "2026-10-25", "drill");
+    expect(schoolDone(p, "2026-10-25")).toBe(true);
+    expect(p.xp).toBe(DEFAULT_PROGRESS.xp + 3 * LESSON_XP + SCHOOL_BONUS_XP);
+    expect(schoolDays(p)).toBe(1);
+    expect(schoolDone(p, "2026-10-26")).toBe(false);
+  });
+});

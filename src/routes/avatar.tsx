@@ -97,7 +97,7 @@ function AvatarPage() {
 
       <Link to="/samling" className="quest mt-4">
         <span className="quest__check"><BookOpen className="size-5" /></span>
-        <span className="min-w-0"><span className="block font-semibold">Monsterboken</span><span className="block text-xs text-muted-foreground">{col.found}/{col.total} motiver · {col.beaten}/{col.opponents} beseiret</span></span>
+        <span className="min-w-0"><span className="block font-semibold">Monsterboken</span><span className="block text-xs text-muted-foreground">Samlingen din · {col.found}/{col.total} motiver funnet · {col.beaten}/{col.opponents} bots slått</span></span>
         <ChevronRight className="size-4 text-muted-foreground" />
       </Link>
 

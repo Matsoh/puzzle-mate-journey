@@ -30,7 +30,7 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
       <p className="eyebrow mb-1">Dagens økt</p>
       <h2 id="session-h" className="section-title">Velg din virtuelle trener</h2>
       <p className="mt-2 mb-4 text-sm text-muted-foreground">Velg mellom en Magnus-inspirert eller Hikaru-inspirert treningsprofil og få en personlig økt hver dag.</p>
-      <Button asChild><Link to="/trener"><GraduationCap />Velg trener</Link></Button>
+      <Button asChild><Link to="/trener"><GraduationCap />Til Mike Skolen</Link></Button>
     </section>;
   }
   const coach = tr.coach;
@@ -118,7 +118,7 @@ export function TrainingSession({ progress, day }: { progress: Progress; day: st
           </ul>
         </>}
       </div>}
-      <p className="mt-4 text-xs text-muted-foreground">Trener: {prof.label} · <Link to="/trener" className="underline">Bytt trener</Link></p>
+      <p className="mt-4 text-xs text-muted-foreground">Trener: {prof.label} · <Link to="/trener" className="underline">Mike Skolen</Link></p>
     </section>
   );
 }

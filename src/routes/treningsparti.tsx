@@ -30,6 +30,9 @@ import { useTrainer } from "@/lib/trainer-store";
 import { dayKey } from "@/lib/rules";
 import { play, unlockAudio } from "@/lib/sound";
 import { MikeCompanion } from "@/components/MikeCompanion";
+import { withLesson } from "@/lib/school";
+import { celebrateDiff } from "@/lib/celebrate";
+import { updateProgress } from "@/lib/progress";
 import { gameContext, gameReaction } from "@/lib/mike-game";
 
 type Search = { fen?: string | undefined; side: "w" | "b"; elo: number; tc: string; src: string };
@@ -165,6 +168,7 @@ function PracticeGame() {
         helpUsed,
       };
       updatePrep((s) => ({ ...s, games: [...s.games, rec].slice(-30) }));
+      if (game.current.history().length >= 10) updateProgress((s) => { const n = withLesson(s, rec.day, "game"); celebrateDiff(s, n); return n; });
     },
     [search.src, elo, helpUsed],
   );

@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, Dumbbell, BookOpen, MessageCircle, Globe, UserRound } from "lucide-react";
+import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Trophy, Ellipsis, BookOpen, MessageCircle, Globe, UserRound } from "lucide-react";
 import { Celebrations } from "./Celebrations";
 import type { ReactNode } from "react";
 import { MuteToggle } from "./AppHeader";
@@ -20,11 +20,10 @@ export const PRIMARY_NAV = [
 export const MORE_NAV = [
   { to: "/mike", label: "Snakk med Mike", hint: "Spør om hva som helst (om sjakk)", icon: MessageCircle },
   { to: "/partier", label: "Mine partier", hint: "Hent partier fra chess.com/Lichess – Mike ser på dem", icon: Globe },
-  { to: "/samling", label: "Monsterboken", hint: "Motiver og beseirede motstandere", icon: BookOpen },
+  { to: "/samling", label: "Monsterboken", hint: "Samlingen din: taktikk-motiver du har funnet og bots du har slått", icon: BookOpen },
   { to: "/fremgang", label: "Fremgang", hint: "Ratinggraf, statistikk og merker", icon: ChartNoAxesCombined },
   { to: "/fritt", label: "Fritt parti", hint: "Velg styrke, farge og tempo", icon: Swords },
-  { to: "/treningsparti", label: "Treningsparti", hint: "Spill med hjelp underveis", icon: Dumbbell },
-  { to: "/trener", label: "Trening med Mike", hint: "Dagens råd og tilpassede oppgaver", icon: GraduationCap },
+  { to: "/trener", label: "Mike Skolen", hint: "Dagens leksjon, treningsparti med hjelp og grunnoppgaver", icon: GraduationCap },
   { to: "/turnering", label: "Forberedelse", hint: "Åpninger, taktikk og sluttspill", icon: Trophy },
 ] as const;
 
@@ -33,7 +32,7 @@ const MORE_PATHS: readonly string[] = MORE_NAV.map((n) => n.to);
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: s => s.location.pathname });
   const p = useProgress();
-  const active = (to: string) => path === to || (to === "/mer" && MORE_PATHS.includes(path)) || (to === "/stigen" && path === "/parti") || (to === "/avatar" && path === "/samling");
+  const active = (to: string) => path === to || (to === "/mer" && MORE_PATHS.includes(path)) || (to === "/stigen" && path === "/parti") || (to === "/avatar" && path === "/samling") || (to === "/mer" && path === "/treningsparti");
   const mobileNav = [...PRIMARY_NAV, { to: "/mer", label: "Mer", icon: Ellipsis }] as const;
   return <>
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] flex-col border-r border-border bg-background px-4 py-8 min-[1100px]:flex">

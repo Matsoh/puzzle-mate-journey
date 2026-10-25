@@ -95,3 +95,9 @@
 - Teori = trekkrekken er et prefiks av en linje i src/data/openings.ts (første 16 halvtrekk).
 - `Board` har fått `badges` (via react-chessboard `squareRenderer`); `GameReview.tsx` viser evalbar, merke på brettet, grønn pil til beste trekk ved feil, trekkliste med merker, bla-knapper og tabell.
 - Brukes i parti, treningsparti og Mine partier (importerte partier).
+
+## Steg 14 – Mike Skolen
+- «Treningsparti» og «Trening med Mike» er slått sammen til én side: **Mike Skolen** (/trener). /treningsparti finnes fortsatt som selve partiet, men er ute av menyen.
+- Dagens timeplan (src/lib/school.ts): tre leksjoner om dagen – adaptiv oppgave, treningsparti (≥10 halvtrekk) og grunnoppgave – +15 XP hver, +40 XP bonus når alle tre er gjort samme dag. Betales én gang per dag via `credits` (`school:<dag>:<leksjon>`), og teller skoledager.
+- Treningsparti startes fra skolen i tre nivåer (Lett/Jevn/Tøff = rating −150/0/+150).
+- Monsterboken forklart: intro-kort øverst på /samling («Pokédex for sjakk»), tydeligere hint i menyen og på avatar-siden.
