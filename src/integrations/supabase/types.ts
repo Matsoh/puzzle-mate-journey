@@ -239,6 +239,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar: Json | null
+          flair: string | null
           friend_code: string
           games: number
           last_seen: string
@@ -248,9 +249,11 @@ export type Database = {
           streak: number
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           avatar?: Json | null
+          flair?: string | null
           friend_code: string
           games?: number
           last_seen?: string
@@ -260,9 +263,11 @@ export type Database = {
           streak?: number
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           avatar?: Json | null
+          flair?: string | null
           friend_code?: string
           games?: number
           last_seen?: string
@@ -272,6 +277,7 @@ export type Database = {
           streak?: number
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -338,6 +344,7 @@ export type Database = {
         Args: { p_name?: string }
         Returns: {
           avatar: Json | null
+          flair: string | null
           friend_code: string
           games: number
           last_seen: string
@@ -347,6 +354,7 @@ export type Database = {
           streak: number
           updated_at: string
           user_id: string
+          username: string | null
         }
         SetofOptions: {
           from: "*"
@@ -450,6 +458,29 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "friendships"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_username: {
+        Args: { p_name: string }
+        Returns: {
+          avatar: Json | null
+          flair: string | null
+          friend_code: string
+          games: number
+          last_seen: string
+          level: number
+          name: string
+          rating: number
+          streak: number
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
           isOneToOne: true
           isSetofReturn: false
         }
