@@ -9,6 +9,7 @@ import { usePremoves } from "@/components/usePremoves";
 import { CoachBubble, PlayerAvatar } from "@/components/CoachAvatar";
 import { GameReview } from "@/components/GameReview";
 import { avatarName } from "@/lib/avatar";
+import { flairEmoji } from "@/lib/flair";
 import { CoachDebrief } from "@/components/CoachDebrief";
 import { ChampAvatarScene } from "@/components/ChampAvatarScene";
 import type { ColorChoice, TimeControl } from "@/components/GameSetup";
@@ -344,7 +345,7 @@ function Game() {
             </div>
             <div className={`bot-bar ${phase === "playing" && game.current.turn() === player ? "is-active" : ""}`}>
               <PlayerAvatar className="size-14" />
-              <span className="min-w-0"><span className="bot-bar__name truncate">{avatarName(getProgress())}</span><span className="bot-bar__sub">{getProgress().rating}{phase === "playing" && game.current.turn() === player ? " · ditt trekk" : ""}</span></span>
+              <span className="min-w-0"><span className="bot-bar__name truncate">{avatarName(getProgress())} {flairEmoji(getProgress().flair)}</span><span className="bot-bar__sub">{getProgress().rating}{phase === "playing" && game.current.turn() === player ? " · ditt trekk" : ""}</span></span>
               {tcCfg && <span className="bot-bar__clock">{fmtClock(clock[oppClockIdx === 0 ? 1 : 0])}</span>}
             </div>
           </section>

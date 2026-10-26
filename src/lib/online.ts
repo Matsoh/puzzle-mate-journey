@@ -45,12 +45,18 @@ let lastProfilePush = "";
 /** Mirror the public bits of progress to the profile, only when something changed. */
 export async function syncProfile(p: Progress): Promise<void> {
   if (!me || !onlineAvailable()) return;
-  const row = { name: avatarName(p), avatar: avatarOf(p) as unknown as Json, rating: p.rating, level: levelFromXp(p.xp).level, streak: p.streak, games: p.games };
+  const row = { name: avatarName(p), avatar: avatarOf(p) as unknown as Json, rating: p.rating, level: levelFromXp(p.xp).level, streak: p.streak, games: p.games, flair: p.flair ?? "none" };
   const sig = JSON.stringify(row);
   if (sig === lastProfilePush) return;
   lastProfilePush = sig;
   const { error } = await supabase.from("profiles").update({ ...row, last_seen: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("user_id", me);
   if (error) lastProfilePush = "";
+}
+
+export async function setUsername(name: string): Promise<Profile> {
+  const { data, error } = await supabase.rpc("set_username", { p_name: name });
+  if (error) throw new Error(friendlyError(error.message));
+  return data;
 }
 
 export async function fetchProfiles(ids: string[]): Promise<Record<string, Profile>> {
@@ -172,6 +178,8 @@ export function unsubscribe(ch: RealtimeChannel | null | undefined) { if (ch) vo
 export function friendlyError(msg: string): string {
   if (/unknown code/.test(msg)) return "Fant ingen spiller med den koden. Sjekk at den er skrevet riktig.";
   if (/own code/.test(msg)) return "Det er din egen kode.";
+  if (/bad username/.test(msg)) return "Brukernavn: 3–16 tegn, bare små bokstaver a–z, tall og _.";
+  if (/username taken/.test(msg)) return "Det brukernavnet er tatt. Prøv et annet.";
   if (/not friends/.test(msg)) return "Dere må være venner først.";
   if (/not approved/.test(msg)) return "Kontoen er ikke godkjent ennå.";
   if (/not pending/.test(msg)) return "Utfordringen er ikke åpen lenger.";

@@ -41,6 +41,8 @@ export type Progress = {
   avatar: Record<string, string>;
   avatarOwned: string[];
   avatarName: string;
+  /** Flair id (src/lib/flair.ts) shown next to the name. */
+  flair: string;
   /** Online accounts for importing real games. */
   accounts: { chesscom?: string; lichess?: string };
   /** Imported real games (newest first, capped) and which ones were reviewed. */
@@ -78,6 +80,7 @@ export const DEFAULT_PROGRESS: Progress = {
   avatar: {},
   avatarOwned: [],
   avatarName: "",
+  flair: "none",
   accounts: {},
   importedGames: [],
   reviewedGames: [],

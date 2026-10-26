@@ -121,3 +121,26 @@ describe("Zuri-parametre", () => {
     expect(pink.glasses).toBe("round");
   });
 });
+
+describe("Flair og brukernavn", () => {
+  it("equips free flair, buys with coins, locks the rest; username rules match the database", async () => {
+    const { FLAIRS, flairEmoji, ownsFlair, withFlair, USERNAME_RE, normalizeUsername } = await import("./flair");
+    expect(new Set(FLAIRS.map((f) => f.id)).size).toBe(FLAIRS.length);
+    expect(flairEmoji("none")).toBe("");
+    expect(flairEmoji("bogus")).toBe("");
+    const p1 = withFlair(DEFAULT_PROGRESS, "rocket")!;
+    expect(p1.flair).toBe("rocket");
+    expect(withFlair(DEFAULT_PROGRESS, "gamer")).toBeNull();
+    const p2 = withFlair({ ...DEFAULT_PROGRESS, coins: 100 }, "gamer")!;
+    expect(p2.coins).toBe(70);
+    expect(ownsFlair(p2, "gamer")).toBe(true);
+    expect(withFlair(p2, "gamer")!.coins).toBe(70);
+    expect(withFlair(DEFAULT_PROGRESS, "alien")).toBeNull();
+    expect(withFlair({ ...DEFAULT_PROGRESS, beaten: ["storm"] }, "alien")!.flair).toBe("alien");
+    expect(USERNAME_RE.test("tobias2015")).toBe(true);
+    expect(USERNAME_RE.test("Tobias")).toBe(false);
+    expect(USERNAME_RE.test("ab")).toBe(false);
+    expect(USERNAME_RE.test("to bias")).toBe(false);
+    expect(normalizeUsername(" @Tobias_K ")).toBe("tobias_k");
+  });
+});

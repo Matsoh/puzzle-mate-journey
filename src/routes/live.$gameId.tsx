@@ -19,6 +19,7 @@ import { applyBadges } from "@/lib/badges";
 import { XP } from "@/lib/rules";
 import { play, unlockAudio } from "@/lib/sound";
 import { avatarName, type PartKey } from "@/lib/avatar";
+import { flairEmoji } from "@/lib/flair";
 import {
   applyUci, createChallenge, fetchChat, fetchGame, fetchProfiles, fmtClock, gameAction, liveClocks, liveRatingChange, myColor, myUserId, onlineAvailable, outcomeFor, playMove, sendChat, sideToMove, subscribeGame, tcLabel, unsubscribe, TIME_CONTROLS,
   type ChatMessage, type LiveGame, type Profile,
@@ -200,7 +201,7 @@ function LivePage() {
       <div className={`mx-auto flex w-full max-w-[min(94vw,68vh)] items-center justify-between gap-3 rounded-xl border px-3 py-2 ${playing && toMove === side ? "border-primary bg-primary/10" : "border-border bg-card/60"}`}>
         <span className="flex min-w-0 items-center gap-2">
           {pr?.avatar ? <AvatarImage parts={pr.avatar as unknown as Record<PartKey, string>} className="size-9" /> : null}
-          <span className="min-w-0"><span className="block truncate font-semibold">{uid === me ? myName : pr?.name ?? "Venn"}</span><span className="block text-xs text-muted-foreground">{pr?.rating ?? "–"}</span></span>
+          <span className="min-w-0"><span className="block truncate font-semibold">{uid === me ? myName : pr?.name ?? "Venn"} {flairEmoji(uid === me ? p.flair : pr?.flair)}</span><span className="block text-xs text-muted-foreground">{pr?.username ? `@${pr.username} · ` : ""}{pr?.rating ?? "–"}</span></span>
         </span>
         <span className={clockCls(side)}>{fmtClock(clocks[side])}</span>
       </div>

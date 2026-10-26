@@ -6,6 +6,7 @@ import { MuteToggle } from "./AppHeader";
 import { ThemeToggle } from "./ThemeToggle";
 import { PlayerAvatar } from "./CoachAvatar";
 import { avatarName } from "@/lib/avatar";
+import { flairEmoji } from "@/lib/flair";
 import { useProgress } from "@/lib/progress";
 import { SyncStatus, LogoutButton, MergeNotice } from "./SyncStatus";
 
@@ -43,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {MORE_NAV.map(n => <Link key={n.to} to={n.to} aria-current={path === n.to ? "page" : undefined} className={`nav-link${path === n.to ? " is-active" : ""}`}><n.icon className="size-5 shrink-0" />{n.label}</Link>)}
       </nav>
       <div className="mt-auto border-t border-border pt-5">
-        <Link to="/avatar" aria-current={path === "/avatar" ? "page" : undefined} className="flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-muted" title="Åpne avataren din"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-xs font-medium">{avatarName(p)}</p></div></Link>
+        <Link to="/avatar" aria-current={path === "/avatar" ? "page" : undefined} className="flex items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-muted" title="Åpne avataren din"><PlayerAvatar className="size-10" /><div className="min-w-0"><p className="text-xs text-muted-foreground">Din avatar</p><p className="text-xs font-medium">{avatarName(p)} {flairEmoji(p.flair)}</p></div></Link>
         <div className="mt-5 flex items-center justify-between gap-2 px-2"><span className="text-xs text-muted-foreground">Tema</span><ThemeToggle /></div>
         <div className="mt-4 flex items-center justify-between px-2"><span className="text-xs text-muted-foreground">Spilllyd</span><MuteToggle /></div>
         <div className="mt-4 flex items-center justify-between gap-2 px-2"><SyncStatus /><LogoutButton /></div>

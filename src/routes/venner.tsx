@@ -10,6 +10,7 @@ import { myUserId, onlineAvailable, sendFriendRequest, respondFriendRequest, rem
 import { friendViews, incomingChallenges, outgoingChallenges, refreshOnline, useOnline, type FriendView } from "@/lib/online-store";
 import type { PartKey } from "@/lib/avatar";
 import { play } from "@/lib/sound";
+import { flairEmoji } from "@/lib/flair";
 
 export const Route = createFileRoute("/venner")({
   head: () => ({ meta: [{ title: "Venner – Goblin Chess" }, { name: "description", content: "Legg til familie og klubbvenner med vennekode, og utfordre dem til parti." }] }),
@@ -58,10 +59,10 @@ function FriendsPage() {
           <p className="text-2xl font-black tracking-widest tabular-nums" data-testid="friend-code">{s.me?.friend_code ?? "…"}</p>
           <Button variant="outline" size="sm" onClick={() => void copy()}>{copied ? <Check /> : <Copy />} {copied ? "Kopiert" : "Kopier"}</Button>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">Gi koden til familie og klubbvenner. Bare de du har lagt til kan utfordre deg.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{s.me?.username ? <>Brukernavnet ditt er <strong>@{s.me.username}</strong> – venner kan legge deg til med det eller med koden.</> : <>Gi koden til familie og klubbvenner, eller <Link to="/avatar" className="underline">velg et brukernavn</Link> som er lettere å huske.</>} Bare de du har lagt til kan utfordre deg.</p>
         <form onSubmit={(e) => void add(e)} className="mt-3 flex gap-2">
-          <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Venns kode, f.eks. KXTR-4821" aria-label="Vennekode" className="min-h-11 min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-base font-semibold uppercase tracking-wider" maxLength={9} />
-          <Button type="submit" disabled={code.trim().length < 9}><UserPlus /> Legg til</Button>
+          <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Brukernavn eller vennekode" aria-label="Brukernavn eller vennekode" autoCapitalize="none" autoCorrect="off" className="min-h-11 min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-base font-semibold" maxLength={20} />
+          <Button type="submit" disabled={code.trim().length < 3}><UserPlus /> Legg til</Button>
         </form>
         {msg && <p role="status" className="mt-2 text-sm font-semibold text-primary">{msg}</p>}
       </section>
@@ -96,7 +97,7 @@ function FriendsPage() {
             <div key={v.friendship.id} className="friend">
               <Avatar v={v} />
               <span className="min-w-0">
-                <span className="block font-semibold"><span className={`friend__dot ${v.online ? "is-on" : ""}`} aria-hidden />{v.profile?.name ?? "Venn"}</span>
+                <span className="block font-semibold"><span className={`friend__dot ${v.online ? "is-on" : ""}`} aria-hidden />{v.profile?.name ?? "Venn"} {flairEmoji(v.profile?.flair)}{v.profile?.username && <span className="ml-1 text-xs font-normal text-muted-foreground">@{v.profile.username}</span>}</span>
                 <span className="block text-xs text-muted-foreground">Rating {v.profile?.rating ?? "–"} · nivå {v.profile?.level ?? 1} · {v.profile?.streak ?? 0} 🔥 · {v.profile?.games ?? 0} partier</span>
               </span>
               {game ? <Link to="/live/$gameId" params={{ gameId: game.id }} className="btn-game text-sm">Til brettet</Link>

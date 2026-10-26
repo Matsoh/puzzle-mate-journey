@@ -139,3 +139,8 @@
 - Adventurer er byttet ut med **Zuri** (bright-kumedzro/zuri, MIT), vendoret under src/vendor/zuri (avatar-pakken + core/random; `// @ts-nocheck` fordi upstream ikke følger vårt strenge tsconfig). Memoji-aktige 3D-hoder genereres fra parametre med SDF-mesh i Web Workers (~250–400 ms per hode), ingen bildefiler.
 - src/lib/avatar.ts: 16 deler (stil, hud 14, ansiktsform 6, hår 16, hårfarge 12, øyne 6, bryn 5, uttrykk 7, skjegg 5, briller 3, ørepynt 3, detaljer 4, klær 22, klesfarge 14, tilbehør 4, bakgrunn 12) = 135 deler, 59 gratis, resten via `RULES`. `normalizeLook` validerer alt som leses (eget lager og venners profil-json).
 - src/lib/avatar-params.ts: look → `AvatarParams` (fast seed så ansiktet ikke hopper; hår-/øyefarge, bryn, fregner/rødme overstyres direkte). src/lib/avatar-render.ts: `flatLook` (øyeblikkelig 2D-plassholder), `renderLook` (3D → PNG, én om gangen, minnecache, egen look i localStorage), `mountLook` (levende 3D-canvas: blunker, svaier, dra for å snu). `PlayerAvatar`/`AvatarImage` bruker `useAvatarImage`; verkstedet viser `LiveAvatar`.
+
+## Steg 24 – Brukernavn og flair
+- Migrasjon supabase/migrations/20261027100000_username_flair.sql: `profiles.username` (unik, case-insensitiv, `^[a-z0-9_]{3,16}$`) og `profiles.flair`; RPC `set_username`; `send_friend_request` godtar nå brukernavn (med/uten @) eller vennekode.
+- src/lib/flair.ts: 20 flairs (5 gratis, mynter, streak, seire, motiver, skoleuke, nivå, slå bots) med samme `Unlock`-regler; `Progress.flair` synkes til profilen. Vises ved navnet på avatarsiden, i sidemenyen, ved brettet (bot- og venne-partier) og i vennelista.
+- Avatarsiden: «Velg brukernavn» under navnet (kun når nettspill er tilgjengelig); Venner-siden viser @brukernavn og tar imot brukernavn i «Legg til».
