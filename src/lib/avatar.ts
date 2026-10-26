@@ -1,5 +1,5 @@
-// Avatarverkstedet — Tobias builds his own character (Adventurer by Lisa
-// Wischofsky, CC BY 4.0, rendered with DiceBear, both vendored). Parts unlock by playing: free basics,
+// Avatarverkstedet — Tobias builds his own 3D character (Zuri by Bright
+// Kumedzro, MIT, vendored: Memoji-style heads generated from code). Parts unlock by playing: free basics,
 // coins from the daily chest, levels, streaks, beaten opponents, motifs, wins.
 import type { Progress } from "./progress";
 import { levelFromXp } from "./rules";
@@ -7,7 +7,7 @@ import { OPPONENTS } from "./opponents";
 import { collectionSummary } from "./collection";
 import { schoolWeeks } from "./school";
 
-export type PartKey = "skin" | "hair" | "hairColor" | "eyes" | "eyebrows" | "mouth" | "glasses" | "earrings" | "features" | "background";
+export type PartKey = "style" | "skin" | "face" | "hair" | "hairColor" | "eyes" | "brows" | "mouth" | "beard" | "glasses" | "earrings" | "details" | "outfit" | "outfitColor" | "accessory" | "background";
 
 export type Unlock =
   | { kind: "free" }
@@ -39,46 +39,51 @@ const RULES: Unlock[] = [
   { kind: "beat", opp: "storm" },
 ];
 
-/** ids → options: the first `freeCount` are free, the rest get RULES in order (offset spreads rule kinds across parts). */
-function series(ids: string[], label: (id: string, i: number) => string, freeCount: number, offset = 0): PartOption[] {
-  return ids.map((id, i) => (i < freeCount ? free(id, label(id, i)) : { id, name: label(id, i), unlock: RULES[(i - freeCount + offset) % RULES.length]! }));
+/** [id, name] pairs → options: the first `freeCount` are free, the rest get RULES in order (offset spreads rule kinds across parts). */
+function series(items: readonly (readonly [string, string])[], freeCount: number, offset = 0): PartOption[] {
+  return items.map(([id, name], i) => (i < freeCount ? free(id, name) : { id, name, unlock: RULES[(i - freeCount + offset) % RULES.length]! }));
 }
-const pad = (n: number) => String(n).padStart(2, "0");
-const variants = (n: number) => Array.from({ length: n }, (_, i) => `variant${pad(i + 1)}`);
-const num = (id: string) => String(Number(id.replace(/\D/g, "")));
 
-// Adventurer by Lisa Wischofsky (CC BY 4.0), rendered with DiceBear (MIT). Both vendored under src/vendor/dicebear.
+// Zuri by Bright Kumedzro (MIT, vendored under src/vendor/zuri): 3D Memoji-style heads generated from code, no image assets.
 export const PARTS: Record<PartKey, { label: string; options: PartOption[] }> = {
-  skin: { label: "Hud", options: [free("f2d3b1", "Lys"), free("ecad80", "Beige"), free("9e5622", "Brun"), free("763900", "Mørk")] },
-  hair: { label: "Hår", options: series([...Array.from({ length: 19 }, (_, i) => `short${pad(i + 1)}`), ...Array.from({ length: 26 }, (_, i) => `long${pad(i + 1)}`)], (id) => (id.startsWith("short") ? `Kort ${num(id)}` : `Langt ${num(id)}`), 8, 0) },
-  hairColor: { label: "Hårfarge", options: series(["0e0e0e", "562306", "6a4e35", "796a45", "ac6511", "cb6820", "e5d7a3", "b9a05f", "ab2a18", "afafaf", "3eac2c", "85c2c6", "dba3be", "592454"], (id) => ({ "0e0e0e": "Svart", "562306": "Mørk brun", "6a4e35": "Brun", "796a45": "Askebrun", "ac6511": "Kastanje", "cb6820": "Rødbrun", "e5d7a3": "Blond", "b9a05f": "Mørk blond", "ab2a18": "Rød", "afafaf": "Grå", "3eac2c": "Grønn", "85c2c6": "Turkis", "dba3be": "Rosa", "592454": "Lilla" })[id] ?? id, 6, 3) },
-  eyes: { label: "Øyne", options: series(variants(26), (_, i) => `Øyne ${i + 1}`, 6, 7) },
-  eyebrows: { label: "Bryn", options: series(variants(15), (_, i) => `Bryn ${i + 1}`, 5, 11) },
-  mouth: { label: "Munn", options: series(variants(30), (_, i) => `Munn ${i + 1}`, 6, 17) },
-  glasses: { label: "Briller", options: [free("none", "Ingen"), ...series(variants(5), (_, i) => `Briller ${i + 1}`, 0, 23)] },
-  earrings: { label: "Ørepynt", options: [free("none", "Ingen"), ...series(variants(6), (_, i) => `Ørepynt ${i + 1}`, 0, 29)] },
-  features: { label: "Detaljer", options: [free("none", "Ingen"), ...series(["freckles", "blush", "birthmark", "mustache"], (id) => ({ freckles: "Fregner", blush: "Rødme", birthmark: "Føflekk", mustache: "Bart" })[id] ?? id, 1, 37)] },
-  background: { label: "Bakgrunn", options: series(["b6e3f4", "c0aede", "d1d4f9", "ffd5dc", "ffdfbf", "a7ffc4", "ffffb1", "ff488e", "65c9ff", "25557c", "2b2b2b", "f5c542"], (id) => ({ b6e3f4: "Lyseblå", c0aede: "Lilla", d1d4f9: "Lavendel", ffd5dc: "Rosa", ffdfbf: "Fersken", a7ffc4: "Mint", ffffb1: "Gul", ff488e: "Magenta", "65c9ff": "Himmelblå", "25557c": "Marine", "2b2b2b": "Svart", f5c542: "Gull" })[id] ?? id, 5, 43) },
+  style: { label: "Stil", options: [free("masculine", "Gutt"), free("feminine", "Jente")] },
+  skin: { label: "Hud", options: series([["13", "Lysest"], ["12", "Veldig lys"], ["11", "Lys"], ["10", "Lys beige"], ["9", "Beige"], ["8", "Gyllen"], ["7", "Karamell"], ["6", "Varm brun"], ["5", "Brun"], ["4", "Mørk brun"], ["3", "Dyp brun"], ["2", "Mørk"], ["1", "Veldig mørk"], ["0", "Mørkest"]], 14) },
+  face: { label: "Ansikt", options: series([["oval", "Oval"], ["round", "Rund"], ["square", "Firkantet"], ["heart", "Hjerte"], ["long", "Lang"], ["diamond", "Diamant"]], 3, 0) },
+  hair: { label: "Hår", options: series([["crop", "Kort"], ["buzz", "Snauklipt"], ["fade", "Fade"], ["curly", "Krøllete"], ["long", "Langt"], ["bob", "Bob"], ["none", "Barbert"], ["hightop", "High top"], ["afro", "Afro"], ["puffs", "Puffs"], ["bun", "Knute"], ["locs", "Locs"], ["braids", "Fletter"], ["cornrows", "Cornrows"], ["ponytail", "Hestehale"], ["headwrap", "Hodeplagg"]], 7, 3) },
+  hairColor: { label: "Hårfarge", options: series([["black", "Svart"], ["espresso", "Espresso"], ["darkBrown", "Mørk brun"], ["brown", "Brun"], ["blonde", "Blond"], ["auburn", "Rødbrun"], ["ginger", "Rød"], ["platinum", "Platina"], ["grey", "Grå"], ["pink", "Rosa"], ["blue", "Blå"], ["purple", "Lilla"]], 5, 7) },
+  eyes: { label: "Øyne", options: series([["darkBrown", "Mørk brun"], ["brown", "Brun"], ["blue", "Blå"], ["hazel", "Hassel"], ["green", "Grønn"], ["grey", "Grå"]], 3, 11) },
+  brows: { label: "Bryn", options: series([["normal", "Vanlige"], ["thin", "Tynne"], ["thick", "Kraftige"], ["arched", "Buede"], ["flat", "Flate"]], 2, 14) },
+  mouth: { label: "Uttrykk", options: series([["smile", "Smil"], ["neutral", "Nøytral"], ["grin", "Glis"], ["laugh", "Latter"], ["smirk", "Skjevt smil"], ["wink", "Blunk"], ["surprised", "Overrasket"]], 3, 17) },
+  beard: { label: "Skjegg", options: series([["none", "Ingen"], ["stubble", "Stubb"], ["mustache", "Bart"], ["goatee", "Geitskjegg"], ["beard", "Helskjegg"]], 1, 21) },
+  glasses: { label: "Briller", options: series([["none", "Ingen"], ["round", "Runde"], ["square", "Firkantede"]], 1, 24) },
+  earrings: { label: "Ørepynt", options: series([["none", "Ingen"], ["studs", "Små"], ["hoops", "Ringer"]], 1, 27) },
+  details: { label: "Detaljer", options: series([["none", "Ingen"], ["freckles", "Fregner"], ["blush", "Rødme"], ["both", "Fregner og rødme"]], 1, 30) },
+  outfit: { label: "Klær", options: series([["tee", "T-skjorte"], ["hoodie", "Hettegenser"], ["vneck", "V-hals"], ["shirt", "Skjorte"], ["sweater", "Genser"], ["tank", "Singlet"], ["turtleneck", "Rullekrage"], ["denim", "Denimjakke"], ["cardigan", "Cardigan"], ["buttonup", "Knappeskjorte"], ["blazer", "Blazer"], ["suit", "Dress"], ["bowtie", "Sløyfe"], ["blouse", "Bluse"], ["wrap", "Omslagstopp"], ["kaftan", "Kaftan"], ["kente", "Kente"], ["ankara", "Ankara"], ["agbada", "Agbada"], ["labcoat", "Labfrakk"], ["scrubs", "Sykehusdrakt"], ["chef", "Kokkejakke"]], 5, 33) },
+  outfitColor: { label: "Klesfarge", options: series([["#2f5d8a", "Blå"], ["#1f2430", "Svart"], ["#f4f1ea", "Hvit"], ["#c8452f", "Rød"], ["#3f7a55", "Grønn"], ["#e8a33d", "Oransje"], ["#7a4bb0", "Lilla"], ["#e7709a", "Rosa"], ["#3a3a3a", "Mørk grå"], ["#9fb7c9", "Lyseblå"], ["#c9b48f", "Sand"], ["#1d6f6a", "Petrol"], ["#f2d24b", "Gul"], ["#8a2f45", "Vinrød"]], 5, 40) },
+  accessory: { label: "Tilbehør", options: series([["none", "Ingen"], ["scarf", "Skjerf"], ["necklace", "Kjede"], ["headtie", "Gele"]], 1, 45) },
+  background: { label: "Bakgrunn", options: series([["#cde2f7", "Lyseblå"], ["#cfe9d6", "Mint"], ["#ffe3a8", "Gul"], ["#ffd8cc", "Fersken"], ["#e2d6f6", "Lilla"], ["#f8d0e0", "Rosa"], ["#d3efe9", "Turkis"], ["#f3e3d0", "Sand"], ["#dfe8c4", "Lime"], ["#1e2a24", "Mørk grønn"], ["#2b2b2b", "Svart"], ["#f5c542", "Gull"]], 5, 48) },
 };
 
 export const PART_KEYS = Object.keys(PARTS) as PartKey[];
 
 export const DEFAULT_AVATAR: Record<PartKey, string> = {
-  skin: "f2d3b1", hair: "short01", hairColor: "562306", eyes: "variant01", eyebrows: "variant01", mouth: "variant01",
-  glasses: "none", earrings: "none", features: "none", background: "b6e3f4",
+  style: "masculine", skin: "12", face: "oval", hair: "crop", hairColor: "darkBrown", eyes: "blue", brows: "normal", mouth: "smile",
+  beard: "none", glasses: "none", earrings: "none", details: "none", outfit: "hoodie", outfitColor: "#2f5d8a", accessory: "none", background: "#cde2f7",
 };
 
 export const DEFAULT_NAME = "Tobias";
 export const partId = (k: PartKey, id: string) => `${k}:${id}`;
 
-export function avatarOf(p: Progress): Record<PartKey, string> {
+/** Any stored/received record → a valid look (unknown parts and ids fall back to the default). */
+export function normalizeLook(raw: Record<string, unknown> | null | undefined): Record<PartKey, string> {
   const a = { ...DEFAULT_AVATAR };
   for (const k of PART_KEYS) {
-    const v = p.avatar?.[k];
-    if (v && PARTS[k].options.some((o) => o.id === v)) a[k] = v;
+    const v = raw?.[k];
+    if (typeof v === "string" && PARTS[k].options.some((o) => o.id === v)) a[k] = v;
   }
   return a;
 }
+export const avatarOf = (p: Progress): Record<PartKey, string> => normalizeLook(p.avatar);
 
 export const avatarName = (p: Progress) => (p.avatarName ?? "").trim() || DEFAULT_NAME;
 

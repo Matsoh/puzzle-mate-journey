@@ -49,24 +49,25 @@ describe("Skattekisten", () => {
 describe("Avatarverkstedet", () => {
   it("free parts equip at once, coin parts need coins, achievement parts need the achievement", () => {
     expect(avatarOf(DEFAULT_PROGRESS)).toEqual(DEFAULT_AVATAR);
-    const p1 = withPart(DEFAULT_PROGRESS, "hair", "short03")!;
-    expect(avatarOf(p1).hair).toBe("short03");
+    const p1 = withPart(DEFAULT_PROGRESS, "hair", "buzz")!;
+    expect(avatarOf(p1).hair).toBe("buzz");
     const coin = PARTS.hair.options.find((o) => o.unlock.kind === "coins")!;
     expect(withPart(p1, "hair", coin.id)).toBeNull();
     const rich = { ...p1, coins: 500 };
     const p2 = withPart(rich, "hair", coin.id)!;
     expect(p2.coins).toBe(500 - (coin.unlock as { cost: number }).cost);
     expect(owns(p2, "hair", coin.id)).toBe(true);
-    expect(withPart({ ...p2, avatar: { ...p2.avatar, hair: "short01" } }, "hair", coin.id)!.coins).toBe(p2.coins); // owned: no second charge
-    const beat = PARTS.eyes.options.find((o) => o.unlock.kind === "beat")!;
-    expect(withPart(DEFAULT_PROGRESS, "eyes", beat.id)).toBeNull();
-    expect(withPart({ ...DEFAULT_PROGRESS, beaten: [(beat.unlock as { opp: string }).opp] }, "eyes", beat.id)).not.toBeNull();
-    const lvl = PARTS.mouth.options.find((o) => o.unlock.kind === "level")!;
-    expect(withPart({ ...DEFAULT_PROGRESS, xp: 100000 }, "mouth", lvl.id)).not.toBeNull();
-    const streak = PARTS.hair.options.find((o) => o.unlock.kind === "streak")!;
-    expect(withPart({ ...DEFAULT_PROGRESS, bestStreak: 30 }, "hair", streak.id)).not.toBeNull();
+    expect(withPart({ ...p2, avatar: { ...p2.avatar, hair: "crop" } }, "hair", coin.id)!.coins).toBe(p2.coins); // owned: no second charge
+    const find = (kind: string) => { for (const k of Object.keys(PARTS) as (keyof typeof PARTS)[]) { const o = PARTS[k].options.find((x) => x.unlock.kind === kind); if (o) return { k, o }; } throw new Error(kind); };
+    const beat = find("beat");
+    expect(withPart(DEFAULT_PROGRESS, beat.k, beat.o.id)).toBeNull();
+    expect(withPart({ ...DEFAULT_PROGRESS, beaten: [(beat.o.unlock as { opp: string }).opp] }, beat.k, beat.o.id)).not.toBeNull();
+    const lvl = find("level");
+    expect(withPart({ ...DEFAULT_PROGRESS, xp: 100000 }, lvl.k, lvl.o.id)).not.toBeNull();
+    const streak = find("streak");
+    expect(withPart({ ...DEFAULT_PROGRESS, bestStreak: 30 }, streak.k, streak.o.id)).not.toBeNull();
     // unknown ids are ignored when reading
-    expect(avatarOf({ ...DEFAULT_PROGRESS, avatar: { hair: "bob" } }).hair).toBe(DEFAULT_AVATAR.hair);
+    expect(avatarOf({ ...DEFAULT_PROGRESS, avatar: { hair: "shortFlat" } }).hair).toBe(DEFAULT_AVATAR.hair);
   });
   it("every part has a free default, ids are unique, and lock labels read well", () => {
     for (const k of Object.keys(PARTS) as (keyof typeof PARTS)[]) {
@@ -79,8 +80,8 @@ describe("Avatarverkstedet", () => {
     expect(unlockLabel({ kind: "weeks", n: 1 })).toBe("Full skoleuke");
     expect(nextUnlocks(DEFAULT_PROGRESS, 3)).toHaveLength(3);
     const w = wardrobeSummary(DEFAULT_PROGRESS);
-    expect(w.total).toBeGreaterThan(120);
-    expect(w.unlocked).toBeGreaterThan(35);
+    expect(w.total).toBeGreaterThan(110);
+    expect(w.unlocked).toBeGreaterThan(45);
   });
   it("names fall back to Tobias", () => {
     expect(avatarName(DEFAULT_PROGRESS)).toBe("Tobias");
@@ -101,3 +102,22 @@ describe("Mike offline", () => {
   });
 });
 
+
+describe("Zuri-parametre", () => {
+  it("maps every part to valid renderer params", async () => {
+    const { paramsFor } = await import("./avatar-params");
+    const { DEFAULT_AVATAR, PARTS, PART_KEYS } = await import("./avatar");
+    const p = paramsFor(DEFAULT_AVATAR);
+    expect(p.hair.style).toBe("crop");
+    expect(p.outfit.style).toBe("hoodie");
+    expect(p.eyes.color).toBe("#3f74b5");
+    expect(p.presentation).toBe("masculine");
+    // every option of every part must be accepted without throwing
+    for (const k of PART_KEYS) for (const o of PARTS[k].options) expect(() => paramsFor({ ...DEFAULT_AVATAR, [k]: o.id })).not.toThrow();
+    const pink = paramsFor({ ...DEFAULT_AVATAR, hairColor: "pink", style: "feminine", hair: "bob", details: "both", glasses: "round" });
+    expect(pink.hair.color).toBe("#e6739f");
+    expect(pink.hair.style).toBe("bob");
+    expect(pink.freckles).toBeGreaterThan(0);
+    expect(pink.glasses).toBe("round");
+  });
+});

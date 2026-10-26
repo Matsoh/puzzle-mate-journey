@@ -4,6 +4,7 @@ import { Check, Lock, BookOpen, ChevronRight, Pencil } from "lucide-react";
 import { updateProgress, useProgress } from "@/lib/progress";
 import { PARTS, PART_KEYS, avatarName, avatarOf, nextUnlocks, owns, unlockLabel, wardrobeSummary, withPart, type PartKey } from "@/lib/avatar";
 import { AvatarImage } from "@/components/PlayerAvatar";
+import { LiveAvatar } from "@/components/LiveAvatar";
 import { Mike } from "@/components/Mike";
 import { collectionSummary } from "@/lib/collection";
 import { play } from "@/lib/sound";
@@ -62,7 +63,8 @@ function AvatarPage() {
       </header>
 
       <div className="card-game mb-3 grid place-items-center p-4">
-        <AvatarImage parts={parts} className="w-48 rounded-full" />
+        <LiveAvatar look={parts} className="aspect-square w-60 overflow-hidden rounded-2xl" />
+        <p className="mt-1 text-[11px] text-muted-foreground">Dra i hodet for å snu det</p>
         <p className="mt-2 text-xs text-muted-foreground">{ward.unlocked} av {ward.total} deler låst opp</p>
       </div>
       {msg && <p role="status" className="mb-3 text-center text-sm font-semibold text-primary">{msg}</p>}
@@ -80,7 +82,7 @@ function AvatarPage() {
           const preview = { ...parts, [tab]: o.id };
           return (
             <button key={o.id} onClick={() => choose(tab, o.id)} className={`part ${on ? "is-on" : ""} ${have ? "" : "is-locked"}`} aria-pressed={on} title={have ? o.name : `${o.name} – ${unlockLabel(o.unlock)}`}>
-              <AvatarImage parts={preview} className="w-14" />
+              <AvatarImage parts={preview} size={96} className="w-16 rounded-xl" />
               <span className="leading-tight">{o.name}</span>
               {on ? <Check className="size-4 text-primary" /> : have ? <span className="part__cost text-muted-foreground">Klar</span> : <span className="part__cost"><Lock className="inline size-3" /> {unlockLabel(o.unlock)}</span>}
             </button>
@@ -105,7 +107,7 @@ function AvatarPage() {
         <Mike mood="chill" className="w-14" animate={false} />
         <p className="mike-bubble text-sm">{ward.unlocked < 90 ? "Looking sharp. Most of the good stuff unlocks by playing – levels, streaks, beating the ladder. Go earn it." : "That wardrobe is getting serious. Almost as serious as your chess."}</p>
       </div>
-      <p className="mt-4 text-[11px] text-muted-foreground">Avatar-stil: Adventurer av Lisa Wischofsky (CC BY 4.0), rendret med DiceBear (MIT).</p>
+      <p className="mt-4 text-[11px] text-muted-foreground">3D-avatarer: Zuri av Bright Kumedzro (MIT) – generert av kode, ingen bilder.</p>
     </main>
   );
 }

@@ -1,35 +1,33 @@
-import { useMemo } from "react";
-import { createAvatar } from "@/vendor/dicebear/core/index.js";
-import * as adventurer from "@/vendor/dicebear/adventurer/index.js";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/lib/progress";
-import { avatarName, avatarOf, type PartKey } from "@/lib/avatar";
+import { avatarName, avatarOf, normalizeLook } from "@/lib/avatar";
+import { lookKey, type AvatarLook } from "@/lib/avatar-params";
+import { flatLook, recallOwn, rememberOwn, renderLook } from "@/lib/avatar-render";
 
-/** SVG for a parts map (Adventurer via DiceBear, all local). Pure, memoised by callers. */
-export function avatarSvg(parts: Record<PartKey, string>, circle = true): string {
-  return createAvatar(adventurer, {
-    seed: "tobias",
-    radius: circle ? 50 : 0,
-    skinColor: [parts.skin],
-    hair: [parts.hair as never],
-    hairProbability: 100,
-    hairColor: [parts.hairColor],
-    eyes: [parts.eyes as never],
-    eyebrows: [parts.eyebrows as never],
-    mouth: [parts.mouth as never],
-    glasses: parts.glasses === "none" ? [] : [parts.glasses as never],
-    glassesProbability: parts.glasses === "none" ? 0 : 100,
-    earrings: parts.earrings === "none" ? [] : [parts.earrings as never],
-    earringsProbability: parts.earrings === "none" ? 0 : 100,
-    features: parts.features === "none" ? [] : [parts.features as never],
-    featuresProbability: parts.features === "none" ? 0 : 100,
-    backgroundColor: [parts.background],
-  }).toString();
+/** Image URL for a look: cached 3D render when ready, flat drawing meanwhile. */
+export function useAvatarImage(look: AvatarLook, size = 256, own = false): { src: string; ready: boolean } {
+  const key = lookKey(look);
+  const [state, setState] = useState<{ key: string; src: string; ready: boolean }>(() => {
+    const cached = own ? recallOwn(look) : null;
+    return { key, src: cached ?? flatLook(look, size), ready: !!cached };
+  });
+  useEffect(() => {
+    let alive = true;
+    const cached = own ? recallOwn(look) : null;
+    if (cached) { setState({ key, src: cached, ready: true }); return; }
+    setState((s) => (s.key === key ? s : { key, src: flatLook(look, size), ready: false }));
+    renderLook(look, size).then((url) => { if (!alive) return; setState({ key, src: url, ready: true }); if (own) rememberOwn(look, url); }).catch(() => { /* keep the flat drawing */ });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, size, own]);
+  return state.key === key ? { src: state.src, ready: state.ready } : { src: flatLook(look, size), ready: false };
 }
 
-export function AvatarImage({ parts, className, circle = true }: { parts: Record<PartKey, string>; className?: string | undefined; circle?: boolean }) {
-  const src = useMemo(() => `data:image/svg+xml;utf8,${encodeURIComponent(avatarSvg(parts, circle))}`, [parts, circle]);
-  return <img src={src} alt="" draggable={false} className={cn("block select-none", className)} />;
+export function AvatarImage({ parts, className, size = 256, own = false }: { parts: Record<string, unknown>; className?: string | undefined; size?: number; own?: boolean }) {
+  const look = useMemo(() => normalizeLook(parts), [parts]);
+  const { src, ready } = useAvatarImage(look, size, own);
+  return <img src={src} alt="" draggable={false} className={cn("block select-none", ready ? "" : "opacity-80", className)} />;
 }
 
 /** The player's own avatar, as built in Avatarverkstedet. */
@@ -38,7 +36,7 @@ export function PlayerAvatar({ className }: { className?: string }) {
   const parts = useMemo(() => avatarOf(p), [p]);
   return (
     <span className={cn("relative inline-flex shrink-0 overflow-hidden rounded-full bg-muted", className)} role="img" aria-label={avatarName(p)}>
-      <AvatarImage parts={parts} className="absolute inset-0 size-full" />
+      <AvatarImage parts={parts} own className="absolute inset-0 size-full object-cover" />
     </span>
   );
 }

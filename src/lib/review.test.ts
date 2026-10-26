@@ -95,16 +95,17 @@ describe("Skoleuka", () => {
     expect(weekStatus(p, "2026-10-25").filter((d) => d.done)).toHaveLength(6);
     expect(weekComplete(p, "2026-10-25")).toBe(false);
     const { PARTS } = await import("./avatar");
-    const w1 = PARTS.hair.options.find((o) => o.unlock.kind === "weeks" && o.unlock.n === 1)!;
-    expect(owns(p, "hair", w1.id)).toBe(false);
+    const findWeeks = (n: number) => { for (const k of Object.keys(PARTS) as (keyof typeof PARTS)[]) { const o = PARTS[k].options.find((x) => x.unlock.kind === "weeks" && x.unlock.n === n); if (o) return { k, o }; } throw new Error(`weeks ${n}`); };
+    const w1 = findWeeks(1);
+    expect(owns(p, w1.k, w1.o.id)).toBe(false);
     const coins = p.coins;
     for (const l of ["lesson", "game", "drill"] as const) p = withLesson(p, "2026-10-25", l);
     expect(weekComplete(p, "2026-10-25")).toBe(true);
     expect(schoolWeeks(p)).toBe(1);
     expect(p.coins).toBe(coins + WEEK_COINS);
-    expect(owns(p, "hair", w1.id)).toBe(true);
-    const w2 = PARTS.hair.options.find((o) => o.unlock.kind === "weeks" && o.unlock.n === 2)!;
-    expect(owns(p, "hair", w2.id)).toBe(false);
+    expect(owns(p, w1.k, w1.o.id)).toBe(true);
+    const w2 = findWeeks(2);
+    expect(owns(p, w2.k, w2.o.id)).toBe(false);
     expect(withLesson(p, "2026-10-25", "drill").coins).toBe(p.coins); // no double pay
   });
 });
