@@ -87,3 +87,25 @@ describe("Mike offline", () => {
     expect(MIKE_SYSTEM_PROMPT).toMatch(/Never compare him to other kids/);
   });
 });
+
+describe("3D-skins", () => {
+  it("has 250 skins with a dozen free, equips and buys correctly", async () => {
+    const { SKINS, ownsSkin, withSkin, withoutSkin, skinSummary } = await import("./skins");
+    expect(SKINS).toHaveLength(250);
+    expect(new Set(SKINS.map((s) => s.id)).size).toBe(250);
+    const free = SKINS.filter((s) => s.unlock.kind === "free");
+    expect(free.length).toBe(12);
+    expect(skinSummary(DEFAULT_PROGRESS).unlocked).toBe(12);
+    const p1 = withSkin(DEFAULT_PROGRESS, free[0]!.id)!;
+    expect(p1.skin).toBe(free[0]!.id);
+    expect(withoutSkin(p1).skin).toBeNull();
+    const coin = SKINS.find((s) => s.unlock.kind === "coins")!;
+    expect(withSkin(DEFAULT_PROGRESS, coin.id)).toBeNull();
+    const rich = withSkin({ ...DEFAULT_PROGRESS, coins: 500 }, coin.id)!;
+    expect(ownsSkin(rich, coin.id)).toBe(true);
+    expect(rich.coins).toBe(500 - (coin.unlock as { cost: number }).cost);
+    const lvl = SKINS.find((s) => s.unlock.kind === "level")!;
+    expect(ownsSkin({ ...DEFAULT_PROGRESS, xp: 100000 }, lvl.id)).toBe(true);
+    expect(SKINS.some((s) => s.unlock.kind === "beat" && s.unlock.opp === "storm")).toBe(true);
+  });
+});

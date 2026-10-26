@@ -126,3 +126,7 @@
 - Nye navn og portretter (public/bots/1–10.png): Neil Down, Bill Board, Chris P. Bacon, Ida Know, Hugh Jass, Jack Pott, Phil Landers, Heidi Claire, Robin Banks, ET. Ids (pelle, kaos …) er beholdt så `beaten` og avatar-låser virker.
 - src/lib/bot-mood.ts (rent, testet): humør fra stillingen og siste trekk sett fra boten – idle/think/happy/smug/angry/worried/sad/win/lose/draw – og replikker med personlighet. `BotAvatar` animerer portrettet med CSS (puster, svaier når den tenker, hopper ved slag, rister med rød glød når den mister brikker, henger med hodet og blir grå når den taper, hopper med gull-glød når den vinner), humør-emoji og snakkeboble ved humørskifte.
 - Partiet: toppfelt med stort portrett, navn litt mindre, rating/stil, klokke; eget felt med Tobias sin avatar nederst. Intro-skjermen viser portrettet i stedet for 3D-scenen. Stigen og Monsterboken bruker portrettene.
+
+## Steg 21 – 3D-skins
+- 250 3D-hoder fra «125 Animoji Style Avatars» (kjøpt pakke, a1–a125 + b1–b125) krympet til 256 px palett-PNG (~15 KB hver) i public/skins. src/lib/skins.ts: 12 gratis startere, resten med lås (mynter 30–80, nivå 2–12, streak, slå hver bot, seire, partier, motiver, skoleuker) – deterministisk fordelt. `Progress.skin` = valgt skin eller null (bygd Avataaars-avatar).
+- Avatarverkstedet har fanene «3D-skins» og «Bygg selv». `AvatarImage` tar `AvatarLook` (deler + `skin3d`) og viser skin-bildet når satt; profilen til venner får `skin3d` i avatar-json, så venner ser skinet.

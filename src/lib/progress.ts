@@ -41,6 +41,8 @@ export type Progress = {
   avatar: Record<string, string>;
   avatarOwned: string[];
   avatarName: string;
+  /** Chosen 3D skin id (public/skins), or null to show the built Avataaars avatar. */
+  skin: string | null;
   /** Online accounts for importing real games. */
   accounts: { chesscom?: string; lichess?: string };
   /** Imported real games (newest first, capped) and which ones were reviewed. */
@@ -78,6 +80,7 @@ export const DEFAULT_PROGRESS: Progress = {
   avatar: {},
   avatarOwned: [],
   avatarName: "",
+  skin: null,
   accounts: {},
   importedGames: [],
   reviewedGames: [],

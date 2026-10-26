@@ -45,7 +45,7 @@ let lastProfilePush = "";
 /** Mirror the public bits of progress to the profile, only when something changed. */
 export async function syncProfile(p: Progress): Promise<void> {
   if (!me || !onlineAvailable()) return;
-  const row = { name: avatarName(p), avatar: avatarOf(p) as unknown as Json, rating: p.rating, level: levelFromXp(p.xp).level, streak: p.streak, games: p.games };
+  const row = { name: avatarName(p), avatar: { ...avatarOf(p), skin3d: p.skin ?? null } as unknown as Json, rating: p.rating, level: levelFromXp(p.xp).level, streak: p.streak, games: p.games };
   const sig = JSON.stringify(row);
   if (sig === lastProfilePush) return;
   lastProfilePush = sig;
