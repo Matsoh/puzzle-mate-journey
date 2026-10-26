@@ -4,7 +4,6 @@ import { Check, Lock, BookOpen, ChevronRight, Pencil } from "lucide-react";
 import { updateProgress, useProgress } from "@/lib/progress";
 import { PARTS, PART_KEYS, avatarName, avatarOf, nextUnlocks, owns, unlockLabel, wardrobeSummary, withPart, type PartKey } from "@/lib/avatar";
 import { AvatarImage } from "@/components/PlayerAvatar";
-import { SKINS, ownsSkin, skinSrc, skinSummary, withSkin, withoutSkin } from "@/lib/skins";
 import { Mike } from "@/components/Mike";
 import { collectionSummary } from "@/lib/collection";
 import { play } from "@/lib/sound";
@@ -18,9 +17,7 @@ export const Route = createFileRoute("/avatar")({
 function AvatarPage() {
   const p = useProgress();
   const parts = useMemo(() => avatarOf(p), [p]);
-  const [mode, setMode] = useState<"skins" | "build">("skins");
   const [tab, setTab] = useState<PartKey>("hair");
-  const sk = skinSummary(p);
   const [msg, setMsg] = useState<string | null>(null);
   const [editName, setEditName] = useState(false);
   const [name, setName] = useState(avatarName(p));
@@ -28,19 +25,6 @@ function AvatarPage() {
   const col = collectionSummary(p);
   const goals = nextUnlocks(p);
 
-  const chooseSkin = (id: string) => {
-    const skin = SKINS.find((x) => x.id === id)!;
-    const had = ownsSkin(p, id);
-    const next = withSkin(p, id);
-    if (!next) {
-      setMsg(skin.unlock.kind === "coins" ? `Trenger ${skin.unlock.cost - (p.coins ?? 0)} mynter til. Dagens kiste gir mynter.` : `Låses opp: ${unlockLabel(skin.unlock)}.`);
-      play("wrong");
-      return;
-    }
-    updateProgress(() => next);
-    setMsg(had ? null : "Ny skin låst opp!");
-    play(had ? "move" : "correct");
-  };
   const choose = (k: PartKey, id: string) => {
     const opt = PARTS[k].options.find((o) => o.id === id)!;
     const had = owns(p, k, id);
@@ -78,42 +62,18 @@ function AvatarPage() {
       </header>
 
       <div className="card-game mb-3 grid place-items-center p-4">
-        <AvatarImage parts={{ ...parts, skin3d: p.skin }} className="w-48 rounded-full" />
-        <p className="mt-2 text-xs text-muted-foreground">{p.skin ? `3D-skin · ${sk.unlocked} av ${sk.total} skins låst opp` : `Bygd avatar · ${ward.unlocked} av ${ward.total} deler låst opp`}</p>
+        <AvatarImage parts={parts} className="w-48 rounded-full" />
+        <p className="mt-2 text-xs text-muted-foreground">{ward.unlocked} av {ward.total} deler låst opp</p>
       </div>
       {msg && <p role="status" className="mb-3 text-center text-sm font-semibold text-primary">{msg}</p>}
 
-      <div className="mb-4 grid grid-cols-2 gap-2" role="tablist" aria-label="Avatartype">
-        <button role="tab" aria-selected={mode === "skins"} onClick={() => setMode("skins")} className={`chip min-h-11 justify-center text-sm ${mode === "skins" ? "border-primary text-primary" : ""}`}>3D-skins <span className="text-muted-foreground">{sk.unlocked}/{sk.total}</span></button>
-        <button role="tab" aria-selected={mode === "build"} onClick={() => setMode("build")} className={`chip min-h-11 justify-center text-sm ${mode === "build" ? "border-primary text-primary" : ""}`}>Bygg selv</button>
-      </div>
-
-      {mode === "skins" && (
-        <>
-          {p.skin && <Button variant="outline" size="sm" className="mb-3" onClick={() => { updateProgress((s) => withoutSkin(s)); play("move"); }}>Bruk den bygde avataren i stedet</Button>}
-          <div className="skin-grid" aria-label="Skins">
-            {SKINS.map((s) => {
-              const have = ownsSkin(p, s.id);
-              const on = p.skin === s.id;
-              return (
-                <button key={s.id} onClick={() => chooseSkin(s.id)} className={`skin ${on ? "is-on" : ""} ${have ? "" : "is-locked"}`} aria-pressed={on} title={have ? "Klar" : unlockLabel(s.unlock)}>
-                  <img src={skinSrc(s.id)} alt="" loading="lazy" draggable={false} />
-                  {on ? <Check className="size-3.5 text-primary" /> : have ? <span>Klar</span> : <span className="truncate w-full">{unlockLabel(s.unlock)}</span>}
-                  {!have && <span className="skin__lock"><Lock className="size-3" /></span>}
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {mode === "build" && <div className="chat__chips mb-3" role="tablist">
+      <div className="chat__chips mb-3" role="tablist">
         {PART_KEYS.map((k) => (
           <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`chip min-h-10 px-4 text-sm ${tab === k ? "border-primary text-primary" : ""}`}>{PARTS[k].label}</button>
         ))}
-      </div>}
+      </div>
 
-      {mode === "build" && <div className="part-grid">
+      <div className="part-grid">
         {PARTS[tab].options.map((o) => {
           const on = parts[tab] === o.id;
           const have = owns(p, tab, o.id);
@@ -126,9 +86,9 @@ function AvatarPage() {
             </button>
           );
         })}
-      </div>}
+      </div>
 
-      {mode === "build" && goals.length > 0 && (
+      {goals.length > 0 && (
         <section className="card-game mt-5 p-4" aria-label="Neste opplåsing">
           <p className="eyebrow mb-2">Neste du kan låse opp</p>
           <ul className="space-y-1 text-sm">{goals.map((g) => <li key={`${g.key}:${g.option.id}`} className="flex items-center justify-between gap-3"><span><span className="font-semibold">{g.option.name}</span> <span className="text-muted-foreground">· {PARTS[g.key].label.toLowerCase()}</span></span><span className="chip shrink-0">{unlockLabel(g.option.unlock)}</span></li>)}</ul>
@@ -145,7 +105,7 @@ function AvatarPage() {
         <Mike mood="chill" className="w-14" animate={false} />
         <p className="mike-bubble text-sm">{ward.unlocked < 90 ? "Looking sharp. Most of the good stuff unlocks by playing – levels, streaks, beating the ladder. Go earn it." : "That wardrobe is getting serious. Almost as serious as your chess."}</p>
       </div>
-      <p className="mt-4 text-[11px] text-muted-foreground">Avatarer: Avataaars av Pablo Stanley (gratis for all bruk), rendret med DiceBear (MIT).</p>
+      <p className="mt-4 text-[11px] text-muted-foreground">Avatar-stil: Adventurer av Lisa Wischofsky (CC BY 4.0), rendret med DiceBear (MIT).</p>
     </main>
   );
 }

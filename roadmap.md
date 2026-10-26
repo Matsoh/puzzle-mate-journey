@@ -130,3 +130,7 @@
 ## Steg 21 – 3D-skins
 - 250 3D-hoder fra «125 Animoji Style Avatars» (kjøpt pakke, a1–a125 + b1–b125) krympet til 256 px palett-PNG (~15 KB hver) i public/skins. src/lib/skins.ts: 12 gratis startere, resten med lås (mynter 30–80, nivå 2–12, streak, slå hver bot, seire, partier, motiver, skoleuker) – deterministisk fordelt. `Progress.skin` = valgt skin eller null (bygd Avataaars-avatar).
 - Avatarverkstedet har fanene «3D-skins» og «Bygg selv». `AvatarImage` tar `AvatarLook` (deler + `skin3d`) og viser skin-bildet når satt; profilen til venner får `skin3d` i avatar-json, så venner ser skinet.
+
+## Steg 22 – Adventurer-bygger (3D-skins fjernet)
+- 3D-skinsene er tatt ut igjen (public/skins, skins.ts, Progress.skin). Byggeren bruker nå DiceBear-stilen **Adventurer** (Lisa Wischofsky, CC BY 4.0 – kreditert nederst i verkstedet) i stedet for Avataaars: 45 frisyrer, 14 hårfarger, 26 øyne, 15 bryn, 30 munner, 5 briller, 6 ørepynt, 4 detaljer, 12 bakgrunner – 164 deler, 44 gratis, resten fordelt på mynter/nivå/streak/bots/seire/partier/motiver/skoleuker via `RULES`-lista i avatar.ts.
+- Vendoret under src/vendor/dicebear/adventurer (importer peker på ../../core). Gamle avatar-valg (Avataaars-ider) ignoreres av `avatarOf` og faller tilbake til standard.

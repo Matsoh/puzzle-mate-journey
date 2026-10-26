@@ -1,5 +1,5 @@
-// Avatarverkstedet — Tobias builds his own character (Avataaars by Pablo Stanley,
-// rendered with DiceBear, both vendored). Parts unlock by playing: free basics,
+// Avatarverkstedet — Tobias builds his own character (Adventurer by Lisa
+// Wischofsky, CC BY 4.0, rendered with DiceBear, both vendored). Parts unlock by playing: free basics,
 // coins from the daily chest, levels, streaks, beaten opponents, motifs, wins.
 import type { Progress } from "./progress";
 import { levelFromXp } from "./rules";
@@ -7,7 +7,7 @@ import { OPPONENTS } from "./opponents";
 import { collectionSummary } from "./collection";
 import { schoolWeeks } from "./school";
 
-export type PartKey = "skin" | "hair" | "hairColor" | "eyes" | "eyebrows" | "mouth" | "clothing" | "clothesColor" | "graphic" | "accessories" | "background";
+export type PartKey = "skin" | "hair" | "hairColor" | "eyes" | "eyebrows" | "mouth" | "glasses" | "earrings" | "features" | "background";
 
 export type Unlock =
   | { kind: "free" }
@@ -23,40 +23,49 @@ export type Unlock =
 export type PartOption = { id: string; name: string; unlock: Unlock };
 
 const free = (id: string, name: string): PartOption => ({ id, name, unlock: { kind: "free" } });
-const coins = (id: string, name: string, cost: number): PartOption => ({ id, name, unlock: { kind: "coins", cost } });
-const level = (id: string, name: string, lvl: number): PartOption => ({ id, name, unlock: { kind: "level", level: lvl } });
-const streak = (id: string, name: string, days: number): PartOption => ({ id, name, unlock: { kind: "streak", days } });
-const beat = (id: string, name: string, opp: string): PartOption => ({ id, name, unlock: { kind: "beat", opp } });
-const motifs = (id: string, name: string, count: number): PartOption => ({ id, name, unlock: { kind: "motifs", count } });
-const wins = (id: string, name: string, n: number): PartOption => ({ id, name, unlock: { kind: "wins", n } });
-const games = (id: string, name: string, n: number): PartOption => ({ id, name, unlock: { kind: "games", n } });
-const weeks = (id: string, name: string, n: number): PartOption => ({ id, name, unlock: { kind: "weeks", n } });
 
+/** Rules handed out in order to the non-free options of each part, so every part has cheap, medium and rare items. */
+const RULES: Unlock[] = [
+  { kind: "coins", cost: 30 }, { kind: "level", level: 2 }, { kind: "coins", cost: 40 }, { kind: "streak", days: 3 }, { kind: "level", level: 3 },
+  { kind: "beat", opp: "pelle" }, { kind: "coins", cost: 50 }, { kind: "wins", n: 5 }, { kind: "level", level: 4 }, { kind: "games", n: 10 },
+  { kind: "beat", opp: "kaos" }, { kind: "coins", cost: 60 }, { kind: "streak", days: 5 }, { kind: "motifs", count: 8 }, { kind: "level", level: 5 },
+  { kind: "beat", opp: "mia" }, { kind: "weeks", n: 1 }, { kind: "coins", cost: 70 }, { kind: "wins", n: 15 }, { kind: "level", level: 6 },
+  { kind: "beat", opp: "leo" }, { kind: "streak", days: 7 }, { kind: "games", n: 30 }, { kind: "coins", cost: 80 }, { kind: "level", level: 7 },
+  { kind: "beat", opp: "pling" }, { kind: "motifs", count: 15 }, { kind: "weeks", n: 2 }, { kind: "wins", n: 30 }, { kind: "level", level: 8 },
+  { kind: "beat", opp: "dina" }, { kind: "streak", days: 10 }, { kind: "coins", cost: 90 }, { kind: "games", n: 60 }, { kind: "level", level: 9 },
+  { kind: "beat", opp: "sigurd" }, { kind: "motifs", count: 22 }, { kind: "weeks", n: 3 }, { kind: "wins", n: 50 }, { kind: "level", level: 10 },
+  { kind: "beat", opp: "nora" }, { kind: "streak", days: 14 }, { kind: "coins", cost: 100 }, { kind: "games", n: 100 }, { kind: "level", level: 11 },
+  { kind: "beat", opp: "ivar" }, { kind: "motifs", count: 30 }, { kind: "weeks", n: 5 }, { kind: "wins", n: 80 }, { kind: "level", level: 12 },
+  { kind: "beat", opp: "storm" },
+];
+
+/** ids → options: the first `freeCount` are free, the rest get RULES in order (offset spreads rule kinds across parts). */
+function series(ids: string[], label: (id: string, i: number) => string, freeCount: number, offset = 0): PartOption[] {
+  return ids.map((id, i) => (i < freeCount ? free(id, label(id, i)) : { id, name: label(id, i), unlock: RULES[(i - freeCount + offset) % RULES.length]! }));
+}
+const pad = (n: number) => String(n).padStart(2, "0");
+const variants = (n: number) => Array.from({ length: n }, (_, i) => `variant${pad(i + 1)}`);
+const num = (id: string) => String(Number(id.replace(/\D/g, "")));
+
+// Adventurer by Lisa Wischofsky (CC BY 4.0), rendered with DiceBear (MIT). Both vendored under src/vendor/dicebear.
 export const PARTS: Record<PartKey, { label: string; options: PartOption[] }> = {
-  skin: { label: "Hud", options: [free("ffdbb4", "Lys"), free("edb98a", "Beige"), free("f8d25c", "Gul"), free("fd9841", "Fersken"), free("d08b5b", "Brun"), free("ae5d29", "Mørk brun"), free("614335", "Mørk")] },
-  hair: { label: "Hår", options: [
-    free("shortFlat", "Kort flatt"), free("shortRound", "Kort rundt"), free("shortWaved", "Kort bølget"), free("theCaesar", "Cæsar"), free("sides", "Sider"), free("straight01", "Rett langt"), free("bob", "Bob"), free("curly", "Krøllete"),
-    level("shortCurly", "Kort krøllete", 2), level("shaggy", "Bustete", 3), level("frizzle", "Krus", 3), level("shavedSides", "Barberte sider", 4), level("theCaesarAndSidePart", "Cæsar med skill", 4), level("fro", "Afro", 5), level("dreads01", "Dreads", 5), level("straightAndStrand", "Rett med lokk", 6), level("bun", "Knute", 6), level("shaggyMullet", "Mullet", 7), level("bigHair", "Stort hår", 8), level("miaWallace", "Mia", 8), level("frida", "Frida", 9), level("dreads", "Lange dreads", 10),
-    free("hijab", "Hijab"), free("turban", "Turban"),
-    beat("hat", "Hatt", "pelle"), streak("winterHat1", "Lue", 3), streak("winterHat02", "Lue med dusk", 5), beat("winterHat03", "Stripete lue", "mia"), beat("winterHat04", "Lue med brett", "sigurd"),
-    weeks("froBand", "Afro med bånd", 1), weeks("dreads02", "Dreads deluxe", 2), weeks("longButNotTooLong", "Halvlangt", 3),
-  ] },
-  hairColor: { label: "Hårfarge", options: [free("2c1b18", "Svart"), free("4a312c", "Mørk brun"), free("724133", "Brun"), free("a55728", "Kastanje"), free("b58143", "Lys brun"), free("d6b370", "Blond"), free("ecdcbf", "Platina"), coins("c93305", "Rød", 20), coins("f59797", "Rosa", 40), coins("e8e1e1", "Sølv", 60)] },
-  eyes: { label: "Øyne", options: [free("default", "Vanlige"), free("happy", "Glade"), free("wink", "Blunk"), free("side", "Sidelengs"), level("surprised", "Overrasket", 2), level("squint", "Myste", 3), level("hearts", "Hjerter", 4), beat("winkWacky", "Skrudd blunk", "kaos"), wins("eyeRoll", "Himler", 5), streak("xDizzy", "Svimmel", 7), free("closed", "Lukket")] },
-  eyebrows: { label: "Bryn", options: [free("default", "Vanlige"), free("defaultNatural", "Naturlige"), free("raisedExcited", "Hevet"), level("upDown", "Opp-ned", 2), level("flatNatural", "Flate", 3), beat("angry", "Sinte", "leo"), beat("angryNatural", "Sinte naturlige", "leo"), coins("unibrowNatural", "Monobryn", 30), free("sadConcerned", "Bekymret"), level("frownNatural", "Rynket", 4), level("raisedExcitedNatural", "Hevet naturlige", 5), weeks("upDownNatural", "Skråbryn", 2)] },
-  mouth: { label: "Munn", options: [free("smile", "Smil"), free("default", "Vanlig"), free("twinkle", "Glimt"), free("serious", "Alvorlig"), level("tongue", "Tunge", 3), coins("eating", "Spiser", 40), beat("grimace", "Grimase", "mia"), level("screamOpen", "Skrik", 5), level("disbelief", "Vantro", 4), wins("concerned", "Bekymret", 3), weeks("sad", "Trist", 1)] },
-  clothing: { label: "Klær", options: [free("shirtCrewNeck", "T-skjorte"), free("hoodie", "Hettegenser"), free("shirtVNeck", "V-hals"), coins("shirtScoopNeck", "Rund hals", 30), level("graphicShirt", "T-skjorte med trykk", 3), level("overall", "Snekkerbukse", 4), coins("collarAndSweater", "Skjorte og genser", 60), beat("blazerAndShirt", "Blazer og skjorte", "pling"), beat("blazerAndSweater", "Blazer og genser", "dina")] },
-  clothesColor: { label: "Farge på klær", options: [free("5199e4", "Blå"), free("262e33", "Svart"), free("e6e6e6", "Lys grå"), free("ff5c5c", "Rød"), free("a7ffc4", "Mint"), free("25557c", "Marine"), coins("ffffb1", "Gul", 20), coins("ff488e", "Rosa", 20), coins("b1e2ff", "Lyseblå", 20), coins("ffafb9", "Lys rosa", 20), coins("929598", "Grå", 20), coins("3c4f5c", "Stål", 20), coins("65c9ff", "Himmelblå", 20), coins("ffffff", "Hvit", 20)] },
-  graphic: { label: "Trykk", options: [free("pizza", "Pizza"), free("bear", "Bjørn"), level("skullOutline", "Hodeskalle (strek)", 4), level("skull", "Hodeskalle", 6), streak("deer", "Hjort", 5), coins("bat", "Flaggermus", 50), motifs("diamond", "Diamant", 15), beat("hola", "Hola", "nora"), games("cumbia", "Cumbia", 20), weeks("resist", "Resist", 1)] },
-  accessories: { label: "Tilbehør", options: [free("none", "Ingen"), level("prescription01", "Briller", 2), coins("round", "Runde briller", 60), level("prescription02", "Firkantede briller", 5), beat("wayfarers", "Wayfarers", "nora"), beat("sunglasses", "Solbriller", "ivar"), level("kurt", "Kurt-briller", 9), motifs("eyepatch", "Øyelapp", 10)] },
-  background: { label: "Bakgrunn", options: [free("b1e2ff", "Lyseblå"), free("a7ffc4", "Mint"), free("ffffb1", "Gul"), free("ffdeb5", "Fersken"), free("e6e6e6", "Grå"), coins("ff488e", "Rosa", 30), coins("65c9ff", "Himmelblå", 30), coins("5199e4", "Blå", 30), level("ffafb9", "Lys rosa", 3), beat("25557c", "Marine", "storm")] },
+  skin: { label: "Hud", options: [free("f2d3b1", "Lys"), free("ecad80", "Beige"), free("9e5622", "Brun"), free("763900", "Mørk")] },
+  hair: { label: "Hår", options: series([...Array.from({ length: 19 }, (_, i) => `short${pad(i + 1)}`), ...Array.from({ length: 26 }, (_, i) => `long${pad(i + 1)}`)], (id) => (id.startsWith("short") ? `Kort ${num(id)}` : `Langt ${num(id)}`), 8, 0) },
+  hairColor: { label: "Hårfarge", options: series(["0e0e0e", "562306", "6a4e35", "796a45", "ac6511", "cb6820", "e5d7a3", "b9a05f", "ab2a18", "afafaf", "3eac2c", "85c2c6", "dba3be", "592454"], (id) => ({ "0e0e0e": "Svart", "562306": "Mørk brun", "6a4e35": "Brun", "796a45": "Askebrun", "ac6511": "Kastanje", "cb6820": "Rødbrun", "e5d7a3": "Blond", "b9a05f": "Mørk blond", "ab2a18": "Rød", "afafaf": "Grå", "3eac2c": "Grønn", "85c2c6": "Turkis", "dba3be": "Rosa", "592454": "Lilla" })[id] ?? id, 6, 3) },
+  eyes: { label: "Øyne", options: series(variants(26), (_, i) => `Øyne ${i + 1}`, 6, 7) },
+  eyebrows: { label: "Bryn", options: series(variants(15), (_, i) => `Bryn ${i + 1}`, 5, 11) },
+  mouth: { label: "Munn", options: series(variants(30), (_, i) => `Munn ${i + 1}`, 6, 17) },
+  glasses: { label: "Briller", options: [free("none", "Ingen"), ...series(variants(5), (_, i) => `Briller ${i + 1}`, 0, 23)] },
+  earrings: { label: "Ørepynt", options: [free("none", "Ingen"), ...series(variants(6), (_, i) => `Ørepynt ${i + 1}`, 0, 29)] },
+  features: { label: "Detaljer", options: [free("none", "Ingen"), ...series(["freckles", "blush", "birthmark", "mustache"], (id) => ({ freckles: "Fregner", blush: "Rødme", birthmark: "Føflekk", mustache: "Bart" })[id] ?? id, 1, 37)] },
+  background: { label: "Bakgrunn", options: series(["b6e3f4", "c0aede", "d1d4f9", "ffd5dc", "ffdfbf", "a7ffc4", "ffffb1", "ff488e", "65c9ff", "25557c", "2b2b2b", "f5c542"], (id) => ({ b6e3f4: "Lyseblå", c0aede: "Lilla", d1d4f9: "Lavendel", ffd5dc: "Rosa", ffdfbf: "Fersken", a7ffc4: "Mint", ffffb1: "Gul", ff488e: "Magenta", "65c9ff": "Himmelblå", "25557c": "Marine", "2b2b2b": "Svart", f5c542: "Gull" })[id] ?? id, 5, 43) },
 };
 
 export const PART_KEYS = Object.keys(PARTS) as PartKey[];
 
 export const DEFAULT_AVATAR: Record<PartKey, string> = {
-  skin: "ffdbb4", hair: "shortFlat", hairColor: "4a312c", eyes: "happy", eyebrows: "default", mouth: "smile",
-  clothing: "hoodie", clothesColor: "5199e4", graphic: "pizza", accessories: "none", background: "b1e2ff",
+  skin: "f2d3b1", hair: "short01", hairColor: "562306", eyes: "variant01", eyebrows: "variant01", mouth: "variant01",
+  glasses: "none", earrings: "none", features: "none", background: "b6e3f4",
 };
 
 export const DEFAULT_NAME = "Tobias";

@@ -49,25 +49,38 @@ describe("Skattekisten", () => {
 describe("Avatarverkstedet", () => {
   it("free parts equip at once, coin parts need coins, achievement parts need the achievement", () => {
     expect(avatarOf(DEFAULT_PROGRESS)).toEqual(DEFAULT_AVATAR);
-    const p1 = withPart(DEFAULT_PROGRESS, "hair", "bob")!;
-    expect(avatarOf(p1).hair).toBe("bob");
-    expect(withPart(p1, "hairColor", "c93305")).toBeNull(); // 20 coins
-    const rich = { ...p1, coins: 50 };
-    const p2 = withPart(rich, "hairColor", "c93305")!;
-    expect(p2.coins).toBe(30);
-    expect(owns(p2, "hairColor", "c93305")).toBe(true);
-    expect(withPart({ ...p2, avatar: { ...p2.avatar, hairColor: "2c1b18" } }, "hairColor", "c93305")!.coins).toBe(30); // owned: no second charge
-    expect(withPart(DEFAULT_PROGRESS, "hair", "hat")).toBeNull(); // beat Pelle
-    expect(withPart({ ...DEFAULT_PROGRESS, beaten: ["pelle"] }, "hair", "hat")).not.toBeNull();
-    expect(withPart({ ...DEFAULT_PROGRESS, xp: 100 }, "eyes", "surprised")).not.toBeNull(); // level 2
-    expect(withPart({ ...DEFAULT_PROGRESS, bestStreak: 3 }, "hair", "winterHat1")).not.toBeNull();
+    const p1 = withPart(DEFAULT_PROGRESS, "hair", "short03")!;
+    expect(avatarOf(p1).hair).toBe("short03");
+    const coin = PARTS.hair.options.find((o) => o.unlock.kind === "coins")!;
+    expect(withPart(p1, "hair", coin.id)).toBeNull();
+    const rich = { ...p1, coins: 500 };
+    const p2 = withPart(rich, "hair", coin.id)!;
+    expect(p2.coins).toBe(500 - (coin.unlock as { cost: number }).cost);
+    expect(owns(p2, "hair", coin.id)).toBe(true);
+    expect(withPart({ ...p2, avatar: { ...p2.avatar, hair: "short01" } }, "hair", coin.id)!.coins).toBe(p2.coins); // owned: no second charge
+    const beat = PARTS.eyes.options.find((o) => o.unlock.kind === "beat")!;
+    expect(withPart(DEFAULT_PROGRESS, "eyes", beat.id)).toBeNull();
+    expect(withPart({ ...DEFAULT_PROGRESS, beaten: [(beat.unlock as { opp: string }).opp] }, "eyes", beat.id)).not.toBeNull();
+    const lvl = PARTS.mouth.options.find((o) => o.unlock.kind === "level")!;
+    expect(withPart({ ...DEFAULT_PROGRESS, xp: 100000 }, "mouth", lvl.id)).not.toBeNull();
+    const streak = PARTS.hair.options.find((o) => o.unlock.kind === "streak")!;
+    expect(withPart({ ...DEFAULT_PROGRESS, bestStreak: 30 }, "hair", streak.id)).not.toBeNull();
+    // unknown ids are ignored when reading
+    expect(avatarOf({ ...DEFAULT_PROGRESS, avatar: { hair: "bob" } }).hair).toBe(DEFAULT_AVATAR.hair);
   });
-  it("every part has a free default and lock labels read well", () => {
-    for (const k of Object.keys(PARTS) as (keyof typeof PARTS)[]) expect(PARTS[k].options.some((o) => o.unlock.kind === "free")).toBe(true);
+  it("every part has a free default, ids are unique, and lock labels read well", () => {
+    for (const k of Object.keys(PARTS) as (keyof typeof PARTS)[]) {
+      expect(PARTS[k].options.some((o) => o.unlock.kind === "free")).toBe(true);
+      expect(new Set(PARTS[k].options.map((o) => o.id)).size).toBe(PARTS[k].options.length);
+      expect(PARTS[k].options.some((o) => o.id === DEFAULT_AVATAR[k])).toBe(true);
+    }
     expect(unlockLabel({ kind: "beat", opp: "leo" })).toBe("Slå Ida");
     expect(unlockLabel({ kind: "level", level: 5 })).toBe("Nivå 5");
+    expect(unlockLabel({ kind: "weeks", n: 1 })).toBe("Full skoleuke");
     expect(nextUnlocks(DEFAULT_PROGRESS, 3)).toHaveLength(3);
-    expect(wardrobeSummary(DEFAULT_PROGRESS).unlocked).toBeGreaterThan(30);
+    const w = wardrobeSummary(DEFAULT_PROGRESS);
+    expect(w.total).toBeGreaterThan(120);
+    expect(w.unlocked).toBeGreaterThan(35);
   });
   it("names fall back to Tobias", () => {
     expect(avatarName(DEFAULT_PROGRESS)).toBe("Tobias");
@@ -88,24 +101,3 @@ describe("Mike offline", () => {
   });
 });
 
-describe("3D-skins", () => {
-  it("has 250 skins with a dozen free, equips and buys correctly", async () => {
-    const { SKINS, ownsSkin, withSkin, withoutSkin, skinSummary } = await import("./skins");
-    expect(SKINS).toHaveLength(250);
-    expect(new Set(SKINS.map((s) => s.id)).size).toBe(250);
-    const free = SKINS.filter((s) => s.unlock.kind === "free");
-    expect(free.length).toBe(12);
-    expect(skinSummary(DEFAULT_PROGRESS).unlocked).toBe(12);
-    const p1 = withSkin(DEFAULT_PROGRESS, free[0]!.id)!;
-    expect(p1.skin).toBe(free[0]!.id);
-    expect(withoutSkin(p1).skin).toBeNull();
-    const coin = SKINS.find((s) => s.unlock.kind === "coins")!;
-    expect(withSkin(DEFAULT_PROGRESS, coin.id)).toBeNull();
-    const rich = withSkin({ ...DEFAULT_PROGRESS, coins: 500 }, coin.id)!;
-    expect(ownsSkin(rich, coin.id)).toBe(true);
-    expect(rich.coins).toBe(500 - (coin.unlock as { cost: number }).cost);
-    const lvl = SKINS.find((s) => s.unlock.kind === "level")!;
-    expect(ownsSkin({ ...DEFAULT_PROGRESS, xp: 100000 }, lvl.id)).toBe(true);
-    expect(SKINS.some((s) => s.unlock.kind === "beat" && s.unlock.opp === "storm")).toBe(true);
-  });
-});

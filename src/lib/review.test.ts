@@ -94,14 +94,17 @@ describe("Skoleuka", () => {
     for (const d of weekDays("2026-10-21").slice(0, 6)) for (const l of ["lesson", "game", "drill"] as const) p = withLesson(p, d, l);
     expect(weekStatus(p, "2026-10-25").filter((d) => d.done)).toHaveLength(6);
     expect(weekComplete(p, "2026-10-25")).toBe(false);
-    expect(owns(p, "hair", "froBand")).toBe(false);
+    const { PARTS } = await import("./avatar");
+    const w1 = PARTS.hair.options.find((o) => o.unlock.kind === "weeks" && o.unlock.n === 1)!;
+    expect(owns(p, "hair", w1.id)).toBe(false);
     const coins = p.coins;
     for (const l of ["lesson", "game", "drill"] as const) p = withLesson(p, "2026-10-25", l);
     expect(weekComplete(p, "2026-10-25")).toBe(true);
     expect(schoolWeeks(p)).toBe(1);
     expect(p.coins).toBe(coins + WEEK_COINS);
-    expect(owns(p, "hair", "froBand")).toBe(true);
-    expect(owns(p, "hair", "dreads02")).toBe(false);
+    expect(owns(p, "hair", w1.id)).toBe(true);
+    const w2 = PARTS.hair.options.find((o) => o.unlock.kind === "weeks" && o.unlock.n === 2)!;
+    expect(owns(p, "hair", w2.id)).toBe(false);
     expect(withLesson(p, "2026-10-25", "drill").coins).toBe(p.coins); // no double pay
   });
 });

@@ -475,12 +475,3 @@
 .bot-bar.is-active .bot-bar__clock { color: var(--primary); }
 .opp-card { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; }
 
-/* ---- 3D skins ---- */
-.skin-circle { object-fit: cover; object-position: 50% 15%; background: radial-gradient(circle at 50% 30%, oklch(0.35 0.05 150), oklch(0.2 0.02 150)); }
-.skin-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-@media (min-width: 640px) { .skin-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
-.skin { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px 8px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); font-size: 10px; line-height: 1.1; text-align: center; color: var(--muted-foreground); }
-.skin img { width: 100%; aspect-ratio: 1; object-fit: contain; }
-.skin.is-on { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 50%, transparent); color: var(--primary); }
-.skin.is-locked img { filter: grayscale(0.8) brightness(0.6); }
-.skin__lock { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 999px; background: var(--background); border: 1px solid var(--border); }
