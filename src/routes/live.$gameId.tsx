@@ -28,6 +28,7 @@ import { refreshOnline } from "@/lib/online-store";
 
 export const Route = createFileRoute("/live/$gameId")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>): { for?: string } => (typeof s["for"] === "string" ? { for: s["for"] } : {}),
   head: () => ({ meta: [{ title: "Parti mot venn – Goblin Chess" }] }),
   component: LivePage,
 });
@@ -36,6 +37,7 @@ type Phase = "loading" | "missing" | "playing" | "over" | "analysing" | "review"
 
 function LivePage() {
   const { gameId } = Route.useParams();
+  const { for: viewAs } = Route.useSearch();
   const me = myUserId();
   const p = useProgress();
   const [g, setG] = useState<LiveGame | null>(null);
@@ -104,7 +106,9 @@ function LivePage() {
     return out;
   }, [g]);
   const lastMove = g && g.moves.length ? ([g.moves[g.moves.length - 1]!.slice(0, 2), g.moves[g.moves.length - 1]!.slice(2, 4)] as [string, string]) : null;
-  const orientation = color === "b" ? "black" : "white";
+  /** Whose side the board and the analysis take: mine, or (as a spectator) the friend whose profile we came from. */
+  const viewColor: "w" | "b" = color ?? (g && viewAs === g.black ? "b" : "w");
+  const orientation = viewColor === "b" ? "black" : "white";
   const oppId = g ? (color === "b" ? g.white : g.black) : null;
   const oppName = oppId ? profiles[oppId]?.name ?? "Venn" : "";
   const myName = avatarName(p);
@@ -171,10 +175,10 @@ function LivePage() {
   }, [g, color, oppId, profiles, outcome]);
 
   const analyse = async () => {
-    if (!g || !color) return;
+    if (!g) return;
     setPhase("analysing"); setPct(0);
     try {
-      const res = await reviewGame(getEngine(), played, g.fen, color, (d, t) => setPct(Math.round((d / t) * 100)));
+      const res = await reviewGame(getEngine(), played, g.fen, viewColor, (d, t) => setPct(Math.round((d / t) * 100)));
       setReview(res); setPhase("review");
     } catch { setPhase("over"); }
   };
@@ -201,7 +205,7 @@ function LivePage() {
       <div className={`mx-auto flex w-full max-w-[min(94vw,68vh)] items-center justify-between gap-3 rounded-xl border px-3 py-2 ${playing && toMove === side ? "border-primary bg-primary/10" : "border-border bg-card/60"}`}>
         <span className="flex min-w-0 items-center gap-2">
           {pr?.avatar ? <AvatarImage parts={pr.avatar as unknown as Record<PartKey, string>} className="size-9" /> : null}
-          <span className="min-w-0"><span className="block truncate font-semibold">{uid === me ? myName : pr?.name ?? "Venn"} {flairEmoji(uid === me ? p.flair : pr?.flair)}</span><span className="block text-xs text-muted-foreground">{pr?.username ? `@${pr.username} · ` : ""}{pr?.rating ?? "–"}</span></span>
+          <span className="min-w-0"><Link to="/spiller/$id" params={{ id: uid }} className="block truncate font-semibold underline-offset-4 hover:underline">{uid === me ? myName : pr?.name ?? "Venn"} {flairEmoji(uid === me ? p.flair : pr?.flair)}</Link><span className="block text-xs text-muted-foreground">{pr?.username ? `@${pr.username} · ` : ""}{pr?.rating ?? "–"}</span></span>
         </span>
         <span className={clockCls(side)}>{fmtClock(clocks[side])}</span>
       </div>
@@ -257,14 +261,15 @@ function LivePage() {
                   <Button variant="outline" onClick={() => void rematch()}><RotateCcw /> Revansj</Button>
                 </div>
               )}
+              {spectating && phase === "over" && g.moves.length >= 2 && <Button className="mt-4 w-full" onClick={() => void analyse()}><Search /> Analyser for {names[viewColor]}</Button>}
               {phase === "analysing" && <div className="mt-3"><div className="xp-track"><div className="xp-fill" style={{ width: `${pct}%` }} /></div><p className="mt-1 text-sm">{pct}%</p></div>}
               <Link to="/venner" className="mt-3 inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"><House className="mr-1 size-4" /> Til venner</Link>
             </section>
           )}
 
-          {phase === "review" && review && color && (
+          {phase === "review" && review && (
             <>
-              <MikeCompanion mode="review" compact line={reviewLine(review.mistakes, outcome ?? "draw")} context={`Live game vs friend ${oppName}. ${reviewContext(review.mistakes, outcome ?? "draw")}`} />
+              {!spectating && <MikeCompanion mode="review" compact line={reviewLine(review.mistakes, outcome ?? "draw")} context={`Live game vs friend ${oppName}. ${reviewContext(review.mistakes, outcome ?? "draw")}`} />}
               <GameReview review={review} orientation={orientation} names={names} />
             </>
           )}

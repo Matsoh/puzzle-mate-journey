@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyUci, fmtClock, friendlyError, liveClocks, liveRatingChange, myColor, outcomeFor, sideToMove, tcLabel } from "./online";
+import { applyUci, fmtClock, friendlyError, liveAsArchive, liveClocks, liveRatingChange, myColor, outcomeFor, sideToMove, tcLabel, type LiveGame } from "./online";
 import { friendViews, incomingChallenges } from "./online-store";
 
 const START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -54,5 +54,15 @@ describe("online helpers", () => {
     expect(v[0]!.userId).toBe("x"); expect(v[0]!.online).toBe(true);
     expect(v[1]!.pendingFromThem).toBe(true);
     expect(incomingChallenges(s, "me")).toHaveLength(1);
+  });
+
+  it("maps a finished live game to an archive row from either player's side", () => {
+    const g = { id: "g1", white: "A", black: "B", initial_ms: 600_000, inc_ms: 0, moves: ["e2e4", "e7e5"], sans: ["e4", "e5"], fen: "", status: "finished", result: "w", reason: "Sjakkmatt", white_ms: 1, black_ms: 1, last_move_at: "", draw_offer: null, created_at: "2026-10-20T10:00:00Z", finished_at: "2026-10-20T10:20:00Z" } as unknown as LiveGame;
+    const a = liveAsArchive(g, "A", "Bea", 1600);
+    expect(a).toMatchObject({ id: "venn:g1", source: "venn", player: "w", result: "win", opponent: "Bea", opponentRating: 1600, timeClass: "rapid", moves: ["e4", "e5"], day: "2026-10-20" });
+    expect(a.url).toContain("for=A");
+    const b = liveAsArchive(g, "B", "Al", null);
+    expect(b.player).toBe("b"); expect(b.result).toBe("loss");
+    expect(liveAsArchive({ ...g, result: "d" } as LiveGame, "B", "Al", null).result).toBe("draw");
   });
 });

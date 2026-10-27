@@ -27,6 +27,7 @@ import { Route as TreningspartiRouteImport } from './routes/treningsparti'
 import { Route as TurneringRouteImport } from './routes/turnering'
 import { Route as VennerRouteImport } from './routes/venner'
 import { Route as LiveGameIdRouteImport } from './routes/live.$gameId'
+import { Route as SpillerIdRouteImport } from './routes/spiller.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +119,11 @@ const LiveGameIdRoute = LiveGameIdRouteImport.update({
   path: '/live/$gameId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpillerIdRoute = SpillerIdRouteImport.update({
+  id: '/spiller/$id',
+  path: '/spiller/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/turnering': typeof TurneringRoute
   '/venner': typeof VennerRoute
   '/live/$gameId': typeof LiveGameIdRoute
+  '/spiller/$id': typeof SpillerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/turnering': typeof TurneringRoute
   '/venner': typeof VennerRoute
   '/live/$gameId': typeof LiveGameIdRoute
+  '/spiller/$id': typeof SpillerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/turnering': typeof TurneringRoute
   '/venner': typeof VennerRoute
   '/live/$gameId': typeof LiveGameIdRoute
+  '/spiller/$id': typeof SpillerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/turnering'
     | '/venner'
     | '/live/$gameId'
+    | '/spiller/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/turnering'
     | '/venner'
     | '/live/$gameId'
+    | '/spiller/$id'
   id:
     | '__root__'
     | '/'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/turnering'
     | '/venner'
     | '/live/$gameId'
+    | '/spiller/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -262,6 +274,7 @@ export interface RootRouteChildren {
   TurneringRoute: typeof TurneringRoute
   VennerRoute: typeof VennerRoute
   LiveGameIdRoute: typeof LiveGameIdRoute
+  SpillerIdRoute: typeof SpillerIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -392,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LiveGameIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/spiller/$id': {
+      id: '/spiller/$id'
+      path: '/spiller/$id'
+      fullPath: '/spiller/$id'
+      preLoaderRoute: typeof SpillerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -414,6 +434,7 @@ const rootRouteChildren: RootRouteChildren = {
   TurneringRoute: TurneringRoute,
   VennerRoute: VennerRoute,
   LiveGameIdRoute: LiveGameIdRoute,
+  SpillerIdRoute: SpillerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

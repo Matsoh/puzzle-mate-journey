@@ -9,6 +9,8 @@ import { isLocalDev } from "./cloud-sync";
 import { expectedScore } from "./rules";
 import type { Progress } from "./progress";
 import { avatarOf, avatarName } from "./avatar";
+import { tcClass } from "./game-log";
+import type { ImportedGame } from "./games-import";
 import { levelFromXp } from "./rules";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -45,7 +47,7 @@ let lastProfilePush = "";
 /** Mirror the public bits of progress to the profile, only when something changed. */
 export async function syncProfile(p: Progress): Promise<void> {
   if (!me || !onlineAvailable()) return;
-  const row = { name: avatarName(p), avatar: avatarOf(p) as unknown as Json, rating: p.rating, level: levelFromXp(p.xp).level, streak: p.streak, games: p.games, flair: p.flair ?? "none" };
+  const row = { name: avatarName(p), avatar: avatarOf(p) as unknown as Json, rating: p.rating, level: levelFromXp(p.xp).level, streak: p.streak, games: p.games, flair: p.flair ?? "none", wins: p.wins, draws: p.draws, beaten: p.beaten.length, xp: p.xp };
   const sig = JSON.stringify(row);
   if (sig === lastProfilePush) return;
   lastProfilePush = sig;
@@ -121,6 +123,13 @@ export async function recentGamesFor(uid: string, limit = 20): Promise<LiveGame[
   const { data, error } = await supabase.from("live_games").select("*").eq("status", "finished").or(`white.eq.${uid},black.eq.${uid}`).order("created_at", { ascending: false }).limit(limit);
   if (error) throw error;
   return data ?? [];
+}
+/** A finished live game as the archive row type, from `viewer`'s side (pure). */
+export function liveAsArchive(g: LiveGame, viewer: string, opponentName: string, opponentRating: number | null): ImportedGame {
+  const player: "w" | "b" = g.black === viewer ? "b" : "w";
+  const result: ImportedGame["result"] = g.result === "d" || !g.result ? "draw" : g.result === player ? "win" : "loss";
+  const at = new Date(g.finished_at ?? g.created_at).getTime();
+  return { id: `venn:${g.id}`, source: "venn", playedAt: at, day: new Date(at).toISOString().slice(0, 10), player, opponent: opponentName, opponentRating, result, timeClass: tcClass(g.initial_ms, g.inc_ms), moves: g.sans, url: `/live/${g.id}?for=${viewer}` };
 }
 export async function playMove(gameId: string, plies: number, uci: string, san: string, fen: string, end: { result: "w" | "b" | "d"; reason: string } | null): Promise<LiveGame> {
   const args = { p_game: gameId, p_uci: uci, p_san: san, p_fen: fen, p_plies: plies, ...(end ? { p_result: end.result, p_reason: end.reason } : {}) };

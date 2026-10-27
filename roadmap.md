@@ -153,3 +153,8 @@
 ## 26. Ferdige 3D-figurer i avatarverkstedet
 - Ny fane «Figur» først i verkstedet: 75 ferdige 3D-figurer (`public/figures/N.png`, Canva-pakke) – 20 gratis, resten låses opp som andre deler. «Egen 3D» (standard) gir Zuri-byggeren som før.
 - `avatar.ts`: PartKey `figure` + `figureSrc(look)`; `AvatarImage`/`LiveAvatar`/`PlayerAvatar` viser bildet i stedet for 3D-rendering når en figur er valgt. Synkes til venner via profilens avatar-json.
+
+## 27. Spillerprofiler (som chess.com)
+- `/spiller/$id`: avatar/figur, navn, flair, @brukernavn, nivåtittel, «medlem siden», pålogget-prikk, statistikk (rating, partier, seire, remis, tap, streak), bots slått på stigen, innbyrdes score, Utfordre-knapp, og alle ferdige partier mot venner som `GameRow`-rader.
+- Et parti åpnes i `/live/$gameId?for=<spiller>`: tilskuere kan analysere («Analyser for X») fra den spillerens side. Navn i vennelista og på brettet lenker til profilen. `ChallengeSheet` er flyttet til egen komponent.
+- Migrasjon `20261028100000_profile_stats.sql`: profiles får wins/draws/beaten/xp/created_at (speiles fra egen fremgang i `syncProfile`). RLS fra før: venner kan lese hverandres live_games.
