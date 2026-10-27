@@ -24,6 +24,7 @@ export const FLAIRS: Flair[] = [
   { id: "dragon", emoji: "🐉", name: "Drage", unlock: { kind: "beat", opp: "ivar" } },
   { id: "ninja", emoji: "🥷", name: "Ninja", unlock: { kind: "beat", opp: "nora" } },
   { id: "alien", emoji: "👽", name: "ET", unlock: { kind: "beat", opp: "storm" } },
+  { id: "goblin", emoji: "🧌", name: "Slo Mike", unlock: { kind: "beat", opp: "mike" } },
   { id: "crown", emoji: "👑", name: "Krone", unlock: { kind: "level", level: 10 } },
   { id: "diamond", emoji: "💎", name: "Diamant", unlock: { kind: "streak", days: 30 } },
 ];

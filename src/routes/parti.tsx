@@ -20,7 +20,7 @@ import { maiaInit } from "@/lib/maia";
 import { MaiaBrain } from "@/components/MaiaBrain";
 import { OPPONENT_TEMPO, remainingDelay, searchTimeMs, thinkTimeMs } from "@/lib/think-time";
 import { reviewGame, type GameReview as Review, type Mistake, type PlayedMove } from "@/lib/coach";
-import { ENGINE_ELO_OFFSET, getOpponent, OPPONENTS } from "@/lib/opponents";
+import { ENGINE_ELO_OFFSET, getOpponent, OPPONENTS, ratingLabel } from "@/lib/opponents";
 import { getProgress, markActive, updateProgress, withHistoryPoint } from "@/lib/progress";
 import { withDayGame } from "@/lib/quests";
 import { withAppGame, tcClass } from "@/lib/game-log";
@@ -202,7 +202,7 @@ function Game() {
       initialMs: tcCfg ? tcCfg[0] : null,
       incrementMs: tcCfg ? tcCfg[1] : 0,
     });
-    botMove(fenNow, engineElo, getProgress().rating, searchTimeMs(remaining, target))
+    botMove(fenNow, engineElo, getProgress().rating, searchTimeMs(remaining, target), { maia: opponent?.brain !== "stockfish" })
       .then(({ uci }) => {
         if (!alive() || game.current.fen() !== fenNow || !uci || uci === "(none)") return;
         timer = setTimeout(() => {
@@ -300,7 +300,7 @@ function Game() {
           <div className="p-6 text-center space-y-3 safe-bottom animate-pop">
             <p className="text-3xl font-semibold text-primary">Neste utfordring</p>
             <h2 className="text-3xl">{opponent.name}</h2>
-            <p className="font-medium text-primary">{opponent.elo} · {opponent.style}</p>
+            <p className="font-medium text-primary">{ratingLabel(opponent)} · {opponent.style}</p>
             <p className="text-lg italic">«{opponent.line}»</p>
             <p className="mike-bubble mx-auto max-w-sm text-left text-sm"><span className="mike-bubble__name">Mike</span>{introLine(opponent)}</p>
             <Button

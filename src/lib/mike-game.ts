@@ -81,6 +81,7 @@ export function introLine(o: Opponent): string {
     nora: "Heidi Claire sets traps. If a move looks free, it isn't.",
     ivar: "Robin Banks calculates. Make it messy – calculation hates mess.",
     storm: "ET. The final boss. Not from this planet. You've beaten nine – he's just number ten.",
+    mike: "Me. Yeah. I've watched every game you've played, and I know all your tricks. Show me a new one.",
   };
   return lines[o.id] ?? `${o.name}. ${o.style}. You've got this.`;
 }

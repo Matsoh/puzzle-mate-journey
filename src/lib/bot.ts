@@ -10,8 +10,8 @@ const pieceCount = (fen: string) => (fen.split(" ")[0] ?? "").replace(/[^a-zA-Z]
 /** Maia is a poor technician with few pieces left; let the engine (at the same rating) convert or defend. */
 export const ENDGAME_PIECES = 8;
 
-export async function botMove(fen: string, botElo: number, playerElo: number, searchMs: number): Promise<{ uci: string; source: BotSource }> {
-  if (maiaReady() && pieceCount(fen) > ENDGAME_PIECES) {
+export async function botMove(fen: string, botElo: number, playerElo: number, searchMs: number, opts: { maia?: boolean } = {}): Promise<{ uci: string; source: BotSource }> {
+  if (opts.maia !== false && maiaReady() && pieceCount(fen) > ENDGAME_PIECES) {
     try {
       const { uci } = await maiaMove(fen, botElo, playerElo);
       return { uci, source: "maia" };

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Lock, ChessKnight, CheckCircle2, ChevronDown } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { GameSetup } from "@/components/GameSetup";
-import { isUnlocked, OPPONENTS } from "@/lib/opponents";
+import { isUnlocked, OPPONENTS, ratingLabel } from "@/lib/opponents";
 import { useProgress } from "@/lib/progress";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,9 +15,9 @@ export const Route = createFileRoute("/stigen")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { title: "Motstanderstigen – Goblin Chess" },
-      { name: "description", content: "Slå 10 motstandere fra 1500 til 2000+ – helt opp til ET." },
+      { name: "description", content: "Slå 11 motstandere fra 1500 til 2000+ – helt opp til ET og Mike selv." },
       { property: "og:title", content: "Motstanderstigen – Goblin Chess" },
-      { property: "og:description", content: "10 bosser fra 1500 til 2000+. Klarer du toppen?" },
+      { property: "og:description", content: "11 bosser fra 1500 til 2000+. Klarer du toppen?" },
     ],
   }),
   component: Ladder,
@@ -33,7 +33,7 @@ function Ladder() {
       <AppHeader title="Motstanderstigen" />
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          {beatenCount}/10 slått. Slå en motstander for å låse opp den neste.
+          {beatenCount}/{OPPONENTS.length} slått. Slå en motstander for å låse opp den neste.
         </p>
         <MaiaBrain />
         {OPPONENTS.map((o) => {
@@ -55,7 +55,7 @@ function Ladder() {
                     {!unlocked && <span className="text-xs text-muted-foreground">Låst</span>}
                     {unlocked && !beaten && <span className="text-xs text-primary">Tilgjengelig</span>}
                   </div>
-                  <p className="text-xs font-medium text-muted-foreground">{o.elo} · {o.style}</p>
+                  <p className="text-xs font-medium text-muted-foreground">{ratingLabel(o)} · {o.style}</p>
                   <p className="text-sm text-muted-foreground italic truncate">«{o.line}»</p>
                 </div>
                 <span className="text-xs text-muted-foreground">#{idx + 1}<ChevronDown className="mt-2 size-4" /></span>

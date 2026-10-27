@@ -1,5 +1,5 @@
 import type { Progress } from "./progress";
-import { OPPONENTS } from "./opponents";
+import { OPPONENTS, ratingLabel } from "./opponents";
 import { liveStreak } from "./rules";
 
 export type CoachVoice = "mike" | "neutral";
@@ -98,7 +98,7 @@ const VOICE: Record<CoachVoice, { win: (w: string, n?: string) => string; puzzle
 export function dailyPeptalk(p: Progress, day: string, recentWinId?: string, voice: CoachVoice = "neutral"): Peptalk {
   const v = VOICE[voice]; const lines = PEPTALKS[voice];
   const next = OPPONENTS.find((o) => !p.beaten.includes(o.id));
-  const goal = next ? `${next.name} · ${next.elo} i rating` : p.rating < 2000 ? "2000 i klubb/FIDE" : "Hold formen med dagens pusler";
+  const goal = next ? `${next.name} · ${ratingLabel(next)} i rating` : p.rating < 2000 ? "2000 i klubb/FIDE" : "Hold formen med dagens pusler";
   const result = (kind: Peptalk["kind"], text: string): Peptalk => ({ kind, text, goal });
   const won = OPPONENTS.find((o) => o.id === recentWinId && p.beaten.includes(o.id));
   if (won) return result("win", v.win(won.name, next?.name));

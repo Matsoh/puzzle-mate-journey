@@ -144,3 +144,8 @@
 - Migrasjon supabase/migrations/20261027100000_username_flair.sql: `profiles.username` (unik, case-insensitiv, `^[a-z0-9_]{3,16}$`) og `profiles.flair`; RPC `set_username`; `send_friend_request` godtar nå brukernavn (med/uten @) eller vennekode.
 - src/lib/flair.ts: 20 flairs (5 gratis, mynter, streak, seire, motiver, skoleuke, nivå, slå bots) med samme `Unlock`-regler; `Progress.flair` synkes til profilen. Vises ved navnet på avatarsiden, i sidemenyen, ved brettet (bot- og venne-partier) og i vennelista.
 - Avatarsiden: «Velg brukernavn» under navnet (kun når nettspill er tilgjengelig); Venner-siden viser @brukernavn og tar imot brukernavn i «Legg til».
+
+## 25. Mike som hemmelig sluttboss (#11)
+- `opponents.ts`: Mike er nr. 11 etter ET – rating 2250, men vises som «??» (`secret`, `ratingLabel()`), og spiller med ren Stockfish (`brain: "stockfish"`, Maia hoppes over i `bot.ts`).
+- Portrett `public/bots/mike.png` (rendret fra Mike-SVG-en). Mike snakker engelsk også ved brettet (`MIKE_QUIPS` i `bot-mood.ts`).
+- Ny flair «Slo Mike» 🧌 ved seier. Stigen, Monsterboken og dagens mål bruker `ratingLabel`.

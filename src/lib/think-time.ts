@@ -11,6 +11,7 @@ export const OPPONENT_TEMPO: Record<string, Tempo> = {
   dina: "steady",
   nora: "steady",
   storm: "steady",
+  mike: "steady",
   pling: "slow",
   sigurd: "slow",
   ivar: "slow",

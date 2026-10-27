@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { expectedScore, levelFromXp, liveStreak, newRating, nextStreak } from "./rules";
 import { applyBadges } from "./badges";
 import { DEFAULT_PROGRESS } from "./progress";
-import { isUnlocked, OPPONENTS } from "./opponents";
+import { isUnlocked, OPPONENTS, ratingLabel } from "./opponents";
 import { parseLichessCsv, pickDaily, PUZZLES } from "./puzzles";
 
 describe("rules", () => {
@@ -23,10 +23,16 @@ describe("rules", () => {
     const { earned } = applyBadges({ ...DEFAULT_PROGRESS, wins: 1 });
     expect(earned.map((b) => b.id)).toContain("forste-seier");
   });
-  it("ladder has 10 opponents from 1500 to 2000+, unlocking in order", () => {
-    expect(OPPONENTS).toHaveLength(10);
+  it("ladder has 10 opponents from 1500 to 2000+ plus Mike as the secret boss, unlocking in order", () => {
+    expect(OPPONENTS).toHaveLength(11);
     expect(OPPONENTS[0]!.elo).toBe(1500);
     expect(OPPONENTS[9]!.elo).toBeGreaterThanOrEqual(2000);
+    const mike = OPPONENTS[10]!;
+    expect(mike.id).toBe("mike");
+    expect(mike.elo).toBeGreaterThan(OPPONENTS[9]!.elo);
+    expect(ratingLabel(mike)).toBe("??");
+    expect(ratingLabel(OPPONENTS[9]!)).toBe("2050");
+    expect(mike.brain).toBe("stockfish");
     expect(isUnlocked(1, [])).toBe(false);
     expect(isUnlocked(1, [OPPONENTS[0]!.id])).toBe(true);
   });

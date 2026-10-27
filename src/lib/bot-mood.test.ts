@@ -29,6 +29,9 @@ describe("bot mood", () => {
     expect(botQuip(et, "lose", 0)).toBe(et.winLine);
     expect(botQuip(et, "win", 0)).toMatch(/Jorda/);
     expect(botQuip(undefined, "angry", 1)).toBeTruthy();
-    for (const o of OPPONENTS) expect(o.portrait).toMatch(/^\/bots\/\d+\.png$/);
+    for (const o of OPPONENTS) expect(o.portrait).toMatch(/^\/bots\/[a-z0-9]+\.png$/);
+    const mike = OPPONENTS.find((o) => o.id === "mike")!;
+    expect(botQuip(mike, "idle", 0)).toMatch(/^[A-Za-z]/); // Mike speaks English
+    expect(botQuip(mike, "lose", 0)).toBe(mike.winLine);
   });
 });

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
 import { useProgress } from "@/lib/progress";
 import { MOTIFS, RARITY_LABEL, RARITY_ORDER, collectionSummary, motifCount } from "@/lib/collection";
-import { OPPONENTS } from "@/lib/opponents";
+import { OPPONENTS, ratingLabel } from "@/lib/opponents";
 import { Mike } from "@/components/Mike";
 import { PlayerAvatar } from "@/components/CoachAvatar";
 
@@ -71,7 +71,7 @@ function Collection() {
               <Link to="/stigen" key={o.id} className={`motif ${got ? "" : "is-locked"}`} data-rarity={o.elo >= 2000 ? "legendarisk" : o.elo >= 1850 ? "episk" : o.elo >= 1700 ? "sjelden" : "vanlig"}>
                 <img src={o.portrait} alt="" className={`mx-auto size-10 object-contain ${got ? "" : "grayscale opacity-60"}`} draggable={false} />
                 <span className="motif__name">{o.name.split(" ")[0]}</span>
-                <span className="motif__count">{got ? "Slått" : o.elo}</span>
+                <span className="motif__count">{got ? "Slått" : ratingLabel(o)}</span>
               </Link>
             );
           })}

@@ -53,9 +53,23 @@ const QUIPS: Record<BotMood, string[]> = {
   draw: ["Remis. Ingen av oss ville gi seg.", "Delt. Neste gang tar jeg deg."],
 };
 
+/** Mike talks English – always. */
+const MIKE_QUIPS: Record<BotMood, string[]> = {
+  idle: ["Your move, champ.", "I'm waiting. One eye, all patience.", "Take your time. I've got all day."],
+  think: ["Hmm …", "Let me see …", "Interesting. Very interesting.", "Hold on …"],
+  happy: ["Thanks for that.", "Mine now.", "Taught you better than that."],
+  smug: ["This is going my way.", "Told you I'd be watching.", "Relax. It's a lesson, not a game."],
+  angry: ["HEY! That was mine!", "Okay. Now I'm awake.", "You'll regret that one."],
+  worried: ["Wait. Wait wait wait.", "Did you just … huh.", "I don't like this."],
+  sad: ["I need a miracle here.", "No no no …", "Who taught you that? Oh. Right."],
+  win: ["Good game. Now go fix that mistake on move 12.", "Still the teacher. Rematch whenever.", "Close! Closer than you think."],
+  lose: ["You beat ME?!", "I've got nothing left to teach you.", "Okay. That was brilliant."],
+  draw: ["A draw. Fair. Next time one of us goes down.", "Split. You're getting dangerous."],
+};
+
 /** Personality-flavoured quip, deterministic per (mood, seed). */
 export function botQuip(o: Opponent | undefined, mood: BotMood, seed: number): string {
-  const list = QUIPS[mood];
+  const list = (o?.id === "mike" ? MIKE_QUIPS : QUIPS)[mood];
   const base = list[Math.abs(seed) % list.length]!;
   if (!o) return base;
   if (mood === "lose") return o.winLine;
