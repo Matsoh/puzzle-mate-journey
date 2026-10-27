@@ -239,6 +239,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar: Json | null
+          beaten: number
+          created_at: string
+          draws: number
           flair: string | null
           friend_code: string
           games: number
@@ -250,9 +253,14 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string | null
+          wins: number
+          xp: number
         }
         Insert: {
           avatar?: Json | null
+          beaten?: number
+          created_at?: string
+          draws?: number
           flair?: string | null
           friend_code: string
           games?: number
@@ -264,9 +272,14 @@ export type Database = {
           updated_at?: string
           user_id: string
           username?: string | null
+          wins?: number
+          xp?: number
         }
         Update: {
           avatar?: Json | null
+          beaten?: number
+          created_at?: string
+          draws?: number
           flair?: string | null
           friend_code?: string
           games?: number
@@ -278,6 +291,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+          wins?: number
+          xp?: number
         }
         Relationships: []
       }
@@ -344,6 +359,9 @@ export type Database = {
         Args: { p_name?: string }
         Returns: {
           avatar: Json | null
+          beaten: number
+          created_at: string
+          draws: number
           flair: string | null
           friend_code: string
           games: number
@@ -355,6 +373,8 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string | null
+          wins: number
+          xp: number
         }
         SetofOptions: {
           from: "*"
@@ -466,6 +486,9 @@ export type Database = {
         Args: { p_name: string }
         Returns: {
           avatar: Json | null
+          beaten: number
+          created_at: string
+          draws: number
           flair: string | null
           friend_code: string
           games: number
@@ -477,6 +500,8 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string | null
+          wins: number
+          xp: number
         }
         SetofOptions: {
           from: "*"
