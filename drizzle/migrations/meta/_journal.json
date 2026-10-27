@@ -36,6 +36,13 @@
       "when": 1793050323543,
       "tag": "0004_username_flair",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793132967900,
+      "tag": "0005_profile_public_stats",
+      "breakpoints": true
     }
   ]
 }
