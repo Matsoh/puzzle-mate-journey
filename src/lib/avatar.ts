@@ -7,7 +7,7 @@ import { OPPONENTS } from "./opponents";
 import { collectionSummary } from "./collection";
 import { schoolWeeks } from "./school";
 
-export type PartKey = "style" | "skin" | "face" | "hair" | "hairColor" | "eyes" | "brows" | "mouth" | "beard" | "glasses" | "earrings" | "details" | "outfit" | "outfitColor" | "accessory" | "background";
+export type PartKey = "figure" | "style" | "skin" | "face" | "hair" | "hairColor" | "eyes" | "brows" | "mouth" | "beard" | "glasses" | "earrings" | "details" | "outfit" | "outfitColor" | "accessory" | "background";
 
 export type Unlock =
   | { kind: "free" }
@@ -44,8 +44,23 @@ function series(items: readonly (readonly [string, string])[], freeCount: number
   return items.map(([id, name], i) => (i < freeCount ? free(id, name) : { id, name, unlock: RULES[(i - freeCount + offset) % RULES.length]! }));
 }
 
+/** Ready-made 3D figures (public/figures/N.png). "none" = build your own head with the parts below. */
+const FIGURES: readonly (readonly [string, string])[] = [
+  ["3", "Blåskjorte"], ["26", "Student"], ["27", "Gul genser"], ["39", "Hettegenser"], ["42", "Blå hette"], ["45", "Blond"], ["49", "Caps"], ["29", "Snudd caps"],
+  ["73", "Blond gutt"], ["74", "Smilende"], ["75", "Rolig"], ["1", "Sjefen"], ["11", "Rødhåret"], ["65", "Blond jente"], ["9", "Rosa hår"], ["55", "Tennisjente"],
+  ["36", "Rød t-skjorte"], ["47", "Hvit skjorte"], ["51", "Lilla genser"], ["70", "Hvit t-skjorte"],
+  ["25", "Fotballspiller"], ["35", "Tennisspiller"], ["52", "Pannebånd"], ["53", "Blått pannebånd"], ["58", "Karate"], ["59", "Karate rød"], ["57", "Solbriller"], ["32", "Syklist"],
+  ["33", "Snowboarder"], ["54", "Bokser"], ["43", "Skater"], ["48", "Lue"], ["50", "Hatt"], ["44", "Lilla hår"], ["40", "Rosa punk"], ["56", "Rødtopp"],
+  ["2", "Skjeggmann"], ["5", "Nerd"], ["6", "Direktør"], ["19", "Sjef i dress"], ["14", "Lærer"], ["7", "Lege"], ["8", "Kirurg"], ["12", "Doktor"],
+  ["15", "Bonde"], ["16", "Byggarbeider"], ["24", "Mekaniker"], ["28", "Kelner"], ["17", "Bart"], ["4", "Bestefar"], ["21", "Tømmerhogger"], ["22", "Emo"],
+  ["23", "Kaptein"], ["20", "Pilot"], ["13", "Soldat"], ["37", "SWAT"], ["31", "Cowboy"], ["30", "Rasta"], ["38", "Gullgenser"], ["72", "Oransje jakke"],
+  ["10", "Gamer"], ["46", "Blå alien"], ["41", "Alv"], ["34", "Kriger"], ["18", "Astronaut"], ["62", "Dommer"], ["76", "Tenkeren"], ["71", "Jubel"],
+  ["61", "Villmann"], ["68", "Tungen ut"], ["67", "Smiley"], ["63", "Maur"], ["64", "Rosa monster"], ["60", "Gresskar"], ["66", "Bæsj"],
+];
+
 // Zuri by Bright Kumedzro (MIT, vendored under src/vendor/zuri): 3D Memoji-style heads generated from code, no image assets.
 export const PARTS: Record<PartKey, { label: string; options: PartOption[] }> = {
+  figure: { label: "Figur", options: [free("none", "Egen 3D"), ...series(FIGURES, 20, 5)] },
   style: { label: "Stil", options: [free("masculine", "Gutt"), free("feminine", "Jente")] },
   skin: { label: "Hud", options: series([["13", "Lysest"], ["12", "Veldig lys"], ["11", "Lys"], ["10", "Lys beige"], ["9", "Beige"], ["8", "Gyllen"], ["7", "Karamell"], ["6", "Varm brun"], ["5", "Brun"], ["4", "Mørk brun"], ["3", "Dyp brun"], ["2", "Mørk"], ["1", "Veldig mørk"], ["0", "Mørkest"]], 14) },
   face: { label: "Ansikt", options: series([["oval", "Oval"], ["round", "Rund"], ["square", "Firkantet"], ["heart", "Hjerte"], ["long", "Lang"], ["diamond", "Diamant"]], 3, 0) },
@@ -67,7 +82,7 @@ export const PARTS: Record<PartKey, { label: string; options: PartOption[] }> = 
 export const PART_KEYS = Object.keys(PARTS) as PartKey[];
 
 export const DEFAULT_AVATAR: Record<PartKey, string> = {
-  style: "masculine", skin: "12", face: "oval", hair: "crop", hairColor: "darkBrown", eyes: "blue", brows: "normal", mouth: "smile",
+  figure: "none", style: "masculine", skin: "12", face: "oval", hair: "crop", hairColor: "darkBrown", eyes: "blue", brows: "normal", mouth: "smile",
   beard: "none", glasses: "none", earrings: "none", details: "none", outfit: "hoodie", outfitColor: "#2f5d8a", accessory: "none", background: "#cde2f7",
 };
 
@@ -83,6 +98,9 @@ export function normalizeLook(raw: Record<string, unknown> | null | undefined): 
   }
   return a;
 }
+/** Image URL when a ready-made figure is chosen, else null (render the 3D head). */
+export const figureSrc = (look: Record<PartKey, string>): string | null => (look.figure && look.figure !== "none" ? `/figures/${look.figure}.png` : null);
+
 export const avatarOf = (p: Progress): Record<PartKey, string> => normalizeLook(p.avatar);
 
 export const avatarName = (p: Progress) => (p.avatarName ?? "").trim() || DEFAULT_NAME;

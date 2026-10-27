@@ -21,7 +21,7 @@ export const Route = createFileRoute("/avatar")({
 function AvatarPage() {
   const p = useProgress();
   const parts = useMemo(() => avatarOf(p), [p]);
-  const [tab, setTab] = useState<PartKey>("hair");
+  const [tab, setTab] = useState<PartKey>(() => (avatarOf(p).figure === "none" ? "hair" : "figure"));
   const [msg, setMsg] = useState<string | null>(null);
   const [editName, setEditName] = useState(false);
   const [name, setName] = useState(avatarName(p));
@@ -100,7 +100,7 @@ function AvatarPage() {
 
       <div className="card-game mb-3 grid place-items-center p-4">
         <LiveAvatar look={parts} className="aspect-square w-60 overflow-hidden rounded-2xl" />
-        <p className="mt-1 text-[11px] text-muted-foreground">Dra i hodet for å snu det</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">{parts.figure === "none" ? "Dra i hodet for å snu det" : "Ferdig figur – velg «Egen 3D» under Figur for å bygge selv"}</p>
         <p className="mt-2 text-xs text-muted-foreground">{ward.unlocked} av {ward.total} deler låst opp</p>
       </div>
       {msg && <p role="status" className="mb-3 text-center text-sm font-semibold text-primary">{msg}</p>}
@@ -125,7 +125,7 @@ function AvatarPage() {
         {PARTS[tab].options.map((o) => {
           const on = parts[tab] === o.id;
           const have = owns(p, tab, o.id);
-          const preview = { ...parts, [tab]: o.id };
+          const preview = tab === "figure" ? { ...parts, figure: o.id } : { ...parts, figure: "none", [tab]: o.id };
           return (
             <button key={o.id} onClick={() => choose(tab, o.id)} className={`part ${on ? "is-on" : ""} ${have ? "" : "is-locked"}`} aria-pressed={on} title={have ? o.name : `${o.name} – ${unlockLabel(o.unlock)}`}>
               <AvatarImage parts={preview} size={96} className="w-16 rounded-xl" />
@@ -153,7 +153,7 @@ function AvatarPage() {
         <Mike mood="chill" className="w-14" animate={false} />
         <p className="mike-bubble text-sm">{ward.unlocked < 90 ? "Looking sharp. Most of the good stuff unlocks by playing – levels, streaks, beating the ladder. Go earn it." : "That wardrobe is getting serious. Almost as serious as your chess."}</p>
       </div>
-      <p className="mt-4 text-[11px] text-muted-foreground">3D-avatarer: Zuri av Bright Kumedzro (MIT) – generert av kode, ingen bilder.</p>
+      <p className="mt-4 text-[11px] text-muted-foreground">Egen 3D-avatar: Zuri av Bright Kumedzro (MIT) – generert av kode. Ferdige figurer: 3D-pakke fra Canva.</p>
     </main>
   );
 }

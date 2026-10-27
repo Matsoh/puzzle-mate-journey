@@ -149,3 +149,7 @@
 - `opponents.ts`: Mike er nr. 11 etter ET – rating 2250, men vises som «??» (`secret`, `ratingLabel()`), og spiller med ren Stockfish (`brain: "stockfish"`, Maia hoppes over i `bot.ts`).
 - Portrett `public/bots/mike.png` (rendret fra Mike-SVG-en). Mike snakker engelsk også ved brettet (`MIKE_QUIPS` i `bot-mood.ts`).
 - Ny flair «Slo Mike» 🧌 ved seier. Stigen, Monsterboken og dagens mål bruker `ratingLabel`.
+
+## 26. Ferdige 3D-figurer i avatarverkstedet
+- Ny fane «Figur» først i verkstedet: 75 ferdige 3D-figurer (`public/figures/N.png`, Canva-pakke) – 20 gratis, resten låses opp som andre deler. «Egen 3D» (standard) gir Zuri-byggeren som før.
+- `avatar.ts`: PartKey `figure` + `figureSrc(look)`; `AvatarImage`/`LiveAvatar`/`PlayerAvatar` viser bildet i stedet for 3D-rendering når en figur er valgt. Synkes til venner via profilens avatar-json.

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/lib/progress";
-import { avatarName, avatarOf, normalizeLook } from "@/lib/avatar";
+import { avatarName, avatarOf, figureSrc, normalizeLook } from "@/lib/avatar";
 import { lookKey, type AvatarLook } from "@/lib/avatar-params";
 import { flatLook, recallOwn, rememberOwn, renderLook } from "@/lib/avatar-render";
 
@@ -14,6 +14,7 @@ export function useAvatarImage(look: AvatarLook, size = 256, own = false): { src
   });
   useEffect(() => {
     let alive = true;
+    if (figureSrc(look)) return;
     const cached = own ? recallOwn(look) : null;
     if (cached) { setState({ key, src: cached, ready: true }); return; }
     setState((s) => (s.key === key ? s : { key, src: flatLook(look, size), ready: false }));
@@ -26,7 +27,9 @@ export function useAvatarImage(look: AvatarLook, size = 256, own = false): { src
 
 export function AvatarImage({ parts, className, size = 256, own = false }: { parts: Record<string, unknown>; className?: string | undefined; size?: number; own?: boolean }) {
   const look = useMemo(() => normalizeLook(parts), [parts]);
-  const { src, ready } = useAvatarImage(look, size, own);
+  const fig = figureSrc(look);
+  const { src, ready } = useAvatarImage(look, size, own && !fig);
+  if (fig) return <img src={fig} alt="" draggable={false} style={{ background: look.background }} className={cn("block select-none", className)} />;
   return <img src={src} alt="" draggable={false} className={cn("block select-none", ready ? "" : "opacity-80", className)} />;
 }
 
@@ -35,7 +38,7 @@ export function PlayerAvatar({ className }: { className?: string }) {
   const p = useProgress();
   const parts = useMemo(() => avatarOf(p), [p]);
   return (
-    <span className={cn("relative inline-flex shrink-0 overflow-hidden rounded-full bg-muted", className)} role="img" aria-label={avatarName(p)}>
+    <span className={cn("relative inline-flex shrink-0 overflow-hidden rounded-full bg-muted", className)} style={figureSrc(parts) ? { background: parts.background } : undefined} role="img" aria-label={avatarName(p)}>
       <AvatarImage parts={parts} own className="absolute inset-0 size-full object-cover" />
     </span>
   );
