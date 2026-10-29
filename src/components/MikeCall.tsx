@@ -50,6 +50,8 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
     let raf = 0;
     const abort = new AbortController();
     let utterance: ((pcm: Float32Array) => void) | null = null;
+    let lastBlock = Date.now();
+    let watchdog: ReturnType<typeof setInterval> | undefined;
 
     const mouth = () => {
       const lvl = phaseRef.current === "speaking" ? player?.level() ?? 0 : phaseRef.current === "listening" ? (seg?.level ?? 0) * 0.5 : 0;
@@ -88,12 +90,15 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
         });
       }
       if (pttRef.current) return new Promise<string>((resolve) => { pttResolve.current = resolve; });
-      return listenBrowser(abort.signal).catch((e: Error) => {
-        // Safari: "not-allowed" outside a tap → switch to push-to-talk for the rest of the call.
-        pttRef.current = true; setPtt(true); setNote(`Automatisk lytting virket ikke (${e.message}). Trykk mikrofonen og snakk.`);
-        return "";
-      });
+      const t0 = Date.now();
+      const toPtt = (why: string) => { pttRef.current = true; setPtt(true); setNote(`Automatisk lytting virket ikke (${why}). Trykk «Snakk» og si noe.`); };
+      return listenBrowser(abort.signal).then((t) => {
+        // iOS quietly ends recognition at once when it won't start outside a tap: two instant empties → push to talk.
+        if (!t && Date.now() - t0 < 1500) { if (++instantEnds >= 2) toPtt("stoppet med en gang"); } else instantEnds = 0;
+        return t;
+      }, (e: Error) => { toPtt(e.message); return ""; });
     };
+    let instantEnds = 0;
 
     const loop = async () => {
       while (alive.current) {
@@ -114,11 +119,17 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
     void (async () => {
       try {
         if (local) {
-          mic = await openMic(ctx, (block) => { if (!seg || mutedRef.current) return; const u = seg.push(block); if (u && utterance) utterance(u); });
+          mic = await openMic(ctx, (block) => { lastBlock = Date.now(); if (!seg || mutedRef.current) return; const u = seg.push(block); if (u && utterance) utterance(u); });
           seg = new Segmenter(ctx.sampleRate);
           player = new Player(ctx);
-        } else if (!browserRecognitionAvailable()) {
-          throw new Error("Nettleseren har ikke talegjenkjenning. Last ned Mikes stemme, eller bruk Safari/Chrome.");
+          // Watchdog: a microphone that delivers nothing while we listen means iOS parked the audio context.
+          watchdog = setInterval(() => {
+            if (phaseRef.current !== "listening" || mutedRef.current) { lastBlock = Date.now(); return; }
+            if (Date.now() - lastBlock > 3000) { setNote("Mikrofonen gir ingen lyd – prøver å vekke den …"); void ctx.resume(); lastBlock = Date.now(); }
+          }, 1000);
+        } else {
+          if (!browserRecognitionAvailable()) throw new Error("Nettleseren har ikke talegjenkjenning. Last ned Mikes stemme, eller bruk Safari/Chrome.");
+          void ctx.suspend(); // iOS has one audio session: a live context can block the built-in recognizer.
         }
         raf = requestAnimationFrame(mouth);
         await speak(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]!);
@@ -132,6 +143,7 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
       alive.current = false;
       abort.abort();
       cancelAnimationFrame(raf);
+      if (watchdog) clearInterval(watchdog);
       stopBrowserSpeech();
       player?.close();
       mic?.stop();
@@ -161,6 +173,7 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
         <Mike mood={mood} className="call__mike" />
         <h2 className="mt-4 text-3xl font-black">Mike</h2>
         <p className="call__status">{phase === "listening" && ptt ? "Trykk «Snakk» og si noe på engelsk" : STATUS[phase]}{muted && phase === "listening" ? " (dempet)" : ""}</p>
+        {local && (phase === "listening" || phase === "speaking") && <div className="call__meter" aria-hidden><i /></div>}
         {error && <p className="mt-2 max-w-xs text-sm text-destructive">{error}</p>}
         {note && <p className="mt-1 max-w-xs text-xs text-muted-foreground">{note}</p>}
       </div>

@@ -487,6 +487,8 @@
 .call__stage.is-connecting .call__mike { animation: call-ring .5s ease-in-out infinite; }
 .call__status { margin-top: 4px; font-weight: 600; color: var(--primary); min-height: 1.5em; }
 .call__stage.is-listening .call__status::before { content: "●"; display: inline-block; margin-right: 6px; color: #4ade80; animation: call-pulse 1.2s ease-in-out infinite; }
+.call__meter { width: 160px; height: 6px; margin-top: 8px; border-radius: 999px; background: color-mix(in oklab, var(--foreground) 12%, transparent); overflow: hidden; }
+.call__meter i { display: block; height: 100%; width: calc(var(--talk, 0) * 100%); background: var(--primary); transition: width 80ms linear; }
 .call__captions { display: grid; gap: 8px; max-width: 480px; width: 100%; margin: 0 auto 12px; min-height: 72px; }
 .call__cap { border-radius: 14px; padding: 8px 12px; font-size: 14px; line-height: 1.4; }
 .call__cap.is-me { justify-self: end; background: var(--primary); color: var(--primary-foreground); max-width: 85%; }
