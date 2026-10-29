@@ -158,3 +158,8 @@
 - `/spiller/$id`: avatar/figur, navn, flair, @brukernavn, nivåtittel, «medlem siden», pålogget-prikk, statistikk (rating, partier, seire, remis, tap, streak), bots slått på stigen, innbyrdes score, Utfordre-knapp, og alle ferdige partier mot venner som `GameRow`-rader.
 - Et parti åpnes i `/live/$gameId?for=<spiller>`: tilskuere kan analysere («Analyser for X») fra den spillerens side. Navn i vennelista og på brettet lenker til profilen. `ChallengeSheet` er flyttet til egen komponent.
 - Migrasjon `20261028100000_profile_stats.sql`: profiles får wins/draws/beaten/xp/created_at (speiles fra egen fremgang i `syncProfile`). RLS fra før: venner kan lese hverandres live_games.
+
+## 28. Ring Mike – samtale med stemme (engelsk)
+- «Ring Mike» på Mike-siden åpner en samtaleskjerm (`MikeCall.tsx`): hands-free – appen lytter til Tobias er ferdig (energibasert stillhetsdetektor `Segmenter` i `voice.ts`), sender teksten til Mikes hjerne med `CALL_RULES` (korte, muntlige svar), leser svaret høyt (munnen beveger seg etter lyden), lytter igjen. Demp og Legg på. Samtalen havner i chatloggen.
+- Lokale modeller i en worker (`voice-worker.ts`, Transformers.js): Whisper base.en (q8) for tale → tekst og Kokoro-82M (q8, wasm) for tekst → tale. Ca. 170 MB lastes ned fra Hugging Face én gang («Last ned»-kort) og caches i nettleseren; varmes opp automatisk neste gang. Stemmevalg (Puck standard, Fenrir, Michael, Fable, George) i innstillingene.
+- Uten nedlasting brukes nettleserens egen talegjenkjenning og stemme (Safari/Chrome) som fallback.

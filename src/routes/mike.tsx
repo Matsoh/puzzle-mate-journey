@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Send, Settings2 } from "lucide-react";
+import { Send, Settings2, Phone, Download, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Mike } from "@/components/Mike";
 import { PlayerAvatar } from "@/components/CoachAvatar";
 import { today, useProgress } from "@/lib/progress";
 import { askMike, loadBrain, saveBrain, mikeContext, ollamaReachable, MIKE_OPENERS, type BrainSettings, type BrainSource, type ChatMsg } from "@/lib/mike-brain";
 import { moodFor, type MikeMood } from "@/lib/mike";
+import { MikeCall } from "@/components/MikeCall";
+import { MIKE_VOICES, VOICE_DOWNLOAD_MB, setMikeVoice, useVoice, voiceDownload, voiceDownloadedBefore, type MikeVoiceId } from "@/lib/voice";
 
 export const Route = createFileRoute("/mike")({
   head: () => ({ meta: [{ title: "Mike – Goblin Chess" }, { name: "description", content: "Snakk med Mike." }] }),
@@ -25,10 +27,14 @@ function MikeChat() {
   const [brain, setBrain] = useState<BrainSettings>(loadBrain);
   const [showSettings, setShowSettings] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
+  const voice = useVoice();
+  const [call, setCall] = useState<AudioContext | null>(null);
   const lastMike = [...msgs].reverse().find((m) => m.role === "assistant")?.content;
   const mood: MikeMood = busy ? "think" : lastMike ? moodFor(lastMike) : "chill";
 
   useEffect(() => { void ollamaReachable(brain).then(setOnline); }, [brain]);
+  // Warm up the voice models from the browser cache if they were downloaded before, so a call starts instantly.
+  useEffect(() => { if (voiceDownloadedBefore()) voiceDownload(); }, []);
   useEffect(() => { try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(msgs.slice(-40))); } catch { /* ignore */ } bottom.current?.scrollIntoView({ block: "end" }); }, [msgs]);
 
   async function send(raw: string) {
@@ -51,8 +57,22 @@ function MikeChat() {
           <Mike mood={mood} className="w-14" />
           <div><h1 className="text-xl font-bold leading-tight">Mike</h1><p className="text-xs text-muted-foreground">{source === null ? "Hjerne: skyen" : source === "cloud" ? "Hjerne: skyen" : source === "ollama" ? "Hjerne: Ollama" : "Hjerne: innebygd (skyen svarte ikke)"}</p></div>
         </div>
-        <Button variant="ghost" size="icon" aria-label="Innstillinger for Mike" onClick={() => setShowSettings((s) => !s)}><Settings2 /></Button>
+        <div className="flex items-center gap-1">
+          <Button size="sm" className="font-bold" aria-label="Ring Mike" disabled={busy} onClick={() => { const ctx = new AudioContext(); void ctx.resume(); setCall(ctx); }}><Phone /> Ring Mike</Button>
+          <Button variant="ghost" size="icon" aria-label="Innstillinger for Mike" onClick={() => setShowSettings((s) => !s)}><Settings2 /></Button>
+        </div>
       </header>
+
+      {voice.status !== "ready" && (
+        <section className="card-game mb-3 flex flex-wrap items-center justify-between gap-3 p-3 text-sm" aria-label="Mikes stemme">
+          <div className="min-w-0">
+            <p className="font-semibold">{voice.status === "downloading" ? `Laster ned Mikes stemme … ${Math.round(voice.progress * 100)} %` : voice.status === "error" ? "Nedlastingen feilet" : "Mikes egen stemme"}</p>
+            <p className="text-xs text-muted-foreground">{voice.status === "error" ? voice.error : `Ca. ${VOICE_DOWNLOAD_MB} MB, én gang. Uten den bruker samtalen nettleserens stemme.`}</p>
+            {voice.status === "downloading" && <div className="xp-track mt-2 w-56"><div className="xp-fill" style={{ width: `${Math.round(voice.progress * 100)}%` }} /></div>}
+          </div>
+          {voice.status !== "downloading" && <Button size="sm" variant="outline" onClick={voiceDownload}><Download /> Last ned</Button>}
+        </section>
+      )}
 
       {showSettings && (
         <section className="card-game mb-3 p-4 text-sm" aria-label="Mikes hjerne">
@@ -61,6 +81,11 @@ function MikeChat() {
           <label className="mt-2 block text-xs text-muted-foreground">Modell<input className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2" value={brain.model} onChange={(e) => setBrain({ ...brain, model: e.target.value })} /></label>
           <div className="mt-3 flex gap-2"><Button size="sm" onClick={() => { saveBrain(brain); void ollamaReachable(brain).then(setOnline); }}>Lagre og test</Button><Button size="sm" variant="outline" onClick={() => setMsgs([])}>Tøm samtalen</Button></div>
           <p className="mt-3 text-xs text-muted-foreground">Mike bruker skyen først. Ollama brukes bare hvis skyen ikke svarer; innebygde replikker er siste utvei.</p>
+          <p className="mb-2 mt-4 font-semibold">Mikes stemme {voice.status === "ready" && <Check className="inline size-4 text-primary" />}</p>
+          <div className="flex flex-wrap gap-2">
+            {MIKE_VOICES.map((v) => <button key={v.id} type="button" className={`chip min-h-9 px-3 ${voice.voice === v.id ? "border-primary text-primary" : ""}`} aria-pressed={voice.voice === v.id} title={v.hint} onClick={() => setMikeVoice(v.id as MikeVoiceId)}>{v.name}</button>)}
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">{MIKE_VOICES.find((v) => v.id === voice.voice)?.hint}. Gjelder når Mikes egen stemme er lastet ned.</p>
         </section>
       )}
 
@@ -81,6 +106,8 @@ function MikeChat() {
       <div className="chat__chips mt-3">
         {MIKE_OPENERS.map((o) => <button key={o} className="chip min-h-9 px-3" onClick={() => void send(o)} disabled={busy}>{o}</button>)}
       </div>
+      {call && <MikeCall ctx={call} brain={brain} context={mikeContext(p, today())} history={msgs} onExchange={(u, m) => setMsgs((h) => [...h, { role: "user", content: u }, { role: "assistant", content: m }])} onEnd={() => { void call.close(); setCall(null); }} />}
+
       <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); void send(text); }}>
         <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Write to Mike…" aria-label="Melding til Mike" maxLength={300}
           className="min-h-12 flex-1 rounded-xl border border-border bg-card px-4 text-base" autoComplete="off" />

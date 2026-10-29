@@ -57,7 +57,7 @@ export function Mike({ mood = "chill", className, animate = true }: { mood?: Mik
       {mood === "shock" ? (
         <ellipse cx="104" cy="168" rx="16" ry="20" fill="#f3f1e3" stroke="#10120f" strokeWidth="3" strokeDasharray="5 5" />
       ) : (
-        <g>
+        <g className="mike__mouth">
           <path d={mood === "happy" ? "M48 142 L160 150 L150 190 L70 182 Z" : "M52 146 L156 152 L140 186 L74 180 Z"} fill="#f3f1e3" />
           <path d={mood === "happy" ? "M56 148 L152 155 L144 183 L74 177 Z" : "M60 152 L148 158 L134 180 L78 175 Z"} fill="none" stroke="#10120f" strokeWidth="3" strokeDasharray="7 6" strokeLinecap="round" />
         </g>
