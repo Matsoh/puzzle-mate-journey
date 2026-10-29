@@ -8,7 +8,7 @@ import { today, useProgress } from "@/lib/progress";
 import { askMike, loadBrain, saveBrain, mikeContext, ollamaReachable, MIKE_OPENERS, type BrainSettings, type BrainSource, type ChatMsg } from "@/lib/mike-brain";
 import { moodFor, type MikeMood } from "@/lib/mike";
 import { MikeCall } from "@/components/MikeCall";
-import { MIKE_VOICES, VOICE_DOWNLOAD_MB, setMikeVoice, unlockBrowserSpeech, useVoice, voiceDownload, voiceDownloadedBefore, type MikeVoiceId } from "@/lib/voice";
+import { MIKE_VOICES, VOICE_DOWNLOAD_MB, browserVoices, setBrowserVoice, setListenMode, setMikeVoice, speakBrowser, unlockBrowserSpeech, useVoice, voiceDownload, voiceDownloadedBefore, type MikeVoiceId } from "@/lib/voice";
 
 export const Route = createFileRoute("/mike")({
   head: () => ({ meta: [{ title: "Mike – Goblin Chess" }, { name: "description", content: "Snakk med Mike." }] }),
@@ -29,6 +29,7 @@ function MikeChat() {
   const bottom = useRef<HTMLDivElement>(null);
   const voice = useVoice();
   const [call, setCall] = useState<AudioContext | null>(null);
+  const [saved, setSaved] = useState(false);
   const lastMike = [...msgs].reverse().find((m) => m.role === "assistant")?.content;
   const mood: MikeMood = busy ? "think" : lastMike ? moodFor(lastMike) : "chill";
 
@@ -79,13 +80,30 @@ function MikeChat() {
           <p className="mb-2 font-semibold">Reserve: Ollama på Macen {online ? "(funnet)" : "(ikke funnet)"}</p>
           <label className="block text-xs text-muted-foreground">Adresse<input className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2" value={brain.url} onChange={(e) => setBrain({ ...brain, url: e.target.value })} /></label>
           <label className="mt-2 block text-xs text-muted-foreground">Modell<input className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2" value={brain.model} onChange={(e) => setBrain({ ...brain, model: e.target.value })} /></label>
-          <div className="mt-3 flex gap-2"><Button size="sm" onClick={() => { saveBrain(brain); void ollamaReachable(brain).then(setOnline); }}>Lagre og test</Button><Button size="sm" variant="outline" onClick={() => setMsgs([])}>Tøm samtalen</Button></div>
+          <div className="mt-3 flex gap-2"><Button size="sm" onClick={() => { saveBrain(brain); setSaved(true); setTimeout(() => setSaved(false), 1500); void ollamaReachable(brain).then(setOnline); }}>{saved ? "Lagret ✓" : "Lagre og test"}</Button><Button size="sm" variant="outline" onClick={() => setMsgs([])}>Tøm samtalen</Button></div>
           <p className="mt-3 text-xs text-muted-foreground">Mike bruker skyen først. Ollama brukes bare hvis skyen ikke svarer; innebygde replikker er siste utvei.</p>
-          <p className="mb-2 mt-4 font-semibold">Mikes stemme {voice.status === "ready" && <Check className="inline size-4 text-primary" />}</p>
+
+          <p className="mb-1 mt-5 font-semibold">Mikes egen stemme (nedlastet) {voice.status === "ready" ? <Check className="inline size-4 text-primary" /> : <span className="text-xs font-normal text-muted-foreground">– ikke lastet ned ennå</span>}</p>
           <div className="flex flex-wrap gap-2">
             {MIKE_VOICES.map((v) => <button key={v.id} type="button" className={`chip min-h-9 px-3 ${voice.voice === v.id ? "border-primary text-primary" : ""}`} aria-pressed={voice.voice === v.id} title={v.hint} onClick={() => setMikeVoice(v.id as MikeVoiceId)}>{v.name}</button>)}
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">{MIKE_VOICES.find((v) => v.id === voice.voice)?.hint}. Gjelder når Mikes egen stemme er lastet ned.</p>
+          <p className="mt-1 text-xs text-muted-foreground">{MIKE_VOICES.find((v) => v.id === voice.voice)?.hint}. Valget lagres med en gang og brukes i neste samtale{voice.status === "ready" ? "" : " – når stemmen er lastet ned"}.</p>
+
+          <p className="mb-1 mt-4 font-semibold">Nettleserens stemme (uten nedlasting)</p>
+          <div className="flex gap-2">
+            <select value={voice.browserVoice} onChange={(e) => setBrowserVoice(e.target.value)} aria-label="Nettleserens stemme" className="min-h-9 min-w-0 flex-1 rounded-lg border border-border bg-background px-2 text-sm">
+              <option value="">Automatisk</option>
+              {browserVoices().map((v) => <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>)}
+            </select>
+            <Button size="sm" variant="outline" onClick={() => { unlockBrowserSpeech(); void speakBrowser("Mike here. One eye, two red ears. Let's play."); }}>Prøv</Button>
+          </div>
+
+          <p className="mb-1 mt-4 font-semibold">Lytting</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={`chip min-h-9 px-3 ${voice.listen === "auto" ? "border-primary text-primary" : ""}`} aria-pressed={voice.listen === "auto"} onClick={() => setListenMode("auto")}>Nettleseren (rask)</button>
+            <button type="button" className={`chip min-h-9 px-3 ${voice.listen === "whisper" ? "border-primary text-primary" : ""}`} aria-pressed={voice.listen === "whisper"} onClick={() => setListenMode("whisper")}>Whisper (lokal, tregere)</button>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Safari og Chrome hører raskt selv. Whisper kjører helt lokalt, men bruker 10–30 sekunder per setning på en iPad.</p>
         </section>
       )}
 

@@ -111,12 +111,28 @@ const VOICE_KEY = "goblin-chess.mike-voice";
 export function mikeVoice(): MikeVoiceId { try { const v = localStorage.getItem(VOICE_KEY); return (MIKE_VOICES.some((x) => x.id === v) ? v : "am_puck") as MikeVoiceId; } catch { return "am_puck"; } }
 export function setMikeVoice(v: MikeVoiceId) { try { localStorage.setItem(VOICE_KEY, v); } catch { /* ignore */ } emit(); }
 
+/** Listening: "auto" = the browser's recognizer when it has one (fast), else Whisper; "whisper" = always the local model. */
+export type ListenMode = "auto" | "whisper";
+const LISTEN_KEY = "goblin-chess.mike-listen";
+export function listenMode(): ListenMode { try { return localStorage.getItem(LISTEN_KEY) === "whisper" ? "whisper" : "auto"; } catch { return "auto"; } }
+export function setListenMode(m: ListenMode) { try { localStorage.setItem(LISTEN_KEY, m); } catch { /* ignore */ } emit(); }
+
+/** The browser's own English voices (Safari/Chrome ship several) – used when Mike's voice isn't downloaded. */
+const BVOICE_KEY = "goblin-chess.mike-browser-voice";
+export function browserVoices(): { name: string; lang: string }[] {
+  if (!browserSpeechAvailable()) return [];
+  return speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en")).map((v) => ({ name: v.name, lang: v.lang })).sort((a, b) => a.name.localeCompare(b.name));
+}
+export function browserVoiceName(): string { try { return localStorage.getItem(BVOICE_KEY) ?? ""; } catch { return ""; } }
+export function setBrowserVoice(name: string) { try { localStorage.setItem(BVOICE_KEY, name); } catch { /* ignore */ } emit(); }
+
 // ---------- store ----------
 export type VoiceStatus = "idle" | "downloading" | "ready" | "error";
-type State = { status: VoiceStatus; progress: number; loaded: number; total: number; error: string | null; voice: MikeVoiceId };
-let state: State = { status: "idle", progress: 0, loaded: 0, total: 0, error: null, voice: "am_puck" };
+type State = { status: VoiceStatus; progress: number; loaded: number; total: number; error: string | null; voice: MikeVoiceId; listen: ListenMode; browserVoice: string };
+let state: State = { status: "idle", progress: 0, loaded: 0, total: 0, error: null, voice: "am_puck", listen: "auto", browserVoice: "" };
 const listeners = new Set<() => void>();
-const emit = () => { state = { ...state, voice: mikeVoice() }; listeners.forEach((l) => l()); };
+const emit = () => { state = { ...state, voice: mikeVoice(), listen: listenMode(), browserVoice: browserVoiceName() }; listeners.forEach((l) => l()); };
+if (typeof window !== "undefined" && "speechSynthesis" in window) { try { speechSynthesis.addEventListener("voiceschanged", () => emit()); } catch { /* ignore */ } }
 const set = (patch: Partial<State>) => { state = { ...state, ...patch }; emit(); };
 export function useVoice(): State { return useSyncExternalStore((l) => { listeners.add(l); return () => { listeners.delete(l); }; }, () => state, () => state); }
 export const voiceReady = () => state.status === "ready";
@@ -198,7 +214,9 @@ export function listenBrowser(signal?: AbortSignal): Promise<string> {
 }
 
 function pickBrowserVoice(): SpeechSynthesisVoice | null {
-  const voices = speechSynthesis.getVoices().filter((v) => v.lang.startsWith("en"));
+  const voices = speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en"));
+  const chosen = browserVoiceName();
+  if (chosen) { const v = voices.find((x) => x.name === chosen); if (v) return v; }
   const prefs = ["Daniel", "Aaron", "Fred", "Google UK English Male", "Alex", "Microsoft Guy", "Rishi"];
   for (const p of prefs) { const v = voices.find((x) => x.name.includes(p)); if (v) return v; }
   return voices.find((v) => v.lang === "en-US") ?? voices[0] ?? null;
