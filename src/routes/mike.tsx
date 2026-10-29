@@ -8,7 +8,7 @@ import { today, useProgress } from "@/lib/progress";
 import { askMike, loadBrain, saveBrain, mikeContext, ollamaReachable, MIKE_OPENERS, type BrainSettings, type BrainSource, type ChatMsg } from "@/lib/mike-brain";
 import { moodFor, type MikeMood } from "@/lib/mike";
 import { MikeCall } from "@/components/MikeCall";
-import { MIKE_VOICES, VOICE_DOWNLOAD_MB, setMikeVoice, useVoice, voiceDownload, voiceDownloadedBefore, type MikeVoiceId } from "@/lib/voice";
+import { MIKE_VOICES, VOICE_DOWNLOAD_MB, setMikeVoice, unlockBrowserSpeech, useVoice, voiceDownload, voiceDownloadedBefore, type MikeVoiceId } from "@/lib/voice";
 
 export const Route = createFileRoute("/mike")({
   head: () => ({ meta: [{ title: "Mike – Goblin Chess" }, { name: "description", content: "Snakk med Mike." }] }),
@@ -58,7 +58,7 @@ function MikeChat() {
           <div><h1 className="text-xl font-bold leading-tight">Mike</h1><p className="text-xs text-muted-foreground">{source === null ? "Hjerne: skyen" : source === "cloud" ? "Hjerne: skyen" : source === "ollama" ? "Hjerne: Ollama" : "Hjerne: innebygd (skyen svarte ikke)"}</p></div>
         </div>
         <div className="flex items-center gap-1">
-          <Button size="sm" className="font-bold" aria-label="Ring Mike" disabled={busy} onClick={() => { const ctx = new AudioContext(); void ctx.resume(); setCall(ctx); }}><Phone /> Ring Mike</Button>
+          <Button size="sm" className="font-bold" aria-label="Ring Mike" disabled={busy} onClick={() => { const ctx = new AudioContext(); void ctx.resume(); unlockBrowserSpeech(); setCall(ctx); }}><Phone /> Ring Mike</Button>
           <Button variant="ghost" size="icon" aria-label="Innstillinger for Mike" onClick={() => setShowSettings((s) => !s)}><Settings2 /></Button>
         </div>
       </header>

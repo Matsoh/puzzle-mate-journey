@@ -203,29 +203,55 @@ function pickBrowserVoice(): SpeechSynthesisVoice | null {
   for (const p of prefs) { const v = voices.find((x) => x.name.includes(p)); if (v) return v; }
   return voices.find((v) => v.lang === "en-US") ?? voices[0] ?? null;
 }
+/** Call inside a tap: iOS only lets speech start after a user gesture, and this unlocks it for the rest of the call. */
+export function unlockBrowserSpeech() {
+  try { if (!browserSpeechAvailable()) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); speechSynthesis.getVoices(); } catch { /* ignore */ }
+}
+/**
+ * Speak with the browser's voice. iOS sometimes never fires onend (or never starts
+ * at all), so this also polls `speaking` and gives up after the text should be done.
+ */
 export function speakBrowser(text: string, onBoundary?: () => void): Promise<void> {
   return new Promise((resolve) => {
-    const u = new SpeechSynthesisUtterance(speakable(text));
+    const clean = speakable(text);
+    if (!clean) { resolve(); return; }
+    let done = false;
+    const finish = () => { if (!done) { done = true; clearInterval(poll); clearTimeout(cap); resolve(); } };
+    const u = new SpeechSynthesisUtterance(clean);
     u.lang = "en-US"; u.rate = 1.05; u.pitch = 0.9;
     const v = pickBrowserVoice();
     if (v) u.voice = v;
     u.onboundary = () => onBoundary?.();
-    u.onend = () => resolve();
-    u.onerror = () => resolve();
+    u.onend = finish;
+    u.onerror = finish;
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
+    let started = false;
+    const poll = setInterval(() => {
+      if (speechSynthesis.speaking) started = true;
+      else if (started) finish();
+    }, 150);
+    const cap = setTimeout(finish, Math.min(30_000, 2_500 + clean.length * 90));
   });
 }
 export function stopBrowserSpeech() { try { speechSynthesis.cancel(); } catch { /* ignore */ } }
+
+/** Reject after `ms` so a stuck worker never freezes the call. */
+export function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${what} tok for lang tid`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
 
 // ---------- microphone + playback (main thread) ----------
 export type Mic = { ctx: AudioContext; stream: MediaStream; stop: () => void; setMuted: (m: boolean) => void };
 
 /** Open the microphone and stream blocks (at ctx.sampleRate) to `onBlock`. Call from a user gesture. */
-export async function openMic(onBlock: (block: Float32Array) => void): Promise<Mic> {
+export async function openMic(ctx: AudioContext, onBlock: (block: Float32Array) => void): Promise<Mic> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
-  const ctx = new AudioContext();
-  await ctx.resume();
+  // One context for everything (created in the user's tap – iOS keeps a context made later suspended).
+  if (ctx.state !== "running") await ctx.resume();
   await ctx.audioWorklet.addModule("/voice-capture.js");
   const src = ctx.createMediaStreamSource(stream);
   const node = new AudioWorkletNode(ctx, "voice-capture");
@@ -234,7 +260,7 @@ export async function openMic(onBlock: (block: Float32Array) => void): Promise<M
   src.connect(node);
   // Keep the graph alive without hearing yourself: route through a silent gain.
   const sink = ctx.createGain(); sink.gain.value = 0; node.connect(sink); sink.connect(ctx.destination);
-  return { ctx, stream, stop: () => { try { node.disconnect(); src.disconnect(); } catch { /* ignore */ } stream.getTracks().forEach((t) => t.stop()); void ctx.close(); }, setMuted: (m) => { muted = m; } };
+  return { ctx, stream, stop: () => { try { node.disconnect(); src.disconnect(); sink.disconnect(); } catch { /* ignore */ } stream.getTracks().forEach((t) => t.stop()); }, setMuted: (m) => { muted = m; } };
 }
 
 /** Plays PCM chunks back to back on one AudioContext; `level()` gives the current loudness for the mouth. */
@@ -271,7 +297,8 @@ export class Player {
     buf.copyToChannel(next.pcm as Float32Array<ArrayBuffer>, 0);
     const src = this.ctx.createBufferSource(); src.buffer = buf; src.connect(this.analyser);
     this.current = src;
-    await new Promise<void>((r) => { src.onended = () => r(); src.start(); });
+    if (this.ctx.state !== "running") { try { await this.ctx.resume(); } catch { /* ignore */ } }
+    await new Promise<void>((r) => { src.onended = () => r(); src.start(); setTimeout(r, buf.duration * 1000 + 1500); });
     this.current = null; this.playing = false;
     void this.pump();
   }
