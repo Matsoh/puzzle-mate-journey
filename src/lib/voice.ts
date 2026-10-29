@@ -101,8 +101,9 @@ export function cleanTranscript(t: string): string {
 /** Friendly text for an error from the mike-voice function. */
 export function elevenError(message: string): string {
   if (/no key|501/.test(message)) return "Stemmenøkkelen mangler i Lovable.";
-  if (/bad key/.test(message)) return "ElevenLabs avviste nøkkelen.";
-  if (/no stt/.test(message)) return "Nøkkelen har ikke tilgang til Speech to Text.";
+  if (/no stt permission/.test(message)) return "Nøkkelen mangler tilgang til Speech to Text i ElevenLabs.";
+  if (/no tts permission/.test(message)) return "Nøkkelen mangler tilgang til Text to Speech i ElevenLabs.";
+  if (/bad key/.test(message)) return `ElevenLabs avviste nøkkelen (${message.replace(/^bad key:\s*/, "") || "ukjent grunn"}).`;
   if (/quota|429/.test(message)) return "Stemmekvoten er brukt opp denne måneden.";
   if (/forbidden|unauthorized/.test(message)) return "Du må være logget inn som godkjent spiller.";
   if (/Failed to fetch|Load failed/.test(message)) return "Fikk ikke kontakt med stemmetjenesten.";

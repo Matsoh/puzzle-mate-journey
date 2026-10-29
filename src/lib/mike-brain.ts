@@ -3,6 +3,7 @@
 // together with Tobias. Chess facts never come from the model alone; the
 // context block gives it real numbers from the app.
 import type { Progress } from "./progress";
+import { avatarName } from "./avatar";
 import { levelFromXp, liveStreak } from "./rules";
 import { dailyQuests, levelTitle, questDone } from "./quests";
 import { collectionSummary } from "./collection";
@@ -47,9 +48,14 @@ export function mikeContext(p: Progress, day: string): string {
   const q = dailyQuests(p, day);
   const next = OPPONENTS.find((o) => !p.beaten.includes(o.id));
   const s = collectionSummary(p);
+  const who = avatarName(p);
+  const isTobias = /^tobias$/i.test(who);
   return [
     `Today: ${day}.`,
-    `Tobias in the app: level ${lvl.level} (${levelTitle(lvl.level)}), ${p.xp} XP, app game rating ${p.rating}, puzzle rating ${p.puzzleRating}.`,
+    isTobias
+      ? "You are talking to Tobias himself."
+      : `You are talking to ${who} – NOT Tobias. ${who} is family or a club friend of Tobias using the same app. Call them "${who}", never "Tobias", and talk about Tobias in the third person if he comes up. Everything below is ${who}'s own progress.`,
+    `${who} in the app: level ${lvl.level} (${levelTitle(lvl.level)}), ${p.xp} XP, app game rating ${p.rating}, puzzle rating ${p.puzzleRating}.`,
     `Streak: ${liveStreak(p.lastDay, day, p.streak)} days. Games played: ${p.games}, wins: ${p.wins}. Puzzles solved: ${p.puzzlesSolved}/${p.puzzlesTried}.`,
     `Today's quests: ${q.map((x) => `${x.title} (${questDone(x) ? "done" : `${x.done}/${x.goal}`})`).join("; ")}.`,
     `Ladder: beaten ${p.beaten.length}/${OPPONENTS.length}${next ? `; next opponent is ${next.name} (${next.elo}, ${next.style})` : "; ladder complete"}.`,

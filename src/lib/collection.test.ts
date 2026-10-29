@@ -99,6 +99,10 @@ describe("Mike offline", () => {
     expect(ctx).toContain("1580");
     expect(ctx).toContain("level 2");
     expect(MIKE_SYSTEM_PROMPT).toMatch(/Never compare him to other kids/);
+    expect(ctx).toContain("talking to Tobias himself");
+    const dad = mikeContext({ ...DEFAULT_PROGRESS, avatarName: "Pappa" }, "2026-10-24");
+    expect(dad).toContain("talking to Pappa – NOT Tobias");
+    expect(dad).toContain("Pappa in the app");
   });
 });
 

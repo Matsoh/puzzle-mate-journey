@@ -17,6 +17,16 @@ const STT_MODEL = Deno.env.get("ELEVENLABS_STT_MODEL") ?? "scribe_v1";
 const MAX_CHARS = 600;
 const MAX_AUDIO = 2_000_000; // ~60 s of 16 kHz WAV, base64
 
+/** Turn an ElevenLabs error into a short code the app can explain (ElevenLabs uses 401 both for bad keys and for keys missing a permission). */
+function classify(what: string, status: number, text: string): string {
+  let detail = "";
+  try { const d = (JSON.parse(text) as { detail?: { status?: string; message?: string } | string }).detail; detail = typeof d === "string" ? d : `${d?.status ?? ""} ${d?.message ?? ""}`.trim(); } catch { detail = text.slice(0, 160); }
+  if (/missing_permissions|permission/i.test(detail)) return `no ${what === "scribe" ? "stt" : "tts"} permission: ${detail}`;
+  if (status === 401) return `bad key: ${detail}`;
+  if (status === 402 || status === 429 || /quota|limit/i.test(detail)) return `quota: ${detail}`;
+  return `${what} ${status}: ${detail}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "content-type": "application/json" } });
@@ -43,10 +53,7 @@ Deno.serve(async (req) => {
       form.append("tag_audio_events", "false");
       form.append("diarize", "false");
       const res = await fetch(`${API}/speech-to-text`, { method: "POST", headers: { "xi-api-key": key }, body: form });
-      if (res.status === 401) return json({ error: "bad key" }, 502);
-      if (res.status === 403) return json({ error: "no stt" }, 502);
-      if (res.status === 402 || res.status === 429) return json({ error: "quota" }, 429);
-      if (!res.ok) return json({ error: `scribe ${res.status}: ${(await res.text()).slice(0, 200)}` }, 502);
+      if (!res.ok) return json({ error: classify("scribe", res.status, await res.text()) }, res.status === 402 || res.status === 429 ? 429 : 502);
       const data = (await res.json()) as { text?: string };
       return json({ text: (data.text ?? "").trim() });
     }
@@ -64,9 +71,7 @@ Deno.serve(async (req) => {
         voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.35, use_speaker_boost: true },
       }),
     });
-    if (res.status === 401) return json({ error: "bad key" }, 502);
-    if (res.status === 402 || res.status === 429) return json({ error: "quota" }, 429);
-    if (!res.ok) return json({ error: `elevenlabs ${res.status}: ${(await res.text()).slice(0, 200)}` }, 502);
+    if (!res.ok) return json({ error: classify("tts", res.status, await res.text()) }, res.status === 402 || res.status === 429 ? 429 : 502);
     return new Response(res.body, { status: 200, headers: { ...cors, "content-type": "audio/mpeg", "cache-control": "no-store" } });
   } catch (e) {
     return json({ error: String(e) }, 500);
