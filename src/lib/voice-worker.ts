@@ -49,7 +49,8 @@ self.onmessage = async (e: MessageEvent) => {
       post({ type: "ready" });
     } else if (m.type === "transcribe") {
       await load();
-      const out = await asr!(m.audio!, { language: "en", task: "transcribe" });
+      // English-only model: no `language`/`task` options (transformers.js throws if they are given).
+      const out = await asr!(m.audio!);
       const text = (Array.isArray(out) ? out.map((o) => o.text).join(" ") : out.text).trim();
       post({ type: "text", id: m.id, text });
     } else if (m.type === "speak") {

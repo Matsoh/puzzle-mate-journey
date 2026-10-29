@@ -30,7 +30,7 @@ export function rms(block: Float32Array): number {
 }
 
 export type VadConfig = { threshold: number; silenceMs: number; minSpeechMs: number; maxMs: number; preRollMs: number };
-export const VAD: VadConfig = { threshold: 0.012, silenceMs: 900, minSpeechMs: 400, maxMs: 15_000, preRollMs: 300 };
+export const VAD: VadConfig = { threshold: 0.009, silenceMs: 1000, minSpeechMs: 350, maxMs: 15_000, preRollMs: 300 };
 
 /**
  * A tiny energy-based voice activity detector. Feed it blocks; it returns a

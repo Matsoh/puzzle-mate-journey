@@ -77,18 +77,26 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
       mic?.setMuted(mutedRef.current);
     };
 
+    let localFails = 0;
+    let localListen = local;
     const listenOnce = (): Promise<string> => {
       go("listening");
-      if (local) {
+      if (localListen) {
         return new Promise((resolve) => {
           seg?.reset();
           utterance = (pcm: Float32Array) => {
             utterance = null;
             go("thinking");
-            withTimeout(transcribeLocal(resample(pcm, ctx.sampleRate, 16_000)), 30_000, "Lyttingen").then(resolve, (e) => { setNote(`Hørte ikke (${(e as Error).message}).`); resolve(""); });
+            withTimeout(transcribeLocal(resample(pcm, ctx.sampleRate, 16_000)), 30_000, "Lyttingen").then((t) => { localFails = 0; setNote(null); resolve(t); }, (e) => {
+              // Whisper failed twice: keep Mike's voice, but let the browser do the listening from now on.
+              if (++localFails >= 2 && browserRecognitionAvailable()) { localListen = false; mic?.setMuted(true); setNote("Bruker nettleserens lytting i stedet."); }
+              else setNote(`Hørte ikke (${(e as Error).message}).`);
+              resolve("");
+            });
           };
         });
       }
+      if (local) void ctx.suspend(); // free iOS's audio session for the built-in recognizer
       if (pttRef.current) return new Promise<string>((resolve) => { pttResolve.current = resolve; });
       const t0 = Date.now();
       const toPtt = (why: string) => { pttRef.current = true; setPtt(true); setNote(`Automatisk lytting virket ikke (${why}). Trykk «Snakk» og si noe.`); };
