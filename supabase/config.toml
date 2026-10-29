@@ -1,3 +1,6 @@
 project_id = "voahmdabyiqddkzwbzoc"
 [functions.mike]
 verify_jwt = false
+
+[functions.mike-voice]
+verify_jwt = false

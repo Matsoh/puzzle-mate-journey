@@ -8,7 +8,8 @@ import { today, useProgress } from "@/lib/progress";
 import { askMike, loadBrain, saveBrain, mikeContext, ollamaReachable, MIKE_OPENERS, type BrainSettings, type BrainSource, type ChatMsg } from "@/lib/mike-brain";
 import { moodFor, type MikeMood } from "@/lib/mike";
 import { MikeCall } from "@/components/MikeCall";
-import { MIKE_VOICES, VOICE_DOWNLOAD_MB, browserVoices, setBrowserVoice, setListenMode, setMikeVoice, speakBrowser, unlockBrowserSpeech, useVoice, voiceDownload, voiceDownloadedBefore, type MikeVoiceId } from "@/lib/voice";
+import { ELEVEN_STOCK, MIKE_VOICES, VOICE_DOWNLOAD_MB, browserVoices, elevenError, listElevenVoices, setBrowserVoice, setElevenVoice, setListenMode, setMikeVoice, setVoiceEngine, speakBrowser, speakEleven, unlockBrowserSpeech, useVoice, voiceDownload, voiceDownloadedBefore, type ElevenVoice, type MikeVoiceId, type VoiceEngine } from "@/lib/voice";
+import { onlineAvailable } from "@/lib/online";
 
 export const Route = createFileRoute("/mike")({
   head: () => ({ meta: [{ title: "Mike – Goblin Chess" }, { name: "description", content: "Snakk med Mike." }] }),
@@ -30,6 +31,25 @@ function MikeChat() {
   const voice = useVoice();
   const [call, setCall] = useState<AudioContext | null>(null);
   const [saved, setSaved] = useState(false);
+  const [elevenVoices, setElevenVoices] = useState<ElevenVoice[] | null>(null);
+  const [elevenMsg, setElevenMsg] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  useEffect(() => {
+    if (!showSettings || elevenVoices || !onlineAvailable()) return;
+    listElevenVoices().then((v) => setElevenVoices(v.length ? v : ELEVEN_STOCK), (e: Error) => { setElevenVoices(ELEVEN_STOCK); setElevenMsg(elevenError(e.message)); });
+  }, [showSettings, elevenVoices]);
+  const testEleven = async () => {
+    setTesting(true); setElevenMsg(null);
+    const ctx = new AudioContext();
+    try {
+      await ctx.resume();
+      const clip = await speakEleven("Mike here. One eye, two red ears, hand-sewn by you. Let's play some chess.", ctx);
+      const buf = ctx.createBuffer(1, clip.pcm.length, clip.rate); buf.copyToChannel(clip.pcm as Float32Array<ArrayBuffer>, 0);
+      const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination); src.onended = () => void ctx.close(); src.start();
+      setElevenMsg("ElevenLabs virker ✓");
+    } catch (e) { setElevenMsg(elevenError((e as Error).message)); void ctx.close(); }
+    finally { setTesting(false); }
+  };
   const lastMike = [...msgs].reverse().find((m) => m.role === "assistant")?.content;
   const mood: MikeMood = busy ? "think" : lastMike ? moodFor(lastMike) : "chill";
 
@@ -64,7 +84,7 @@ function MikeChat() {
         </div>
       </header>
 
-      {voice.status !== "ready" && (
+      {voice.engine === "local" && voice.status !== "ready" && (
         <section className="card-game mb-3 flex flex-wrap items-center justify-between gap-3 p-3 text-sm" aria-label="Mikes stemme">
           <div className="min-w-0">
             <p className="font-semibold">{voice.status === "downloading" ? `Laster ned Mikes stemme … ${Math.round(voice.progress * 100)} %` : voice.status === "error" ? "Nedlastingen feilet" : "Mikes egen stemme"}</p>
@@ -82,6 +102,27 @@ function MikeChat() {
           <label className="mt-2 block text-xs text-muted-foreground">Modell<input className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2" value={brain.model} onChange={(e) => setBrain({ ...brain, model: e.target.value })} /></label>
           <div className="mt-3 flex gap-2"><Button size="sm" onClick={() => { saveBrain(brain); setSaved(true); setTimeout(() => setSaved(false), 1500); void ollamaReachable(brain).then(setOnline); }}>{saved ? "Lagret ✓" : "Lagre og test"}</Button><Button size="sm" variant="outline" onClick={() => setMsgs([])}>Tøm samtalen</Button></div>
           <p className="mt-3 text-xs text-muted-foreground">Mike bruker skyen først. Ollama brukes bare hvis skyen ikke svarer; innebygde replikker er siste utvei.</p>
+
+          <p className="mb-1 mt-5 font-semibold">Stemmemotor</p>
+          <div className="flex flex-wrap gap-2">
+            {([["eleven", "ElevenLabs (best)"], ["local", "Nedlastet (Kokoro)"], ["browser", "Nettleseren"]] as const).map(([id, label]) => (
+              <button key={id} type="button" className={`chip min-h-9 px-3 ${voice.engine === id ? "border-primary text-primary" : ""}`} aria-pressed={voice.engine === id} onClick={() => setVoiceEngine(id as VoiceEngine)}>{label}</button>
+            ))}
+          </div>
+          {voice.engine === "eleven" && (
+            <div className="mt-2">
+              <div className="flex gap-2">
+                <select value={voice.elevenVoice} onChange={(e) => setElevenVoice(e.target.value)} aria-label="ElevenLabs-stemme" className="min-h-9 min-w-0 flex-1 rounded-lg border border-border bg-background px-2 text-sm">
+                  {(elevenVoices ?? ELEVEN_STOCK).map((v) => <option key={v.id} value={v.id}>{v.name}{v.labels["accent"] ? ` · ${v.labels["accent"]}` : ""}{v.labels["description"] ? ` · ${v.labels["description"]}` : ""}</option>)}
+                  {!(elevenVoices ?? ELEVEN_STOCK).some((v) => v.id === voice.elevenVoice) && <option value={voice.elevenVoice}>Egen stemme-ID</option>}
+                </select>
+                <Button size="sm" variant="outline" disabled={testing} onClick={() => void testEleven()}>{testing ? "…" : "Prøv"}</Button>
+              </div>
+              <input value={voice.elevenVoice} onChange={(e) => setElevenVoice(e.target.value.trim())} aria-label="Stemme-ID fra ElevenLabs" placeholder="…eller lim inn en Voice ID fra ElevenLabs-biblioteket" className="mt-2 min-h-9 w-full rounded-lg border border-border bg-background px-3 text-xs" />
+              {elevenMsg && <p role="status" className="mt-1 text-xs font-semibold text-primary">{elevenMsg}</p>}
+              <p className="mt-1 text-xs text-muted-foreground">Stemmene hentes fra ElevenLabs-kontoen din (legg til flere under «Voices» der). Hvis ElevenLabs feiler i en samtale, brukes neste stemme automatisk.</p>
+            </div>
+          )}
 
           <p className="mb-1 mt-5 font-semibold">Mikes egen stemme (nedlastet) {voice.status === "ready" ? <Check className="inline size-4 text-primary" /> : <span className="text-xs font-normal text-muted-foreground">– ikke lastet ned ennå</span>}</p>
           <div className="flex flex-wrap gap-2">

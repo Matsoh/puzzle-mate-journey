@@ -126,12 +126,69 @@ export function browserVoices(): { name: string; lang: string }[] {
 export function browserVoiceName(): string { try { return localStorage.getItem(BVOICE_KEY) ?? ""; } catch { return ""; } }
 export function setBrowserVoice(name: string) { try { localStorage.setItem(BVOICE_KEY, name); } catch { /* ignore */ } emit(); }
 
+/** Which engine reads Mike's replies: ElevenLabs (cloud, best), the downloaded Kokoro, or the browser's voice. */
+export type VoiceEngine = "eleven" | "local" | "browser";
+const ENGINE_KEY = "goblin-chess.mike-engine";
+export function voiceEngine(): VoiceEngine { try { const v = localStorage.getItem(ENGINE_KEY); return v === "local" || v === "browser" ? v : "eleven"; } catch { return "eleven"; } }
+export function setVoiceEngine(e: VoiceEngine) { try { localStorage.setItem(ENGINE_KEY, e); } catch { /* ignore */ } emit(); }
+
+// ---------- ElevenLabs (via the mike-voice edge function) ----------
+export type ElevenVoice = { id: string; name: string; category: string; labels: Record<string, string> };
+/** A few of ElevenLabs' stock voices, shown until the account's own list has loaded. */
+export const ELEVEN_STOCK: ElevenVoice[] = [
+  { id: "S0ypc51SmsvcKXTWvjqJ", name: "Mike", category: "custom", labels: { description: "valgt av Tobias" } },
+  { id: "IKne3meq5aSn9XLyUdCD", name: "Charlie", category: "premade", labels: { accent: "Australian", description: "casual, cheeky" } },
+  { id: "N2lVS1w4EtoT3dr4eOWO", name: "Callum", category: "premade", labels: { accent: "Transatlantic", description: "intense, gravelly" } },
+  { id: "D38z5RcWu1voky8WS1ja", name: "Fin", category: "premade", labels: { accent: "Irish", description: "sailor, character" } },
+  { id: "TX3LPaxmHKxFdv7VOQHJ", name: "Liam", category: "premade", labels: { accent: "American", description: "young, energetic" } },
+  { id: "SOYHLrjzK2X1ezoPC6cr", name: "Harry", category: "premade", labels: { accent: "American", description: "anxious, fast" } },
+  { id: "iP95p4xoKVk53GoZ742B", name: "Chris", category: "premade", labels: { accent: "American", description: "casual, friendly" } },
+];
+const EVOICE_KEY = "goblin-chess.mike-eleven-voice";
+export function elevenVoiceId(): string { try { return localStorage.getItem(EVOICE_KEY) || ELEVEN_STOCK[0]!.id; } catch { return ELEVEN_STOCK[0]!.id; } }
+export function setElevenVoice(id: string) { try { localStorage.setItem(EVOICE_KEY, id); } catch { /* ignore */ } emit(); }
+
+/** Friendly text for an error from the mike-voice function. */
+export function elevenError(message: string): string {
+  if (/no key|501/.test(message)) return "ElevenLabs-nøkkelen mangler i Lovable (ELEVENLABS_API_KEY).";
+  if (/bad key/.test(message)) return "ElevenLabs avviste nøkkelen – sjekk at den har tilgang til Text to Speech.";
+  if (/quota|429/.test(message)) return "ElevenLabs-kvoten er brukt opp denne måneden.";
+  if (/forbidden|unauthorized/.test(message)) return "Du må være logget inn som godkjent spiller.";
+  return `ElevenLabs svarte ikke (${message}).`;
+}
+
+async function callVoice(body: Record<string, unknown>): Promise<Response> {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("unauthorized");
+  const url = `${import.meta.env["VITE_SUPABASE_URL"]}/functions/v1/mike-voice`;
+  const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json", Authorization: `Bearer ${session.access_token}`, apikey: import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? "" }, body: JSON.stringify(body) });
+  if (!res.ok) {
+    let msg = `${res.status}`;
+    try { msg = ((await res.json()) as { error?: string }).error ?? msg; } catch { /* keep status */ }
+    throw new Error(msg);
+  }
+  return res;
+}
+export async function listElevenVoices(): Promise<ElevenVoice[]> {
+  const res = await callVoice({ list: true });
+  return ((await res.json()) as { voices: ElevenVoice[] }).voices;
+}
+/** Ask ElevenLabs to read `text`; returns decoded PCM ready for the Player. */
+export async function speakEleven(text: string, ctx: AudioContext, voice = elevenVoiceId()): Promise<{ pcm: Float32Array; rate: number }> {
+  const clean = speakable(text);
+  const res = await callVoice({ text: clean, voice });
+  const buf = await res.arrayBuffer();
+  const audio = await ctx.decodeAudioData(buf.slice(0));
+  return { pcm: audio.getChannelData(0), rate: audio.sampleRate };
+}
+
 // ---------- store ----------
 export type VoiceStatus = "idle" | "downloading" | "ready" | "error";
-type State = { status: VoiceStatus; progress: number; loaded: number; total: number; error: string | null; voice: MikeVoiceId; listen: ListenMode; browserVoice: string };
-let state: State = { status: "idle", progress: 0, loaded: 0, total: 0, error: null, voice: "am_puck", listen: "auto", browserVoice: "" };
+type State = { status: VoiceStatus; progress: number; loaded: number; total: number; error: string | null; voice: MikeVoiceId; listen: ListenMode; browserVoice: string; engine: VoiceEngine; elevenVoice: string };
+let state: State = { status: "idle", progress: 0, loaded: 0, total: 0, error: null, voice: "am_puck", listen: "auto", browserVoice: "", engine: "eleven", elevenVoice: ELEVEN_STOCK[0]!.id };
 const listeners = new Set<() => void>();
-const emit = () => { state = { ...state, voice: mikeVoice(), listen: listenMode(), browserVoice: browserVoiceName() }; listeners.forEach((l) => l()); };
+const emit = () => { state = { ...state, voice: mikeVoice(), listen: listenMode(), browserVoice: browserVoiceName(), engine: voiceEngine(), elevenVoice: elevenVoiceId() }; listeners.forEach((l) => l()); };
 if (typeof window !== "undefined" && "speechSynthesis" in window) { try { speechSynthesis.addEventListener("voiceschanged", () => emit()); } catch { /* ignore */ } }
 const set = (patch: Partial<State>) => { state = { ...state, ...patch }; emit(); };
 export function useVoice(): State { return useSyncExternalStore((l) => { listeners.add(l); return () => { listeners.delete(l); }; }, () => state, () => state); }

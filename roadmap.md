@@ -163,3 +163,7 @@
 - «Ring Mike» på Mike-siden åpner en samtaleskjerm (`MikeCall.tsx`): hands-free – appen lytter til Tobias er ferdig (energibasert stillhetsdetektor `Segmenter` i `voice.ts`), sender teksten til Mikes hjerne med `CALL_RULES` (korte, muntlige svar), leser svaret høyt (munnen beveger seg etter lyden), lytter igjen. Demp og Legg på. Samtalen havner i chatloggen.
 - Lokale modeller i en worker (`voice-worker.ts`, Transformers.js): Whisper base.en (q8) for tale → tekst og Kokoro-82M (q8, wasm) for tekst → tale. Ca. 170 MB lastes ned fra Hugging Face én gang («Last ned»-kort) og caches i nettleseren; varmes opp automatisk neste gang. Stemmevalg (Puck standard, Fenrir, Michael, Fable, George) i innstillingene.
 - Uten nedlasting brukes nettleserens egen talegjenkjenning og stemme (Safari/Chrome) som fallback.
+
+## 29. Mike med ElevenLabs-stemme
+- Edge-funksjon `supabase/functions/mike-voice` (hemmelighet `ELEVENLABS_API_KEY` i Lovable): godkjent spiller → ElevenLabs Flash v2.5 → MP3 tilbake; `{list:true}` gir kontoens stemmer. Standardstemme «Charlie».
+- `voice.ts`: stemmemotor (ElevenLabs → nedlastet Kokoro → nettleser, med automatisk fallback i samtalen), `speakEleven` dekoder MP3 til PCM for `Player`. Innstillinger: motor, ElevenLabs-stemmeliste + egen Voice ID + Prøv. Fyll-replikker caches per stemme.

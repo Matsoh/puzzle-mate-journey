@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Mike } from "@/components/Mike";
 import { askMike, type BrainSettings, type ChatMsg } from "@/lib/mike-brain";
 import { moodFor, type MikeMood } from "@/lib/mike";
-import { Player, Segmenter, browserRecognitionAvailable, browserSpeechAvailable, listenBrowser, listenMode, openMic, resample, speakBrowser, speakLocal, stopBrowserSpeech, transcribeLocal, voiceReady, withTimeout, type Mic as MicHandle } from "@/lib/voice";
+import { Player, Segmenter, browserRecognitionAvailable, browserSpeechAvailable, elevenError, elevenVoiceId, listenBrowser, listenMode, openMic, resample, speakBrowser, speakEleven, speakLocal, stopBrowserSpeech, transcribeLocal, voiceEngine, voiceReady, withTimeout, type Mic as MicHandle } from "@/lib/voice";
 
 export type CallPhase = "connecting" | "listening" | "thinking" | "speaking" | "ended" | "failed";
 
@@ -18,6 +18,8 @@ const FILLERS = ["Hmm.", "Let me think.", "Good question.", "Okay, hold on."];
 const STATUS: Record<CallPhase, string> = { connecting: "Ringer …", listening: "Lytter – snakk engelsk", thinking: "Mike tenker …", speaking: "Mike snakker", ended: "Samtalen er over", failed: "Fikk ikke til samtalen" };
 
 type Clip = { pcm: Float32Array; rate: number };
+/** Filler clips survive across calls so ElevenLabs isn't asked for "Hmm." every time. */
+const fillerCache = new Map<string, Clip[]>();
 
 /**
  * A phone call with Mike: hands-free. Listens until Tobias goes quiet, sends what he
@@ -37,6 +39,7 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
   const [said, setSaid] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [engine] = useState(() => (voiceEngine() === "local" && !voiceReady() ? "browser" : voiceEngine()));
   const [localVoice] = useState(() => voiceReady());
   const [whisper] = useState(() => voiceReady() && (listenMode() === "whisper" || !browserRecognitionAvailable()));
   const wrap = useRef<HTMLDivElement>(null);
@@ -55,6 +58,9 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
     let seg: Segmenter | null = null;
     let raf = 0;
     let useWhisper = whisper;
+    let eleven = engine === "eleven";
+    const hasPlayer = eleven || localVoice;
+    const fillerKey = eleven ? `eleven:${elevenVoiceId()}` : "local";
     let whisperFails = 0;
     let instantEnds = 0;
     const abort = new AbortController();
@@ -75,7 +81,16 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
       go("speaking"); setSaid(text);
       mic?.setMuted(true); // don't listen to ourselves
       let spoken = false;
-      if (localVoice && player) {
+      if (eleven && player) {
+        try {
+          await resume();
+          const clip = await withTimeout(speakEleven(text, ctx), 20_000, "ElevenLabs");
+          player.enqueue(clip.pcm, clip.rate);
+          await withTimeout(player.drain(), 60_000, "Avspillingen");
+          spoken = true;
+        } catch (e) { eleven = false; setNote(`${elevenError((e as Error).message)} Bruker ${localVoice ? "nedlastet" : "nettleserens"} stemme.`); player.stop(); }
+      }
+      if (!spoken && localVoice && player) {
         try {
           await resume();
           await withTimeout(speakLocal(text, (pcm, rate) => player?.enqueue(pcm, rate)), 45_000, "Stemmen");
@@ -91,12 +106,17 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
 
     /** Pre-render the fillers once Mike has greeted, in the background. */
     const prepareFillers = async () => {
-      if (!localVoice) return;
-      for (const f of FILLERS) {
+      if (!hasPlayer) return;
+      const cached = fillerCache.get(fillerKey);
+      if (cached?.length) { fillers.push(...cached); return; }
+      for (const f of (eleven ? FILLERS.slice(0, 2) : FILLERS)) {
         if (!alive.current) return;
-        const parts: Clip[] = [];
-        try { await speakLocal(f, (pcm, rate) => parts.push({ pcm, rate })); if (parts[0]) fillers.push(parts[0]); } catch { /* skip */ }
+        try {
+          if (eleven) fillers.push(await speakEleven(f, ctx));
+          else if (localVoice) { const parts: Clip[] = []; await speakLocal(f, (pcm, rate) => parts.push({ pcm, rate })); if (parts[0]) fillers.push(parts[0]); }
+        } catch { /* skip */ }
       }
+      if (fillers.length) fillerCache.set(fillerKey, [...fillers]);
     };
     const playFiller = async () => {
       const clip = fillers[Math.floor(Math.random() * fillers.length)];
@@ -120,7 +140,7 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
     });
 
     const listenBrowserOnce = async (): Promise<string> => {
-      if (localVoice) { try { await ctx.suspend(); } catch { /* ignore */ } } // iOS has one audio session: free it for the recognizer
+      if (hasPlayer) { try { await ctx.suspend(); } catch { /* ignore */ } } // iOS has one audio session: free it for the recognizer
       if (pttRef.current) return new Promise<string>((resolve) => { pttResolve.current = resolve; });
       const t0 = Date.now();
       const toPtt = (why: string) => { pttRef.current = true; setPtt(true); setNote(`Automatisk lytting virket ikke (${why}). Trykk «Snakk» og si noe.`); };
@@ -153,7 +173,7 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
 
     void (async () => {
       try {
-        if (localVoice) player = new Player(ctx);
+        if (hasPlayer) player = new Player(ctx);
         if (useWhisper) {
           mic = await openMic(ctx, (block) => { lastBlock = Date.now(); if (!seg || mutedRef.current) return; const u = seg.push(block); if (u && utterance) utterance(u); });
           seg = new Segmenter(ctx.sampleRate);
@@ -201,7 +221,7 @@ export function MikeCall({ ctx, brain, context, history, onExchange, onEnd }: { 
   return (
     <div ref={wrap} role="dialog" aria-modal="true" aria-label="Samtale med Mike" className={`call ${phase === "speaking" || phase === "thinking" ? "mike--talk" : ""}`}>
       <div className="call__top">
-        <p className="eyebrow">{localVoice ? "Mikes egen stemme" : "Nettleserens stemme"} · {whisper ? "Whisper lytter" : "nettleseren lytter"}</p>
+        <p className="eyebrow">{engine === "eleven" ? "ElevenLabs" : localVoice ? "Nedlastet stemme" : "Nettleserens stemme"} · {whisper ? "Whisper lytter" : "nettleseren lytter"}</p>
         <p className="call__timer tabular-nums">{mm}</p>
       </div>
       <div className={`call__stage is-${phase}`}>
