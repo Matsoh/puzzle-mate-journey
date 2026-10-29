@@ -1,7 +1,7 @@
-// Mike's voice via ElevenLabs. The browser sends a short text; this function
-// checks that the caller is an approved player, then asks ElevenLabs to read
-// it and streams the MP3 back. {list:true} returns the account's voices for the
-// picker in settings. ELEVENLABS_API_KEY is a Lovable/Supabase secret.
+// Mike's voice and ears via ElevenLabs. The browser sends either a short text
+// ({text}) – read aloud, MP3 streamed back – or a WAV recording ({audio}:
+// base64) – transcribed with Scribe, {text} back. Callers must be approved
+// players. ELEVENLABS_API_KEY is a Lovable/Supabase secret.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const cors = {
@@ -12,8 +12,10 @@ const cors = {
 const API = "https://api.elevenlabs.io/v1";
 /** Fast + cheapest model; fine for short spoken replies. */
 const MODEL = Deno.env.get("ELEVENLABS_MODEL") ?? "eleven_flash_v2_5";
-const DEFAULT_VOICE = "S0ypc51SmsvcKXTWvjqJ"; // Mike's voice, picked by Tobias in the ElevenLabs library
+const DEFAULT_VOICE = Deno.env.get("ELEVENLABS_VOICE") ?? "S0ypc51SmsvcKXTWvjqJ"; // Mike's voice, picked by Tobias in the ElevenLabs library
+const STT_MODEL = Deno.env.get("ELEVENLABS_STT_MODEL") ?? "scribe_v1";
 const MAX_CHARS = 600;
+const MAX_AUDIO = 2_000_000; // ~60 s of 16 kHz WAV, base64
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
@@ -29,14 +31,24 @@ Deno.serve(async (req) => {
     const key = Deno.env.get("ELEVENLABS_API_KEY");
     if (!key) return json({ error: "no key" }, 501);
 
-    const body = (await req.json().catch(() => ({}))) as { text?: string; voice?: string; list?: boolean };
+    const body = (await req.json().catch(() => ({}))) as { text?: string; voice?: string; audio?: string };
 
-    if (body.list) {
-      const res = await fetch(`${API}/voices`, { headers: { "xi-api-key": key } });
-      if (!res.ok) return json({ error: `voices ${res.status}` }, 502);
-      const data = (await res.json()) as { voices?: { voice_id: string; name: string; category?: string; labels?: Record<string, string> }[] };
-      const voices = (data.voices ?? []).map((v) => ({ id: v.voice_id, name: v.name, category: v.category ?? "", labels: v.labels ?? {} }));
-      return json({ voices });
+    if (typeof body.audio === "string") {
+      if (body.audio.length > MAX_AUDIO) return json({ error: "too long" }, 413);
+      const bytes = Uint8Array.from(atob(body.audio), (c) => c.charCodeAt(0));
+      const form = new FormData();
+      form.append("file", new Blob([bytes], { type: "audio/wav" }), "speech.wav");
+      form.append("model_id", STT_MODEL);
+      form.append("language_code", "en");
+      form.append("tag_audio_events", "false");
+      form.append("diarize", "false");
+      const res = await fetch(`${API}/speech-to-text`, { method: "POST", headers: { "xi-api-key": key }, body: form });
+      if (res.status === 401) return json({ error: "bad key" }, 502);
+      if (res.status === 403) return json({ error: "no stt" }, 502);
+      if (res.status === 402 || res.status === 429) return json({ error: "quota" }, 429);
+      if (!res.ok) return json({ error: `scribe ${res.status}: ${(await res.text()).slice(0, 200)}` }, 502);
+      const data = (await res.json()) as { text?: string };
+      return json({ text: (data.text ?? "").trim() });
     }
 
     const text = (body.text ?? "").toString().replace(/\s+/g, " ").trim().slice(0, MAX_CHARS);

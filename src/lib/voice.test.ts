@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Segmenter, cleanTranscript, resample, rms, speakable } from "./voice";
+import { Segmenter, cleanTranscript, resample, rms, speakable, wavBytes } from "./voice";
 
 const tone = (n: number, amp: number) => Float32Array.from({ length: n }, (_, i) => Math.sin(i * 0.3) * amp);
 const silence = (n: number) => new Float32Array(n);
@@ -51,5 +51,16 @@ describe("voice helpers", () => {
     expect(cleanTranscript(" Thank you. ")).toBe("");
     expect(cleanTranscript("[BLANK_AUDIO]")).toBe("");
     expect(cleanTranscript("What is a fork?")).toBe("What is a fork?");
+  });
+
+  it("encodes 16-bit WAV", () => {
+    const w = wavBytes(Float32Array.from([0, 1, -1, 0.5]), 16000);
+    expect(w.length).toBe(44 + 8);
+    expect(String.fromCharCode(...w.subarray(0, 4))).toBe("RIFF");
+    expect(String.fromCharCode(...w.subarray(8, 12))).toBe("WAVE");
+    const v = new DataView(w.buffer);
+    expect(v.getUint32(24, true)).toBe(16000);
+    expect(v.getInt16(46, true)).toBe(0x7fff);
+    expect(v.getInt16(48, true)).toBe(-0x8000);
   });
 });

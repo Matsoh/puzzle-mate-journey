@@ -1,8 +1,7 @@
-// Voice for Mike: local Whisper + Kokoro in a worker (downloaded once), with the
-// browser's own speech recognition / synthesis as the fallback when the models
-// aren't on the device. Pure helpers (resampling, the silence detector, sentence
-// splitting) live at the top and are tested.
-import { useSyncExternalStore } from "react";
+// Voice for Mike: ElevenLabs reads his replies (mike-voice edge function) and
+// ElevenLabs Scribe listens when the browser's own recognizer can't (iPad).
+// The browser's recognizer and voice are the free fast path / last resort.
+// Pure helpers (resampling, the silence detector, WAV encoding) are tested.
 
 // ---------- pure helpers ----------
 
@@ -98,63 +97,16 @@ export function cleanTranscript(t: string): string {
   return s;
 }
 
-// ---------- voices ----------
-export const MIKE_VOICES = [
-  { id: "am_puck", name: "Puck", hint: "Leken, litt rampete (standard)" },
-  { id: "am_fenrir", name: "Fenrir", hint: "Litt mørkere, mer kraft" },
-  { id: "am_michael", name: "Michael", hint: "Vanlig, vennlig" },
-  { id: "bm_fable", name: "Fable", hint: "Britisk, fortellerstemme" },
-  { id: "bm_george", name: "George", hint: "Britisk, rolig" },
-] as const;
-export type MikeVoiceId = (typeof MIKE_VOICES)[number]["id"];
-const VOICE_KEY = "goblin-chess.mike-voice";
-export function mikeVoice(): MikeVoiceId { try { const v = localStorage.getItem(VOICE_KEY); return (MIKE_VOICES.some((x) => x.id === v) ? v : "am_puck") as MikeVoiceId; } catch { return "am_puck"; } }
-export function setMikeVoice(v: MikeVoiceId) { try { localStorage.setItem(VOICE_KEY, v); } catch { /* ignore */ } emit(); }
-
-/** Listening: "auto" = the browser's recognizer when it has one (fast), else Whisper; "whisper" = always the local model. */
-export type ListenMode = "auto" | "whisper";
-const LISTEN_KEY = "goblin-chess.mike-listen";
-export function listenMode(): ListenMode { try { return localStorage.getItem(LISTEN_KEY) === "whisper" ? "whisper" : "auto"; } catch { return "auto"; } }
-export function setListenMode(m: ListenMode) { try { localStorage.setItem(LISTEN_KEY, m); } catch { /* ignore */ } emit(); }
-
-/** The browser's own English voices (Safari/Chrome ship several) – used when Mike's voice isn't downloaded. */
-const BVOICE_KEY = "goblin-chess.mike-browser-voice";
-export function browserVoices(): { name: string; lang: string }[] {
-  if (!browserSpeechAvailable()) return [];
-  return speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en")).map((v) => ({ name: v.name, lang: v.lang })).sort((a, b) => a.name.localeCompare(b.name));
-}
-export function browserVoiceName(): string { try { return localStorage.getItem(BVOICE_KEY) ?? ""; } catch { return ""; } }
-export function setBrowserVoice(name: string) { try { localStorage.setItem(BVOICE_KEY, name); } catch { /* ignore */ } emit(); }
-
-/** Which engine reads Mike's replies: ElevenLabs (cloud, best), the downloaded Kokoro, or the browser's voice. */
-export type VoiceEngine = "eleven" | "local" | "browser";
-const ENGINE_KEY = "goblin-chess.mike-engine";
-export function voiceEngine(): VoiceEngine { try { const v = localStorage.getItem(ENGINE_KEY); return v === "local" || v === "browser" ? v : "eleven"; } catch { return "eleven"; } }
-export function setVoiceEngine(e: VoiceEngine) { try { localStorage.setItem(ENGINE_KEY, e); } catch { /* ignore */ } emit(); }
-
 // ---------- ElevenLabs (via the mike-voice edge function) ----------
-export type ElevenVoice = { id: string; name: string; category: string; labels: Record<string, string> };
-/** A few of ElevenLabs' stock voices, shown until the account's own list has loaded. */
-export const ELEVEN_STOCK: ElevenVoice[] = [
-  { id: "S0ypc51SmsvcKXTWvjqJ", name: "Mike", category: "custom", labels: { description: "valgt av Tobias" } },
-  { id: "IKne3meq5aSn9XLyUdCD", name: "Charlie", category: "premade", labels: { accent: "Australian", description: "casual, cheeky" } },
-  { id: "N2lVS1w4EtoT3dr4eOWO", name: "Callum", category: "premade", labels: { accent: "Transatlantic", description: "intense, gravelly" } },
-  { id: "D38z5RcWu1voky8WS1ja", name: "Fin", category: "premade", labels: { accent: "Irish", description: "sailor, character" } },
-  { id: "TX3LPaxmHKxFdv7VOQHJ", name: "Liam", category: "premade", labels: { accent: "American", description: "young, energetic" } },
-  { id: "SOYHLrjzK2X1ezoPC6cr", name: "Harry", category: "premade", labels: { accent: "American", description: "anxious, fast" } },
-  { id: "iP95p4xoKVk53GoZ742B", name: "Chris", category: "premade", labels: { accent: "American", description: "casual, friendly" } },
-];
-const EVOICE_KEY = "goblin-chess.mike-eleven-voice";
-export function elevenVoiceId(): string { try { return localStorage.getItem(EVOICE_KEY) || ELEVEN_STOCK[0]!.id; } catch { return ELEVEN_STOCK[0]!.id; } }
-export function setElevenVoice(id: string) { try { localStorage.setItem(EVOICE_KEY, id); } catch { /* ignore */ } emit(); }
-
 /** Friendly text for an error from the mike-voice function. */
 export function elevenError(message: string): string {
-  if (/no key|501/.test(message)) return "ElevenLabs-nøkkelen mangler i Lovable (ELEVENLABS_API_KEY).";
-  if (/bad key/.test(message)) return "ElevenLabs avviste nøkkelen – sjekk at den har tilgang til Text to Speech.";
-  if (/quota|429/.test(message)) return "ElevenLabs-kvoten er brukt opp denne måneden.";
+  if (/no key|501/.test(message)) return "Stemmenøkkelen mangler i Lovable.";
+  if (/bad key/.test(message)) return "ElevenLabs avviste nøkkelen.";
+  if (/no stt/.test(message)) return "Nøkkelen har ikke tilgang til Speech to Text.";
+  if (/quota|429/.test(message)) return "Stemmekvoten er brukt opp denne måneden.";
   if (/forbidden|unauthorized/.test(message)) return "Du må være logget inn som godkjent spiller.";
-  return `ElevenLabs svarte ikke (${message}).`;
+  if (/Failed to fetch|Load failed/.test(message)) return "Fikk ikke kontakt med stemmetjenesten.";
+  return `Stemmetjenesten svarte ikke (${message}).`;
 }
 
 async function callVoice(body: Record<string, unknown>): Promise<Response> {
@@ -170,81 +122,36 @@ async function callVoice(body: Record<string, unknown>): Promise<Response> {
   }
   return res;
 }
-export async function listElevenVoices(): Promise<ElevenVoice[]> {
-  const res = await callVoice({ list: true });
-  return ((await res.json()) as { voices: ElevenVoice[] }).voices;
-}
 /** Ask ElevenLabs to read `text`; returns decoded PCM ready for the Player. */
-export async function speakEleven(text: string, ctx: AudioContext, voice = elevenVoiceId()): Promise<{ pcm: Float32Array; rate: number }> {
-  const clean = speakable(text);
-  const res = await callVoice({ text: clean, voice });
+export async function speakEleven(text: string, ctx: AudioContext): Promise<{ pcm: Float32Array; rate: number }> {
+  const res = await callVoice({ text: speakable(text) });
   const buf = await res.arrayBuffer();
   const audio = await ctx.decodeAudioData(buf.slice(0));
   return { pcm: audio.getChannelData(0), rate: audio.sampleRate };
 }
-
-// ---------- store ----------
-export type VoiceStatus = "idle" | "downloading" | "ready" | "error";
-type State = { status: VoiceStatus; progress: number; loaded: number; total: number; error: string | null; voice: MikeVoiceId; listen: ListenMode; browserVoice: string; engine: VoiceEngine; elevenVoice: string };
-let state: State = { status: "idle", progress: 0, loaded: 0, total: 0, error: null, voice: "am_puck", listen: "auto", browserVoice: "", engine: "eleven", elevenVoice: ELEVEN_STOCK[0]!.id };
-const listeners = new Set<() => void>();
-const emit = () => { state = { ...state, voice: mikeVoice(), listen: listenMode(), browserVoice: browserVoiceName(), engine: voiceEngine(), elevenVoice: elevenVoiceId() }; listeners.forEach((l) => l()); };
-if (typeof window !== "undefined" && "speechSynthesis" in window) { try { speechSynthesis.addEventListener("voiceschanged", () => emit()); } catch { /* ignore */ } }
-const set = (patch: Partial<State>) => { state = { ...state, ...patch }; emit(); };
-export function useVoice(): State { return useSyncExternalStore((l) => { listeners.add(l); return () => { listeners.delete(l); }; }, () => state, () => state); }
-export const voiceReady = () => state.status === "ready";
-export const VOICE_DOWNLOAD_MB = 170;
-
-let worker: Worker | null = null;
-let seq = 0;
-const pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void; onChunk?: (a: Float32Array, rate: number) => void }>();
-
-function ensureWorker(): Worker {
-  if (worker) return worker;
-  worker = new Worker(new URL("./voice-worker.ts", import.meta.url), { type: "module" });
-  worker.onmessage = (e: MessageEvent) => {
-    const m = e.data as { type: string; id?: number; progress?: number; loaded?: number; total?: number; text?: string; audio?: Float32Array; rate?: number; done?: boolean; message?: string };
-    if (m.type === "progress") set({ status: "downloading", progress: m.progress ?? 0, loaded: m.loaded ?? 0, total: m.total ?? 0 });
-    else if (m.type === "ready") { set({ status: "ready", progress: 1 }); try { localStorage.setItem("goblin-chess.voice-ready", "1"); } catch { /* ignore */ } }
-    else if (m.type === "error") {
-      const p = m.id !== undefined ? pending.get(m.id) : undefined;
-      if (p) { pending.delete(m.id!); p.reject(new Error(m.message)); } else set({ status: "error", error: m.message ?? "Ukjent feil" });
-    } else if (m.type === "text") { const p = pending.get(m.id!); if (p) { pending.delete(m.id!); p.resolve(m.text ?? ""); } }
-    else if (m.type === "audio") {
-      const p = pending.get(m.id!);
-      if (!p) return;
-      if (m.done) { pending.delete(m.id!); p.resolve(undefined); } else p.onChunk?.(m.audio!, m.rate ?? 24_000);
-    }
-  };
-  worker.onerror = (e) => set({ status: "error", error: e.message });
-  return worker;
+/** ElevenLabs Scribe: 16 kHz mono PCM → English text. */
+export async function transcribeEleven(pcm16k: Float32Array): Promise<string> {
+  const res = await callVoice({ audio: wavBase64(pcm16k, 16_000) });
+  return cleanTranscript(((await res.json()) as { text?: string }).text ?? "");
 }
 
-/** True when the models were downloaded on this device before (so a call can warm them up silently). */
-export const voiceDownloadedBefore = () => { try { return localStorage.getItem("goblin-chess.voice-ready") === "1"; } catch { return false; } };
-
-/** Download (or warm up) Whisper + Kokoro. Safe to call repeatedly. */
-export function voiceDownload() {
-  if (state.status === "ready" || state.status === "downloading") return;
-  set({ status: "downloading", progress: 0, error: null });
-  ensureWorker().postMessage({ type: "load" });
+/** Mono float PCM → 16-bit WAV, base64 (what the edge function forwards to Scribe). */
+export function wavBase64(pcm: Float32Array, rate: number): string {
+  const bytes = wavBytes(pcm, rate);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
 }
-
-export function transcribeLocal(audio16k: Float32Array): Promise<string> {
-  const id = ++seq;
-  return new Promise((resolve, reject) => {
-    pending.set(id, { resolve: (v) => resolve(cleanTranscript(String(v))), reject });
-    ensureWorker().postMessage({ type: "transcribe", id, audio: audio16k }, [audio16k.buffer as ArrayBuffer]);
-  });
-}
-
-/** Generate speech sentence by sentence; `onChunk` receives PCM to play as it arrives. */
-export function speakLocal(text: string, onChunk: (pcm: Float32Array, rate: number) => void): Promise<void> {
-  const id = ++seq;
-  return new Promise((resolve, reject) => {
-    pending.set(id, { resolve: () => resolve(), reject, onChunk });
-    ensureWorker().postMessage({ type: "speak", id, text: speakable(text), voice: mikeVoice(), speed: 1.05 });
-  });
+export function wavBytes(pcm: Float32Array, rate: number): Uint8Array {
+  const buf = new ArrayBuffer(44 + pcm.length * 2);
+  const v = new DataView(buf);
+  const str = (o: number, t: string) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  str(0, "RIFF"); v.setUint32(4, 36 + pcm.length * 2, true); str(8, "WAVE");
+  str(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, "data"); v.setUint32(40, pcm.length * 2, true);
+  for (let i = 0; i < pcm.length; i++) { const x = Math.max(-1, Math.min(1, pcm[i]!)); v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true); }
+  return new Uint8Array(buf);
 }
 
 // ---------- browser fallbacks ----------
@@ -272,8 +179,6 @@ export function listenBrowser(signal?: AbortSignal): Promise<string> {
 
 function pickBrowserVoice(): SpeechSynthesisVoice | null {
   const voices = speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en"));
-  const chosen = browserVoiceName();
-  if (chosen) { const v = voices.find((x) => x.name === chosen); if (v) return v; }
   const prefs = ["Daniel", "Aaron", "Fred", "Google UK English Male", "Alex", "Microsoft Guy", "Rishi"];
   for (const p of prefs) { const v = voices.find((x) => x.name.includes(p)); if (v) return v; }
   return voices.find((v) => v.lang === "en-US") ?? voices[0] ?? null;

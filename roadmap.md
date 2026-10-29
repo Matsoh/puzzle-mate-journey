@@ -167,3 +167,7 @@
 ## 29. Mike med ElevenLabs-stemme
 - Edge-funksjon `supabase/functions/mike-voice` (hemmelighet `ELEVENLABS_API_KEY` i Lovable): godkjent spiller → ElevenLabs Flash v2.5 → MP3 tilbake; `{list:true}` gir kontoens stemmer. Standardstemme «Charlie».
 - `voice.ts`: stemmemotor (ElevenLabs → nedlastet Kokoro → nettleser, med automatisk fallback i samtalen), `speakEleven` dekoder MP3 til PCM for `Player`. Innstillinger: motor, ElevenLabs-stemmeliste + egen Voice ID + Prøv. Fyll-replikker caches per stemme.
+
+## 30. Samtalen forenklet: bare ElevenLabs
+- Kokoro/Whisper og stemmepanelet er fjernet (`kokoro-js` ute av package.json, `voice-worker.ts` slettet). Stemmen velges med `ELEVENLABS_VOICE` (env) / standard-ID i `mike-voice`.
+- Lytting: egen mikrofon + stillhetsdetektor → ElevenLabs Scribe (`{audio}` base64 WAV til `mike-voice`) – én lydvei som fungerer på iPad. Faller tilbake til nettleserens gjenkjenning, og til sist «Snakk»-knapp. Nøkkelen trenger Text to Speech + Speech to Text.
