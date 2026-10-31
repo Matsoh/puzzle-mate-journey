@@ -15,8 +15,9 @@ const id = (day: string, l: LessonId) => `school:${day}:${l}`;
 export function lessonDone(p: Progress, day: string, l: LessonId): boolean {
   return p.credits[id(day, l)] !== undefined;
 }
+/** A school day is done when it was closed (bonus paid) – by today's four periods or the old three lessons. */
 export function schoolDone(p: Progress, day: string): boolean {
-  return LESSONS_PLAN.every((l) => lessonDone(p, day, l.id));
+  return p.credits[`school:${day}:done`] !== undefined || LESSONS_PLAN.every((l) => lessonDone(p, day, l.id));
 }
 export function withLesson(p: Progress, day: string, l: LessonId): Progress {
   let n = withCredit(p, id(day, l), LESSON_XP);

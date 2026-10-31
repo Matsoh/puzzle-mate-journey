@@ -18,6 +18,7 @@ import { celebrateBadges, celebrateDiff } from "@/lib/celebrate";
 import { applyBadges } from "@/lib/badges";
 import { XP } from "@/lib/rules";
 import { play, unlockAudio } from "@/lib/sound";
+import { primeMikeVoice } from "@/lib/mike-voice";
 import { avatarName, type PartKey } from "@/lib/avatar";
 import { flairEmoji } from "@/lib/flair";
 import {
@@ -215,7 +216,7 @@ function LivePage() {
   const bottom = color === "b" ? "b" : "w";
 
   return (
-    <main className="page-layout" onPointerDown={unlockAudio}>
+    <main className="page-layout" onPointerDown={() => { unlockAudio(); primeMikeVoice(); }}>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section className="space-y-2" aria-label="Brett">
           {bar(top)}
@@ -248,7 +249,7 @@ function LivePage() {
         </section>
 
         <aside className="space-y-4">
-          {playing && !spectating && <MikeCompanion mode="game" compact line={line} context={`${gameContext({ ...snapshot!, tc: tcLabel(g.initial_ms, g.inc_ms) })}\nThis is a LIVE game against a real friend (${oppName}, rating ${profiles[oppId ?? ""]?.rating ?? "?"}). Never suggest moves.`} />}
+          {playing && !spectating && <MikeCompanion mode="game" compact speak line={line} context={`${gameContext({ ...snapshot!, tc: tcLabel(g.initial_ms, g.inc_ms) })}\nThis is a LIVE game against a real friend (${oppName}, rating ${profiles[oppId ?? ""]?.rating ?? "?"}). Never suggest moves.`} />}
 
           {(phase === "over" || phase === "analysing" || phase === "review") && (
             <section className="card-game p-4 text-center" aria-label="Resultat">
@@ -269,7 +270,7 @@ function LivePage() {
 
           {phase === "review" && review && (
             <>
-              {!spectating && <MikeCompanion mode="review" compact line={reviewLine(review.mistakes, outcome ?? "draw")} context={`Live game vs friend ${oppName}. ${reviewContext(review.mistakes, outcome ?? "draw")}`} />}
+              {!spectating && <MikeCompanion mode="review" compact speak important line={reviewLine(review.mistakes, outcome ?? "draw")} context={`Live game vs friend ${oppName}. ${reviewContext(review.mistakes, outcome ?? "draw")}`} />}
               <GameReview review={review} orientation={orientation} names={names} />
             </>
           )}

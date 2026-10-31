@@ -30,14 +30,15 @@ import { updatePrep } from "@/lib/prep-store";
 import { useTrainer } from "@/lib/trainer-store";
 import { dayKey } from "@/lib/rules";
 import { play, unlockAudio } from "@/lib/sound";
+import { primeMikeVoice } from "@/lib/mike-voice";
 import { MikeCompanion } from "@/components/MikeCompanion";
-import { withLesson } from "@/lib/school";
+import { withExamGame, withPeriod } from "@/lib/curriculum";
 import { withAppGame } from "@/lib/game-log";
 import { celebrateDiff } from "@/lib/celebrate";
 import { updateProgress } from "@/lib/progress";
 import { gameContext, gameReaction } from "@/lib/mike-game";
 
-type Search = { fen?: string | undefined; side: "w" | "b"; elo: number; tc: string; src: string };
+type Search = { fen?: string | undefined; side: "w" | "b"; elo: number; tc: string; src: string; period?: number | undefined; day?: string | undefined; goal?: "win" | "draw" | undefined; exam?: boolean | undefined };
 const START = new Chess().fen();
 
 export const Route = createFileRoute("/treningsparti")({
@@ -48,6 +49,10 @@ export const Route = createFileRoute("/treningsparti")({
     elo: Number.isFinite(Number(s["elo"])) ? Number(s["elo"]) : 1550,
     tc: typeof s["tc"] === "string" ? s["tc"] : "none",
     src: typeof s["src"] === "string" ? s["src"].slice(0, 80) : "Treningsparti",
+    ...(Number.isFinite(Number(s["period"])) && s["period"] !== undefined ? { period: Number(s["period"]) } : {}),
+    ...(typeof s["day"] === "string" ? { day: s["day"] } : {}),
+    ...(s["goal"] === "win" || s["goal"] === "draw" ? { goal: s["goal"] as "win" | "draw" } : {}),
+    ...(s["exam"] === true || s["exam"] === "1" ? { exam: true } : {}),
   }),
   head: () => ({
     meta: [
@@ -154,6 +159,7 @@ function PracticeGame() {
       .catch(() => setEngineError(true));
   }, [elo, restart]);
 
+  const [schoolOk, setSchoolOk] = useState<boolean | null>(null);
   const finish = useCallback(
     (o: Over) => {
       setOver(o);
@@ -172,9 +178,14 @@ function PracticeGame() {
       updatePrep((s) => ({ ...s, games: [...s.games, rec].slice(-30) }));
       const res = o.result;
       if (res !== "stopped") updateProgress((s) => withAppGame(s, { id: `app:${rec.id}`, source: "app", opponent: `Bot ${elo} (trening)`, opponentRating: elo, player, result: res, moves: game.current.history(), timeClass: "trening" }));
-      if (game.current.history().length >= 10) updateProgress((s) => { const n = withLesson(s, rec.day, "game"); celebrateDiff(s, n); return n; });
+      // Mike Skolen: a period (training game or endgame boss) or the exam game.
+      const day = search.day ?? rec.day;
+      const met = search.goal ? (res === "win" || (search.goal === "draw" && res === "draw")) : game.current.history().length >= 10 && res !== "stopped";
+      setSchoolOk(search.period !== undefined || search.exam ? met : null);
+      if (search.exam) updateProgress((s) => { const n = withExamGame(s, res, day); celebrateDiff(s, n); return n; });
+      else if (search.period !== undefined && met) updateProgress((s) => { const n = withPeriod(s, day, search.period!, search.goal ? "endgame" : "game", res !== "loss"); celebrateDiff(s, n); return n; });
     },
-    [search.src, elo, helpUsed],
+    [search.src, search.day, search.goal, search.period, search.exam, elo, helpUsed],
   );
 
   const checkEnd = useCallback(() => {
@@ -494,7 +505,7 @@ function PracticeGame() {
     : "";
 
   return (
-    <main className="page-layout" onPointerDown={unlockAudio}>
+    <main className="page-layout" onPointerDown={() => { unlockAudio(); primeMikeVoice(); }}>
       <AppHeader title="Treningsparti" />
       <p className="mb-4 rounded-lg border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
         <strong>Treningsparti med hjelp.</strong> Påvirker ikke ratingen. {search.src} · Bot {elo}
@@ -603,7 +614,7 @@ function PracticeGame() {
         </div>
 
         <div className="space-y-4">
-          {!over && <MikeCompanion mode="training" line={mikeLine} context={mikeCtx} compact />}
+          {!over && <MikeCompanion mode="training" line={mikeLine} context={mikeCtx} compact speak />}
           {!over && (
             <section className="card-game p-4" aria-label="Trenerhjelp">
               <div className="flex items-center gap-3">
@@ -684,8 +695,14 @@ function PracticeGame() {
               {moves.some((m) => m.color === player) && (
                 <Button onClick={analyse}>Kort gjennomgang med motoren</Button>
               )}
+              {schoolOk !== null && (
+                <p className={`rounded-lg border px-3 py-2 text-sm font-semibold ${schoolOk ? "border-primary text-primary" : "border-destructive text-destructive"}`}>
+                  {search.exam ? (schoolOk ? "Eksamen bestått! Du rykker opp en klasse. 🎓" : "Ikke denne gangen – eksamen kan tas igjen i morgen.") : schoolOk ? "Timen er godkjent ✓" : search.goal ? (search.goal === "win" ? "Målet var å vinne – prøv bossen igjen." : "Målet var remis – prøv bossen igjen.") : "For kort parti til å telle – spill minst 5 trekk."}
+                </p>
+              )}
+              {schoolOk !== null && !schoolOk && <Button onClick={() => window.location.reload()}>Prøv igjen</Button>}
               <Button variant="outline" asChild>
-                <Link to="/turnering">Tilbake til forberedelsen</Link>
+                <Link to={search.period !== undefined || search.exam ? "/trener" : "/turnering"}>{search.period !== undefined || search.exam ? "Tilbake til Mike Skolen" : "Tilbake til forberedelsen"}</Link>
               </Button>
             </section>
           )}

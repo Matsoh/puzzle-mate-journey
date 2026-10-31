@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X } from "lucide-react";
+import { MessageCircle, Send, X, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Mike } from "./Mike";
 import { PlayerAvatar } from "./CoachAvatar";
@@ -7,6 +7,7 @@ import { today, useProgress } from "@/lib/progress";
 import { askMike, loadBrain, mikeContext, type ChatMsg } from "@/lib/mike-brain";
 import { MODE_RULES, type MikeMode } from "@/lib/mike-game";
 import { moodFor, type MikeLine } from "@/lib/mike";
+import { mikeLevel, primeMikeVoice, sayMike, setMikeVoiceOn, useMikeVoice } from "@/lib/mike-voice";
 
 type Props = {
   mode: MikeMode;
@@ -17,6 +18,10 @@ type Props = {
   quick?: string[] | undefined;
   compact?: boolean | undefined;
   className?: string | undefined;
+  /** Read `line` aloud when it changes (key moments only – the caller decides what counts). */
+  speak?: boolean | undefined;
+  /** Treat every new line as important (no throttling) – e.g. lessons in the school. */
+  important?: boolean | undefined;
 };
 
 const QUICK: Record<MikeMode, string[]> = {
@@ -28,9 +33,24 @@ const QUICK: Record<MikeMode, string[]> = {
 };
 
 /** Mike beside the board / the round / the session: a live line plus an optional mini-chat. */
-export function MikeCompanion({ mode, line, context, quick, compact = false, className }: Props) {
+export function MikeCompanion({ mode, line, context, quick, compact = false, className, speak = false, important = false }: Props) {
   const p = useProgress();
   const [open, setOpen] = useState(false);
+  const voice = useMikeVoice();
+  const wrap = useRef<HTMLElement>(null);
+  const lastSaid = useRef<string | null>(null);
+  useEffect(() => {
+    if (!speak || !line?.text || line.text === lastSaid.current) return;
+    lastSaid.current = line.text;
+    void sayMike(line.text, important);
+  }, [line?.text, speak, important]);
+  useEffect(() => {
+    if (!voice.speaking) { wrap.current?.style.setProperty("--talk", "0"); return; }
+    let raf = 0;
+    const tick = () => { wrap.current?.style.setProperty("--talk", mikeLevel().toFixed(3)); raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [voice.speaking]);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -49,13 +69,14 @@ export function MikeCompanion({ mode, line, context, quick, compact = false, cla
   }
 
   return (
-    <section className={`card-game p-3 ${className ?? ""}`} aria-label="Mike">
+    <section ref={wrap} className={`card-game p-3 ${voice.speaking ? "mike--talk" : ""} ${className ?? ""}`} aria-label="Mike">
       <div className="flex items-end gap-3">
         <Mike mood={busy ? "think" : msgs.length ? moodFor([...msgs].reverse().find((m) => m.role === "assistant")?.content ?? "") : line?.mood ?? "chill"} className={compact ? "w-11 shrink-0" : "w-14 shrink-0"} animate={false} />
         <div className="mike-bubble min-w-0 flex-1 text-sm">
           <span className="mike-bubble__name">Mike</span>
           {line?.text ?? "Right here. Ask me anything about the position."}
         </div>
+        {speak && <button type="button" onClick={() => { primeMikeVoice(); setMikeVoiceOn(!voice.on); if (!voice.on && line?.text) { lastSaid.current = line.text; void sayMike(line.text, true); } }} aria-pressed={voice.on} aria-label={voice.on ? "Slå av Mikes stemme" : "Slå på Mikes stemme"} className="grid size-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground hover:bg-muted">{voice.on ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}</button>}
       </div>
       {!open ? (
         <button type="button" onClick={() => setOpen(true)} className="mt-2 flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-border text-sm font-semibold text-primary hover:bg-muted"><MessageCircle className="size-4" />Spør Mike</button>

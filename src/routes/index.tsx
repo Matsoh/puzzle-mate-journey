@@ -1,10 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { GameRow } from "@/components/GameRow";
 import { useEffect, useState } from "react";
-import { Flame, Puzzle, Swords, Check, ChevronRight, Sparkles, MessageCircle } from "lucide-react";
+import { Flame, Puzzle, Swords, Check, ChevronRight, Sparkles, MessageCircle, GraduationCap } from "lucide-react";
 import { today, updateProgress, useProgress, withCredit } from "@/lib/progress";
 import { levelFromXp, liveStreak } from "@/lib/rules";
 import { OPPONENTS } from "@/lib/opponents";
+import { classOf, periodsDone, timetable } from "@/lib/curriculum";
+import { schoolDone } from "@/lib/school";
 import { unlockAudio } from "@/lib/sound";
 import { allQuestsDone, dailyQuests, levelTitle, questCreditId, questDone, QUEST_BONUS_XP, type Quest } from "@/lib/quests";
 import { mikeHomeLine, mikeLevelLine } from "@/lib/mike";
@@ -92,6 +94,13 @@ function Home() {
         <div className="xp-big__track"><div className="xp-big__fill" style={{ width: `${Math.max(3, (lvl.into / lvl.needed) * 100)}%` }} /></div>
       </section>
 
+      {t && (
+        <Link to="/trener" className="quest mb-4 border-primary/50" aria-label="Mike Skolen">
+          <span className="quest__check"><GraduationCap className="size-5" /></span>
+          <span className="min-w-0"><span className="block font-semibold">Mike Skolen · {classOf(p).name}</span><span className="block text-xs text-muted-foreground">{schoolDone(p, t) ? "Skoledagen er fullført 🎓" : `Dagens timeplan: ${periodsDone(p, t)}/4 timer · neste: ${timetable(p, t)[periodsDone(p, t)]?.title ?? "ferdig"}`}</span></span>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </Link>
+      )}
       <Link to="/stigen" className="btn-play mb-7">
         <Swords />
         {nextOpp ? <span>Spill mot {nextOpp.name.split(" ")[0]}</span> : <span>Spill</span>}

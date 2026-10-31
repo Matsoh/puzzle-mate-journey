@@ -60,8 +60,16 @@ function Body({ c }: { c: Celebration }) {
         <Mike mood="happy" className="mx-auto w-32" />
         <p className="celebrate__eyebrow">Mike Skolen</p>
         <h2 className="celebrate__title">Skoledag fullført!</h2>
-        <p className="celebrate__sub">Alle tre leksjoner i dag. Skoledager totalt: <strong>{c.days}</strong>.</p>
+        <p className="celebrate__sub">Hele timeplanen i dag. Skoledager totalt: <strong>{c.days}</strong>.</p>
         <p className="mike-bubble mt-4 text-sm">Class dismissed. Same time tomorrow – a full week unlocks something special.</p>
+      </>;
+    case "classup":
+      return <>
+        <Mike mood="happy" className="mx-auto w-32" />
+        <p className="celebrate__eyebrow">Eksamen bestått!</p>
+        <h2 className="celebrate__title">{c.cls > 7 ? "Uteksaminert fra Mike Skolen!" : `Velkommen til ${c.name}`}</h2>
+        <p className="celebrate__sub">+100 XP og +50 🪙. {c.cls > 7 ? "Du har gått hele skolen. Nå: 2000." : "Nye åpninger, nye motstandere, nytt pensum fra i morgen."}</p>
+        <p className="mike-bubble mt-4 text-sm">{c.cls > 7 ? "You finished my school. I'm not crying, I'm felt. Go get the rating." : "Passed. I knew it. New class, new tricks – and I get to be tougher on you."}</p>
       </>;
     case "week":
       return <>

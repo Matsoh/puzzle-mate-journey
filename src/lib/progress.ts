@@ -50,6 +50,12 @@ export type Progress = {
   reviewedGames: string[];
   /** Mikes notatbok. */
   notebook: Notebook;
+  /** Mike Skolen: current class (1–7, 8 = graduated), when it started, classes passed, exam in progress, report-card scores. */
+  schoolClass: number;
+  schoolClassSince: string;
+  schoolPassed: number[];
+  schoolExam: { day: string; cls: number; puzzlesOk: number; puzzlesDone: number; stage: "puzzles" | "game" | "passed" | "failed" } | null;
+  schoolScores: Record<string, number[]>;
 };
 
 export const DEFAULT_PROGRESS: Progress = {
@@ -85,6 +91,11 @@ export const DEFAULT_PROGRESS: Progress = {
   importedGames: [],
   reviewedGames: [],
   notebook: { entries: [], patterns: {} },
+  schoolClass: 1,
+  schoolClassSince: "2000-01-01",
+  schoolPassed: [],
+  schoolExam: null,
+  schoolScores: {},
 };
 
 // Old anonymous key — read only for the one-time import offer, never deleted.

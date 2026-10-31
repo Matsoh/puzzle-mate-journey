@@ -14,7 +14,8 @@ export type Celebration =
   | { kind: "motif"; motifs: Motif[] }
   | { kind: "chest"; coins: number; tier: ChestTier }
   | { kind: "schoolday"; days: number }
-  | { kind: "week"; coins: number; weeks: number };
+  | { kind: "week"; coins: number; weeks: number }
+  | { kind: "classup"; cls: number; name: string };
 
 export type ChestTier = "vanlig" | "stor" | "jackpot";
 
@@ -33,6 +34,8 @@ export function celebrateDiff(before: Progress, after: Progress) {
   const newKeys = Object.keys(after.credits).filter((k) => before.credits[k] === undefined);
   const dayDone = newKeys.filter((k) => /^school:\d{4}-\d{2}-\d{2}:done$/.test(k)).length;
   const weeks = newKeys.filter((k) => k.startsWith("school:week:"));
+  const passed = newKeys.find((k) => /^school:exam:\d+$/.test(k));
+  if (passed) celebrate({ kind: "classup", cls: after.schoolClass, name: after.schoolClass > 7 ? "Uteksaminert!" : `${after.schoolClass}. klasse` });
   if (weeks.length) celebrate({ kind: "week", coins: WEEK_COINS, weeks: Object.keys(after.credits).filter((k) => k.startsWith("school:week:")).length });
   else if (dayDone) celebrate({ kind: "schoolday", days: Object.keys(after.credits).filter((k) => /^school:\d{4}-\d{2}-\d{2}:done$/.test(k)).length });
 }

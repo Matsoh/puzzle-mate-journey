@@ -171,3 +171,10 @@
 ## 30. Samtalen forenklet: bare ElevenLabs
 - Kokoro/Whisper og stemmepanelet er fjernet (`kokoro-js` ute av package.json, `voice-worker.ts` slettet). Stemmen velges med `ELEVENLABS_VOICE` (env) / standard-ID i `mike-voice`.
 - Lytting: egen mikrofon + stillhetsdetektor → ElevenLabs Scribe (`{audio}` base64 WAV til `mike-voice`) – én lydvei som fungerer på iPad. Faller tilbake til nettleserens gjenkjenning, og til sist «Snakk»-knapp. Nøkkelen trenger Text to Speech + Speech to Text.
+
+## 31. Mike Skolen som ekte sjakkskole
+- `src/lib/curriculum.ts` (testet): 7 klassetrinn 1500→2000 (`CLASSES`: åpninger, taktikkmotiver, sluttspill-bosser, mesterparti, eksamen), dagens timeplan `timetable()` med fire timer – oppvarming, dagens fag (man/lør åpning, tir taktikk, ons sluttspill-boss, tor/søn gjett mesterens trekk, fre eksamen når den er åpen), treningsparti, lekse fra notatboken. Turneringsuke (siste 7 dager før dato) gir repertoar hver dag.
+- Eksamen: `startExam/withExamPuzzle/withExamGame` – N oppgaver med krav + ett parti mot klassens bot (vinn/remis). Bestått → neste klasse, +100 XP, +50 mynter, feiring `classup`. Vitnemål: `grade()` per fag (A–E) fra `schoolScores`.
+- Innhold: `src/data/master-games.ts` (Réti–Tartakower, Operapartiet, Evergreen, Immortal – chess.js-verifisert, matt til slutt), `BOSSES` (K+D, K+T, K+B vinn/remis, Lucena) spilt i treningsrommet med `goal`.
+- UI: `routes/trener.tsx` (klassekort, karakterer, ukestripe, timeplan med lås, periodevisning, turneringskort), `components/school/{PuzzleSet,OpeningDrill,MasterGame}.tsx`. `treningsparti` tar `period/day/goal/exam` og krediterer timen. Forberedelse er borte fra menyen (nås fra skolen).
+- Mikes stemme ved brettet: `lib/mike-voice.ts` (`sayMike`, cache per replikk, 8 s-throttle, høyttalerknapp i `MikeCompanion`, munn følger lyden). Intro, viktige reaksjoner, dom og skoletimenes innledning leses med ElevenLabs.
