@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, GraduationCap, Lock, Play, Swords, Trophy, Calendar, Target } from "lucide-react";
+import { Check, ChevronRight, GraduationCap, Lock, Play, Swords, Trophy, Calendar, Target, BookOpen, Dumbbell, Pencil } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { MikeCompanion } from "@/components/MikeCompanion";
@@ -16,6 +16,9 @@ import { addTournament, archiveCurrent, useTournaments } from "@/lib/tournament-
 import { clampSetup, defaultSetup, newTournament, type Tournament } from "@/lib/tournament";
 import { getMasterGame } from "@/data/master-games";
 import { getOpening } from "@/data/openings";
+import { RepertoirePicker } from "@/components/school/RepertoirePicker";
+import { updatePrep, usePrep } from "@/lib/prep-store";
+import { recordDrill, type Plan } from "@/lib/prep";
 import { play } from "@/lib/sound";
 
 export const Route = createFileRoute("/trener")({
@@ -40,7 +43,9 @@ function SchoolPage() {
   const t = useTournaments();
   const current = t.list.find((x) => x.id === t.current && !x.archived) ?? null;
   const inDays = day ? daysUntil(day, current?.setup.date) : null;
-  const periods = useMemo(() => (day ? timetable(p, day, inDays) : []), [p, day, inDays]);
+  const prep = usePrep();
+  const repertoire = useMemo(() => prep.plan?.openings ?? [], [prep.plan]);
+  const periods = useMemo(() => (day ? timetable(p, day, inDays, repertoire) : []), [p, day, inDays, repertoire]);
   const nextIdx = periods.findIndex((x) => !periodDone(p, day, x.idx));
   const [open, setOpen] = useState<number | null>(null);
   const active = open ?? (nextIdx >= 0 ? nextIdx : null);
@@ -115,11 +120,27 @@ function SchoolPage() {
         </section>
       )}
 
+      <RepertoireCard plan={prep.plan} />
+
+      <section className="card-game mb-4 p-4" aria-label="Treningsparti med hjelp">
+        <div className="mb-2 flex items-center gap-2"><Dumbbell className="size-5 text-primary" /><p className="font-bold">Treningsparti med hjelp – når du vil</p></div>
+        <p className="mb-3 text-xs text-muted-foreground">Mike ved brettet med hint, «hva truer boten?» og forslag. Påvirker ikke ratingen, og du får full analyse etterpå. Spill så mange du vil – timeplanens parti er bare minimum.</p>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {([["Lett", Math.max(1000, cls.botElo - 150), "Prøv ideer uten press"], ["Jevn", cls.botElo, "Som en ekte motstander"], ["Tøff", cls.botElo + 150, "Mike hjelper når det brenner"]] as const).map(([label, elo, hint]) => (
+            <Link key={label} to="/treningsparti" search={{ fen: undefined, side: "w", elo, tc: "none", src: `Mike Skolen · ${label}` }} className="quest" data-testid={`training-${label.toLowerCase()}`}>
+              <span className="quest__check"><Swords className="size-5" /></span>
+              <span className="min-w-0"><span className="block font-semibold">{label} · bot {elo}</span><span className="block text-xs text-muted-foreground">{hint}</span></span>
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <TournamentCard current={current} inDays={inDays} day={day} />
 
       <section className="mb-2" aria-label="Pensum">
         <p className="eyebrow mb-2">Pensum i {done ? "7. klasse" : cls.name}</p>
-        <p className="text-xs text-muted-foreground"><strong>Åpninger:</strong> {cls.openings.map((o) => getOpening(o)?.name ?? o).join(", ")} · <strong>Taktikk:</strong> {cls.tactics.length} motiver · <strong>Sluttspill:</strong> {cls.endgames.map((b) => getBoss(b)?.name ?? b).join(", ")} · <strong>Mesterparti:</strong> {cls.games.map((g) => getMasterGame(g)?.title ?? g).join(", ")} · <strong>Eksamen:</strong> {cls.exam.puzzles} oppgaver (minst {cls.exam.pass} rett) + parti mot bot {cls.exam.elo}.</p>
+        <p className="text-xs text-muted-foreground"><strong>Åpninger:</strong> {(repertoire.length ? repertoire : cls.openings).map((o) => getOpening(o)?.name ?? o).join(", ")}{repertoire.length ? " (ditt repertoar)" : " (forslag – velg dine egne over)"} · <strong>Taktikk:</strong> {cls.tactics.length} motiver · <strong>Sluttspill:</strong> {cls.endgames.map((b) => getBoss(b)?.name ?? b).join(", ")} · <strong>Mesterparti:</strong> {cls.games.map((g) => getMasterGame(g)?.title ?? g).join(", ")} · <strong>Eksamen:</strong> {cls.exam.puzzles} oppgaver (minst {cls.exam.pass} rett) + parti mot bot {cls.exam.elo}.</p>
       </section>
     </main>
   );
@@ -143,6 +164,9 @@ function PeriodView({ p, day, period, cls, done, onStart, onNext }: { p: Progres
   );
   const scoreItem = (subject: Subject, ok: boolean) => updateProgress((s) => withScore(s, subject, ok));
   const [botElo, side] = period.kind === "game" ? period.ref.split(":") : [String(cls.botElo), "w"];
+  const prep = usePrep();
+  /** Rotate through the opening's variations: the spaced-repetition record says which one is next. */
+  const branchFor = (id: string) => prep.openings[id]?.nextBranch ?? 0;
 
   return (
     <section className="card-game mb-4 p-4" aria-label={period.title}>
@@ -152,7 +176,7 @@ function PeriodView({ p, day, period, cls, done, onStart, onNext }: { p: Progres
       ) : period.kind === "warmup" || period.kind === "tactic" || period.kind === "homework" ? (
         <PuzzleSet title={period.title} items={pickItems(period.ref, period.count ?? 3, day, period.kind)} onItem={(_, ok) => scoreItem("tactic", ok)} onDone={(ok, total) => finish(undefined, ok * 2 >= total)} />
       ) : period.kind === "opening" ? (
-        <OpeningDrill openingId={period.ref} branchIdx={Math.floor(Number(day.slice(8, 10)) / 7)} botElo={cls.botElo} onDone={(mistakes) => finish("opening", mistakes <= 1)} />
+        <OpeningDrill openingId={period.ref} branchIdx={branchFor(period.ref)} botElo={cls.botElo} onDone={(mistakes, o, b) => { updatePrep((s) => ({ ...s, openings: { ...s.openings, [o.id]: recordDrill(s.openings[o.id], o, b.id, day, mistakes === 0) } })); finish("opening", mistakes <= 1); }} />
       ) : period.kind === "strategy" ? (
         <MasterGame gameId={period.ref} onMike={(t) => void sayMike(t, true)} onDone={(hits, total) => finish("strategy", hits * 10 >= total * 6)} />
       ) : period.kind === "endgame" ? (
@@ -220,8 +244,8 @@ function TournamentCard({ current, inDays, day }: { current: Tournament | null; 
   return (
     <section className="card-game mb-4 p-4" aria-label="Turnering">
       <div className="flex items-center justify-between gap-3">
-        <span className="flex min-w-0 items-center gap-2"><Calendar className="size-5 shrink-0 text-primary" /><span className="min-w-0"><span className="block font-semibold">{current ? current.setup.name : "Neste turnering"}</span><span className="block text-xs text-muted-foreground">{current ? `${current.setup.date}${inDays !== null ? inDays === 0 ? " · i dag!" : inDays > 0 ? ` · om ${inDays} dag${inDays === 1 ? "" : "er"}` : " · spilt" : ""} · siste uka blir turneringsuke` : "Legg inn dato – siste uka før blir turneringsuke på timeplanen"}</span></span></span>
-        {current ? <span className="flex shrink-0 gap-1"><Link to="/turnering" className="btn-game text-sm">Forbered</Link><Button size="sm" variant="ghost" onClick={() => archiveCurrent()} aria-label="Fjern turneringen">✕</Button></span> : <Button size="sm" onClick={() => setEdit((e) => !e)}>Legg inn</Button>}
+        <span className="flex min-w-0 items-center gap-2"><Calendar className="size-5 shrink-0 text-primary" /><span className="min-w-0"><span className="block font-semibold">{current ? current.setup.name : "Neste turnering"}</span><span className="block text-xs text-muted-foreground">{current ? `${current.setup.date}${inDays !== null ? inDays === 0 ? " · i dag!" : inDays > 0 ? ` · om ${inDays} dag${inDays === 1 ? "" : "er"}` : " · spilt" : ""} · siste uka terper vi repertoaret hver dag` : "Legg inn dato – den siste uka før blir turneringsuke på timeplanen"}</span></span></span>
+        {current ? <Button size="sm" variant="ghost" onClick={() => archiveCurrent()} aria-label="Fjern turneringen">Fjern</Button> : <Button size="sm" onClick={() => setEdit((e) => !e)}>Legg inn</Button>}
       </div>
       {edit && !current && (
         <form className="mt-3 flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); save(); }}>
@@ -229,6 +253,30 @@ function TournamentCard({ current, inDays, day }: { current: Tournament | null; 
           <input type="date" value={date} min={day} onChange={(e) => setDate(e.target.value)} aria-label="Dato" className="min-h-10 rounded-lg border border-border bg-background px-3 text-sm" />
           <Button type="submit" size="sm">Lagre</Button>
         </form>
+      )}
+    </section>
+  );
+}
+
+/** Tobias's openings, chosen here in the school (not in a separate prep page). Mike's opening classes use exactly these. */
+function RepertoireCard({ plan }: { plan: Plan | null }) {
+  const [edit, setEdit] = useState(false);
+  const open = edit || !plan;
+  return (
+    <section className="card-game mb-4 p-4" aria-label="Repertoaret mitt">
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex min-w-0 items-center gap-2"><BookOpen className="size-5 shrink-0 text-primary" /><span className="min-w-0"><span className="block font-semibold">Repertoaret mitt</span><span className="block text-xs text-muted-foreground">{plan ? "Åpningene Mike terper i åpningstimene" : "Velg åpningene dine – Mike bruker klassens forslag til du har valgt"}</span></span></span>
+        {plan && !edit && <Button size="sm" variant="outline" onClick={() => setEdit(true)}><Pencil /> Endre</Button>}
+      </div>
+      {plan && !edit && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {plan.openings.map((id) => { const o = getOpening(id); return o ? <span key={id} className="chip">{o.side === "white" ? "♙" : "♟"} {o.name}</span> : null; })}
+        </div>
+      )}
+      {open && (
+        <div className="mt-4">
+          <RepertoirePicker initial={plan} onSave={(next) => { updatePrep((s) => ({ ...s, plan: next })); setEdit(false); play("correct"); }} onCancel={plan ? () => setEdit(false) : undefined} />
+        </div>
       )}
     </section>
   );

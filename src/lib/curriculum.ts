@@ -91,19 +91,21 @@ export function daysInClass(p: Progress): number {
 }
 
 /** The day's timetable: warm-up, the subject of the day, a game, homework (or the exam on Fridays). */
-export function timetable(p: Progress, day: string, tournamentInDays: number | null = null): Period[] {
+/** The day's timetable. `repertoire` = Tobias's own openings (from the school's repertoire picker); the class syllabus is the fallback. */
+export function timetable(p: Progress, day: string, tournamentInDays: number | null = null, repertoire: string[] = []): Period[] {
   const c = classOf(p);
   const wd = weekday(day);
   const h = seed(day);
   const side = h % 2 === 0 ? "w" : "b";
+  const openings = repertoire.length ? repertoire : c.openings;
   const warm: Period = { idx: 0, kind: "warmup", subject: "tactic", title: "Oppvarming", hint: "3 taktikkoppgaver, rett i gang", mike: "Warm-up. Three puzzles. Checks, captures, threats – every move.", ref: pick(c.tactics, h), count: 3 };
   const game: Period = { idx: 2, kind: "game", subject: "game", title: `Treningsparti · ${side === "w" ? "hvit" : "svart"}`, hint: `Mot bot ${c.botElo} med Mike ved brettet`, mike: `Training game. You're ${side === "w" ? "White" : "Black"}. Use what we just worked on – I'm right here.`, ref: `${c.botElo}:${side}` };
   let subject: Period;
   const prep = tournamentInDays !== null && tournamentInDays >= 0 && tournamentInDays <= 7;
   if (prep) {
-    subject = { idx: 1, kind: "opening", subject: "opening", title: "Turneringsuke: repertoar", hint: `Turnering om ${tournamentInDays} dag${tournamentInDays === 1 ? "" : "er"} – terp åpningen`, mike: `Tournament in ${tournamentInDays} days. We drill your opening until your hands know it.`, ref: pick(c.openings, h) };
+    subject = { idx: 1, kind: "opening", subject: "opening", title: "Turneringsuke: repertoar", hint: `Turnering om ${tournamentInDays} dag${tournamentInDays === 1 ? "" : "er"} – terp åpningen`, mike: `Tournament in ${tournamentInDays} days. We drill your opening until your hands know it.`, ref: pick(openings, h) };
   } else if (wd === 0 || wd === 5) {
-    subject = { idx: 1, kind: "opening", subject: "opening", title: wd === 5 ? "Åpningslab" : "Åpning", hint: "Spill repertoarlinjen din – Mike retter", mike: "Opening class. You play your line, I play the other side and stop you when you drift.", ref: pick(c.openings, h) };
+    subject = { idx: 1, kind: "opening", subject: "opening", title: wd === 5 ? "Åpningslab" : "Åpning", hint: "Spill repertoarlinjen din – Mike retter", mike: "Opening class. You play your line, I play the other side and stop you when you drift.", ref: pick(openings, h) };
   } else if (wd === 1) {
     subject = { idx: 1, kind: "tactic", subject: "tactic", title: `Taktikk: ${THEME_LABEL(pick(c.tactics, h >>> 3))}`, hint: "3 oppgaver med samme motiv", mike: `Tactics. Today's pattern: ${THEME_LABEL(pick(c.tactics, h >>> 3)).toLowerCase()}. See it once, you see it forever.`, ref: pick(c.tactics, h >>> 3), count: 3 };
   } else if (wd === 2) {

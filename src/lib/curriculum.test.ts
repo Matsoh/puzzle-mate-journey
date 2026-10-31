@@ -46,6 +46,11 @@ describe("curriculum", () => {
     expect(t[2]!.ref).toMatch(/^1450:[wb]$/);
     expect(t.every((x) => x.mike.length > 10)).toBe(true);
   });
+  it("drills the player's own repertoire when one is chosen", () => {
+    expect(["italiensk", "carokann"]).toContain(timetable(P, MON)[1]!.ref);
+    expect(timetable(P, MON, null, ["spansk"])[1]!.ref).toBe("spansk");
+    expect(timetable(P, WED, 2, ["london", "slavisk"])[1]!.ref).toMatch(/london|slavisk/);
+  });
   it("switches to tournament prep in the last week before a tournament", () => {
     expect(timetable(P, WED, 3)[1]!.kind).toBe("opening");
     expect(timetable(P, WED, 3)[1]!.title).toMatch(/Turneringsuke/);

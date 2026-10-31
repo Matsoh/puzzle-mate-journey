@@ -702,7 +702,7 @@ function PracticeGame() {
               )}
               {schoolOk !== null && !schoolOk && <Button onClick={() => window.location.reload()}>Prøv igjen</Button>}
               <Button variant="outline" asChild>
-                <Link to={search.period !== undefined || search.exam ? "/trener" : "/turnering"}>{search.period !== undefined || search.exam ? "Tilbake til Mike Skolen" : "Tilbake til forberedelsen"}</Link>
+                <Link to="/trener">Tilbake til Mike Skolen</Link>
               </Button>
             </section>
           )}
