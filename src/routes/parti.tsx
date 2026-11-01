@@ -328,7 +328,7 @@ function Game() {
                 onClick={() => {
                   unlockAudio();
                   primeMikeVoice();
-                  void sayMike(mikeIntro, true);
+                  if (!isTour) void sayMike(mikeIntro, true); // tournaments are text-only: five games would eat the voice quota
                   play("boss");
                   startedAt.current = Date.now();
                   setPhase("playing");
@@ -386,7 +386,7 @@ function Game() {
           {phase === "playing" && (
             <>
               <MaiaBrain compact />
-              <MikeCompanion mode="game" line={lastLine} context={gameContext(snapshot)} compact speak />
+              <MikeCompanion mode="game" line={lastLine} context={gameContext(snapshot)} compact speak={!isTour} />
               <div className="card-game p-3 max-h-64 overflow-y-auto text-sm font-medium leading-7">
                 {moveListSan.length === 0 ? (
                   <span className="text-muted-foreground">{player === "w" ? "Du starter – lykke til! 🍀" : "Motstanderen starter…"}</span>
@@ -455,7 +455,7 @@ function Game() {
 
           {phase === "review" && (
             <>
-              {result && <MikeCompanion mode="review" line={reviewLine(mistakes, result.outcome)} context={reviewContext(mistakes, result.outcome, opponent)} speak important />}
+              {result && <MikeCompanion mode="review" line={reviewLine(mistakes, result.outcome)} context={reviewContext(mistakes, result.outcome, opponent)} speak={!isTour} important />}
               {result && <CoachDebrief mistakes={mistakes} outcome={result.outcome} orientation={orientation} />}
               {review && <GameReview review={review} orientation={orientation} names={player === "w" ? { w: avatarName(getProgress()), b: title } : { w: title, b: avatarName(getProgress()) }} />}
               {isTour ? (

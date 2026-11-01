@@ -11,7 +11,6 @@ import { avatarName } from "@/lib/avatar";
 import { flairEmoji } from "@/lib/flair";
 import { celebrate } from "@/lib/celebrate";
 import { play, unlockAudio } from "@/lib/sound";
-import { primeMikeVoice } from "@/lib/mike-voice";
 import { updateProgress, useProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 import { tierBots } from "@/lib/tour-bots";
@@ -55,7 +54,7 @@ function TourPage() {
   const p = useProgress();
   const pod = useMemo(() => podiums(state.history), [state.history]);
   return (
-    <main className="page-layout page-narrow" onPointerDown={() => { unlockAudio(); primeMikeVoice(); }}>
+    <main className="page-layout page-narrow" onPointerDown={unlockAudio}>
       <AppHeader title="Turnering" />
       {t ? <Live t={t} /> : <Lobby rating={p.rating} name={avatarName(p)} pod={pod} history={state.history} />}
     </main>
@@ -176,7 +175,7 @@ function Live({ t }: { t: Tour }) {
         <p className="font-bold">{tierInfo(t.tier).emoji} {tierInfo(t.tier).name} · {t.tc}</p>
         <p className="chip">{ph === "done" ? "Ferdig" : `Runde ${round} av ${ROUNDS}`}</p>
       </div>
-      <MikeCompanion mode="tournament" line={line} context={context} compact speak important />
+      <MikeCompanion mode="tournament" line={line} context={context} compact />
 
       {ph === "done" ? (
         <Podium t={t} myPlace={placeOf(t, me)} onFinish={finish} />
