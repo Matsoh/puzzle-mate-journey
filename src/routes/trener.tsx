@@ -136,6 +136,12 @@ function SchoolPage() {
         </div>
       </section>
 
+      <Link to="/turnering" className="quest mb-4" data-testid="school-tour">
+        <span className="quest__check"><Trophy className="size-5" /></span>
+        <span className="min-w-0"><span className="block font-semibold">Turnering mot klubbspillere</span><span className="block text-xs text-muted-foreground">Test det du har lært: 10 spillere, 5 runder, ekte tabell. Teller på ratingen som stigen.</span></span>
+        <ChevronRight className="size-4 text-muted-foreground" />
+      </Link>
+
       <TournamentCard current={current} inDays={inDays} day={day} />
 
       <section className="mb-2" aria-label="Pensum">

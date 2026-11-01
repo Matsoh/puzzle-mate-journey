@@ -17,7 +17,9 @@ import { celebrate, celebrateDiff } from "@/lib/celebrate";
 import { collectionSummary } from "@/lib/collection";
 import { play } from "@/lib/sound";
 import { notebookLine } from "@/lib/notebook";
-import { Globe } from "lucide-react";
+import { Globe, Trophy } from "lucide-react";
+import { ROUNDS, phase } from "@/lib/tour";
+import { useTour } from "@/lib/tour-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const p = useProgress();
+  const tour = useTour().current;
   const navigate = useNavigate();
   const lvl = levelFromXp(p.xp);
   const [t, setT] = useState("");
@@ -98,6 +101,13 @@ function Home() {
         <Link to="/trener" className="quest mb-4 border-primary/50" aria-label="Mike Skolen">
           <span className="quest__check"><GraduationCap className="size-5" /></span>
           <span className="min-w-0"><span className="block font-semibold">Mike Skolen · {classOf(p).name}</span><span className="block text-xs text-muted-foreground">{schoolDone(p, t) ? "Skoledagen er fullført 🎓" : `Dagens timeplan: ${periodsDone(p, t)}/4 timer · neste: ${timetable(p, t)[periodsDone(p, t)]?.title ?? "ferdig"}`}</span></span>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </Link>
+      )}
+      {tour && (
+        <Link to="/turnering" className="quest mb-4 border-gold/60" aria-label="Turnering">
+          <span className="quest__check"><Trophy className="size-5" /></span>
+          <span className="min-w-0"><span className="block font-semibold">Turnering · runde {tour.rounds.length} av {ROUNDS}</span><span className="block text-xs text-muted-foreground">{phase(tour, Date.now()) === "play" ? "Partiet ditt venter ved brettet" : phase(tour, Date.now()) === "done" ? "Ferdig – hent premien!" : "Se de andre bordene og tabellen"}</span></span>
           <ChevronRight className="size-4 text-muted-foreground" />
         </Link>
       )}

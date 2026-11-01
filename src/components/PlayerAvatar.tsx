@@ -34,11 +34,11 @@ export function AvatarImage({ parts, className, size = 256, own = false }: { par
 }
 
 /** The player's own avatar, as built in Avatarverkstedet. */
-export function PlayerAvatar({ className }: { className?: string }) {
+export function PlayerAvatar({ className, style }: { className?: string; style?: React.CSSProperties | undefined }) {
   const p = useProgress();
   const parts = useMemo(() => avatarOf(p), [p]);
   return (
-    <span className={cn("relative inline-flex shrink-0 overflow-hidden rounded-full bg-muted", className)} style={figureSrc(parts) ? { background: parts.background } : undefined} role="img" aria-label={avatarName(p)}>
+    <span className={cn("relative inline-flex shrink-0 overflow-hidden rounded-full bg-muted", className)} style={{ ...(figureSrc(parts) ? { background: parts.background } : {}), ...style }} role="img" aria-label={avatarName(p)}>
       <AvatarImage parts={parts} own className="absolute inset-0 size-full object-cover" />
     </span>
   );

@@ -35,8 +35,11 @@ import { MikeCompanion } from "@/components/MikeCompanion";
 import { BotAvatar } from "@/components/BotAvatar";
 import { botMood } from "@/lib/bot-mood";
 import { gameContext, gameReaction, introLine, reviewContext, reviewLine } from "@/lib/mike-game";
+import { boardIntro, isTourOpponent, myBoard, ROUNDS } from "@/lib/tour";
+import { getTour, recordTourResult, useTour } from "@/lib/tour-store";
+import { Trophy } from "lucide-react";
 
-type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeControl; color: ColorChoice };
+type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeControl; color: ColorChoice; tour?: string | undefined; round?: number | undefined };
 
 export const Route = createFileRoute("/parti")({
   ssr: false,
@@ -45,6 +48,8 @@ export const Route = createFileRoute("/parti")({
     elo: s["elo"] !== undefined && Number.isFinite(Number(s["elo"])) ? Number(s["elo"]) : undefined,
     tc: parseTimeControl(s["tc"]),
     color: s["color"] === "b" || s["color"] === "r" ? s["color"] : "w",
+    tour: typeof s["tour"] === "string" ? s["tour"] : undefined,
+    round: s["round"] !== undefined && Number.isInteger(Number(s["round"])) ? Number(s["round"]) : undefined,
   }),
   head: () => ({
     meta: [
@@ -69,9 +74,15 @@ function fmtClock(ms: number) {
 }
 
 function Game() {
-  const { opp: oppId, elo: freeElo, tc, color } = Route.useSearch();
+  const { opp: oppId, elo: freeElo, tc, color, tour: tourId, round: tourRound } = Route.useSearch();
   const opponent = getOpponent(oppId);
   const engineElo = opponent?.elo ?? freeElo ?? 1600;
+  const isTour = isTourOpponent(oppId) && !!tourId && tourRound !== undefined;
+  // Tournament game: the live tournament must match the link, and the board must still be open.
+  const tourState = useTour();
+  const tour = isTour && tourState.current?.id === tourId ? tourState.current : null;
+  const tourSeat = tour && tourRound !== undefined ? myBoard(tour, tourRound) : null;
+  const startedAt = useRef(Date.now());
   const [player] = useState<"w" | "b">(() => (color === "r" ? (Math.random() < 0.5 ? "w" : "b") : color));
   const orientation = player === "w" ? "white" : "black";
 
@@ -110,11 +121,12 @@ function Game() {
       setPhase("over");
       play(outcome === "win" ? "win" : outcome === "loss" ? "lose" : "correct");
       let rw: Reward | null = null;
+      const tourGame = isTour && getTour().current?.id === tourId;
       updateProgress((p0) => {
         const score = outcome === "win" ? 1 : outcome === "draw" ? 0.5 : 0;
         const before = levelFromXp(p0.xp).level;
         let gained = outcome === "win" ? XP.gameWin : outcome === "draw" ? XP.gameDraw : XP.gameLoss;
-        const firstBeat = outcome === "win" && opponent && !p0.beaten.includes(opponent.id);
+        const firstBeat = outcome === "win" && opponent && !tourGame && !p0.beaten.includes(opponent.id);
         if (firstBeat) gained += XP.bossWinBonus;
         let p = {
           ...p0,
@@ -127,7 +139,7 @@ function Game() {
           maxBeatenElo: outcome === "win" ? Math.max(p0.maxBeatenElo, engineElo) : p0.maxBeatenElo,
         };
         p = withDayGame(withHistoryPoint(markActive(p)), today(), outcome === "win");
-        p = withAppGame(p, { id: `app:${Date.now()}`, source: "app", opponent: opponent ? opponent.name : `Stockfish ${engineElo}`, opponentRating: engineElo, player, result: outcome, moves: game.current.history(), timeClass: tcCfg ? tcClass(tcCfg[0], tcCfg[1]) : "none" });
+        p = withAppGame(p, { id: `app:${Date.now()}`, source: "app", opponent: opponent ? `${opponent.name}${tourGame ? " (turnering)" : ""}` : `Stockfish ${engineElo}`, opponentRating: engineElo, player, result: outcome, moves: game.current.history(), timeClass: tcCfg ? tcClass(tcCfg[0], tcCfg[1]) : "none" });
         const b = applyBadges(p);
         rw = { xp: gained, ratingBefore: p0.rating, ratingAfter: p.rating, badges: b.earned, levelUp: levelFromXp(p.xp).level > before };
         celebrateDiff(p0, b.progress);
@@ -135,9 +147,10 @@ function Game() {
         return b.progress;
       });
       setReward(rw);
-      if (outcome === "win" && opponent) rememberLadderWin(opponent.id, today());
+      if (tourGame && tourId && tourRound !== undefined) recordTourResult(tourId, tourRound, outcome, Date.now() - startedAt.current);
+      else if (outcome === "win" && opponent) rememberLadderWin(opponent.id, today());
     },
-    [opponent, engineElo],
+    [opponent, engineElo, isTour, tourId, tourRound],
   );
 
   const checkEnd = useCallback(() => {
@@ -192,7 +205,7 @@ function Game() {
     const remaining = tcCfg ? clockRef.current[player === "w" ? 1 : 0] : null;
     const target = thinkTimeMs({
       elo: engineElo,
-      tempo: opponent ? OPPONENT_TEMPO[opponent.id] : undefined,
+      tempo: opponent ? opponent.tempo ?? OPPONENT_TEMPO[opponent.id] : undefined,
       ply: g.history().length,
       legalMoves: legal.length,
       inCheck: g.inCheck(),
@@ -280,7 +293,8 @@ function Game() {
 
   const title = opponent ? opponent.name : `Fritt parti · ${engineElo}`;
   const oppClockIdx = player === "w" ? 1 : 0;
-  const nextOpp = opponent ? OPPONENTS[OPPONENTS.indexOf(opponent) + 1] : undefined;
+  const nextOpp = opponent && !isTour ? OPPONENTS[OPPONENTS.indexOf(opponent) + 1] : undefined;
+  const mikeIntro = tour && tourRound !== undefined ? boardIntro(tour, tourRound) : opponent ? introLine(opponent) : "";
   const moveListSan = useMemo(() => moves.map((m) => m.san), [moves]);
   const myClockMs = tcCfg ? clock[player === "w" ? 0 : 1] : null;
   const snapshot = useMemo(() => ({ fen, moves, player, opponent, myClockMs: tcCfg ? Math.round(myClockMs! / 5000) * 5000 : null, tc }), [fen, moves, player, opponent, tcCfg, myClockMs, tc]);
@@ -299,23 +313,30 @@ function Game() {
             <BotAvatar opponent={opponent} mood="smug" size={200} quips={false} />
           </div>
           <div className="p-6 text-center space-y-3 safe-bottom animate-pop">
-            <p className="text-3xl font-semibold text-primary">Neste utfordring</p>
+            <p className="text-3xl font-semibold text-primary">{isTour && tourRound !== undefined ? `Runde ${tourRound + 1} av ${ROUNDS}${tourSeat ? ` · Bord ${tourSeat.no}` : ""}` : "Neste utfordring"}</p>
             <h2 className="text-3xl">{opponent.name}</h2>
             <p className="font-medium text-primary">{ratingLabel(opponent)} · {opponent.style}</p>
             <p className="text-lg italic">«{opponent.line}»</p>
-            <p className="mike-bubble mx-auto max-w-sm text-left text-sm"><span className="mike-bubble__name">Mike</span>{introLine(opponent)}</p>
-            <Button
-              className=" w-full max-w-sm "
-              onClick={() => {
-                unlockAudio();
-                primeMikeVoice();
-                void sayMike(introLine(opponent), true);
-                play("boss");
-                setPhase("playing");
-              }}
-            >
-              <Swords /> Start kampen
-            </Button>
+            <p className="mike-bubble mx-auto max-w-sm text-left text-sm"><span className="mike-bubble__name">Mike</span>{mikeIntro}</p>
+            {isTour && !tourSeat && <p className="text-sm text-muted-foreground">Denne turneringen er ikke aktiv lenger.</p>}
+            {isTour && tourSeat && tourSeat.board.result && <p className="text-sm text-muted-foreground">Dette partiet er allerede spilt.</p>}
+            {isTour && (!tourSeat || tourSeat.board.result) ? (
+              <Link to="/turnering" className="btn-game btn-primary w-full max-w-sm"><Trophy /> Til turneringen</Link>
+            ) : (
+              <Button
+                className=" w-full max-w-sm "
+                onClick={() => {
+                  unlockAudio();
+                  primeMikeVoice();
+                  void sayMike(mikeIntro, true);
+                  play("boss");
+                  startedAt.current = Date.now();
+                  setPhase("playing");
+                }}
+              >
+                <Swords /> Start kampen
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -408,14 +429,19 @@ function Game() {
                   </div>
                 )}
                 {result.outcome === "win" && nextOpp && <p className="font-medium text-accent pt-1"><LockKeyholeOpen className="inline size-4" /> {nextOpp.name} er låst opp!</p>}
+                {isTour && <p className="font-medium text-accent pt-1"><Trophy className="inline size-4" /> Resultatet er ført i turneringstabellen.</p>}
               </div>
               <MikeCompanion mode="review" compact context={`${gameContext(snapshot)}\nResult: Tobias ${result.outcome === "win" ? "won" : result.outcome === "draw" ? "drew" : "lost"} (${result.reason}). The engine analysis has not been run yet.`}
                 line={{ text: result.outcome === "win" ? "That's a win. Say it out loud. Then let's see where it nearly wasn't." : result.outcome === "draw" ? "Draw. Half a point and a full lesson, if we look." : "Lost. Good. Losses are where the XP is. Run the analysis.", mood: result.outcome === "win" ? "happy" : "think" }} />
               <Button className=" w-full" disabled={moves.length < 2} onClick={startAnalysis}><Search /> Analyser partiet</Button>
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Omkamp</Button>
-                <Link to={opponent ? "/stigen" : "/"} className="btn-game btn-ghost">{opponent ? "<Swords /> Stigen" : "<House /> Oversikt"}</Link>
-              </div>
+              {isTour ? (
+                <Link to="/turnering" className="btn-game btn-primary w-full"><Trophy /> Til turneringen – se de andre bordene</Link>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Omkamp</Button>
+                  <Link to={opponent ? "/stigen" : "/"} className="btn-game btn-ghost">{opponent ? <><Swords /> Stigen</> : <><House /> Oversikt</>}</Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -432,10 +458,14 @@ function Game() {
               {result && <MikeCompanion mode="review" line={reviewLine(mistakes, result.outcome)} context={reviewContext(mistakes, result.outcome, opponent)} speak important />}
               {result && <CoachDebrief mistakes={mistakes} outcome={result.outcome} orientation={orientation} />}
               {review && <GameReview review={review} orientation={orientation} names={player === "w" ? { w: avatarName(getProgress()), b: title } : { w: title, b: avatarName(getProgress()) }} />}
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Ny kamp</Button>
-                <Link to="/" className="btn-game btn-ghost"><House /> Oversikt</Link>
-              </div>
+              {isTour ? (
+                <Link to="/turnering" className="btn-game btn-primary w-full"><Trophy /> Til turneringen</Link>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Ny kamp</Button>
+                  <Link to="/" className="btn-game btn-ghost"><House /> Oversikt</Link>
+                </div>
+              )}
             </>
           )}
         </aside>

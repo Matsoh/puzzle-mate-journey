@@ -56,6 +56,10 @@ export type Progress = {
   schoolPassed: number[];
   schoolExam: { day: string; cls: number; puzzlesOk: number; puzzlesDone: number; stage: "puzzles" | "game" | "passed" | "failed" } | null;
   schoolScores: Record<string, number[]>;
+  /** Turnering mot bots: played, won and podium finishes. */
+  tourPlayed: number;
+  tourWins: number;
+  tourPodiums: number;
 };
 
 export const DEFAULT_PROGRESS: Progress = {
@@ -96,6 +100,9 @@ export const DEFAULT_PROGRESS: Progress = {
   schoolPassed: [],
   schoolExam: null,
   schoolScores: {},
+  tourPlayed: 0,
+  tourWins: 0,
+  tourPodiums: 0,
 };
 
 // Old anonymous key — read only for the one-time import offer, never deleted.

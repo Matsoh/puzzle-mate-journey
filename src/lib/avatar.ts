@@ -18,7 +18,8 @@ export type Unlock =
   | { kind: "motifs"; count: number }
   | { kind: "wins"; n: number }
   | { kind: "games"; n: number }
-  | { kind: "weeks"; n: number };
+  | { kind: "weeks"; n: number }
+  | { kind: "tourwins"; n: number };
 
 export type PartOption = { id: string; name: string; unlock: Unlock };
 
@@ -117,6 +118,7 @@ export function unlockLabel(u: Unlock): string {
     case "wins": return `${u.n} seire`;
     case "games": return `${u.n} partier`;
     case "weeks": return u.n === 1 ? "Full skoleuke" : `${u.n} fulle skoleuker`;
+    case "tourwins": return u.n === 1 ? "Vinn en turnering" : `Vinn ${u.n} turneringer`;
   }
 }
 
@@ -132,6 +134,7 @@ export function unlocked(p: Progress, u: Unlock, owned: boolean): boolean {
     case "wins": return p.wins >= u.n;
     case "games": return p.games >= u.n;
     case "weeks": return schoolWeeks(p) >= u.n;
+    case "tourwins": return (p.tourWins ?? 0) >= u.n;
   }
 }
 

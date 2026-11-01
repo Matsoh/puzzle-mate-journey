@@ -16,7 +16,7 @@ export function Celebrations() {
   const c = useSyncExternalStore(subscribe, peek, () => undefined);
   useEffect(() => {
     if (!c) return;
-    play(c.kind === "level" ? "levelup" : c.kind === "chest" && c.tier === "jackpot" ? "win" : "correct");
+    play(c.kind === "level" ? "levelup" : (c.kind === "chest" && c.tier === "jackpot") || (c.kind === "tour" && c.place <= 3) ? "win" : "correct");
   }, [c]);
   if (!c) return null;
   return (
@@ -70,6 +70,14 @@ function Body({ c }: { c: Celebration }) {
         <h2 className="celebrate__title">{c.cls > 7 ? "Uteksaminert fra Mike Skolen!" : `Velkommen til ${c.name}`}</h2>
         <p className="celebrate__sub">+100 XP og +50 🪙. {c.cls > 7 ? "Du har gått hele skolen. Nå: 2000." : "Nye åpninger, nye motstandere, nytt pensum fra i morgen."}</p>
         <p className="mike-bubble mt-4 text-sm">{c.cls > 7 ? "You finished my school. I'm not crying, I'm felt. Go get the rating." : "Passed. I knew it. New class, new tricks – and I get to be tougher on you."}</p>
+      </>;
+    case "tour":
+      return <>
+        <div className="celebrate__emoji">{c.place === 1 ? "🥇" : c.place === 2 ? "🥈" : c.place === 3 ? "🥉" : "🏁"}</div>
+        <p className="celebrate__eyebrow">Turnering · {c.tier}</p>
+        <h2 className="celebrate__title">{c.place === 1 ? "Turneringsseier!" : c.place <= 3 ? `${c.place}. plass – pallen!` : `${c.place}. plass`}</h2>
+        <p className="celebrate__sub">+{c.xp} XP og +{c.coins} 🪙 for fem runder i sveitsersystemet.</p>
+        <p className="mike-bubble mt-4 text-sm">{c.place === 1 ? "Winner. Ten players, five rounds, your name on top. Frame it." : c.place <= 3 ? "A medal. Real tournament chess, real nerves – and you held them." : "Five tournament games in the bank. The table doesn't remember, the notebook does."}</p>
       </>;
     case "week":
       return <>

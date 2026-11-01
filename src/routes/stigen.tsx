@@ -1,6 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Lock, ChessKnight, CheckCircle2, ChevronDown } from "lucide-react";
+import { Lock, ChessKnight, CheckCircle2, ChevronDown, Trophy, ChevronRight } from "lucide-react";
+import { ROUNDS, phase } from "@/lib/tour";
+import { useTour } from "@/lib/tour-store";
 import { AppHeader } from "@/components/AppHeader";
 import { GameSetup } from "@/components/GameSetup";
 import { isUnlocked, OPPONENTS, ratingLabel } from "@/lib/opponents";
@@ -27,6 +29,7 @@ function Ladder() {
   const p = useProgress();
   const [open, setOpen] = useState<string | null>(null);
   const beatenCount = OPPONENTS.filter((o) => p.beaten.includes(o.id)).length;
+  const tour = useTour().current;
 
   return (
     <main className="page-layout page-narrow">
@@ -36,6 +39,14 @@ function Ladder() {
           {beatenCount}/{OPPONENTS.length} slått. Slå en motstander for å låse opp den neste.
         </p>
         <MaiaBrain />
+        <Link to="/turnering" className="quest border-gold/60" data-testid="tour-link">
+          <span className="quest__check text-xl">🏆</span>
+          <span className="min-w-0">
+            <span className="block font-semibold">Turnering{tour ? ` · runde ${tour.rounds.length} av ${ROUNDS}` : ""}</span>
+            <span className="block text-xs text-muted-foreground">{tour ? (phase(tour, Date.now()) === "play" ? "Partiet ditt venter – spill det nå" : "Se resultatene og tabellen") : "10 spillere, 5 runder, tabell med Buchholz – pallplass gir premie"}</span>
+          </span>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </Link>
         {OPPONENTS.map((o) => {
           const idx = OPPONENTS.indexOf(o);
           const unlocked = isUnlocked(idx, p.beaten);

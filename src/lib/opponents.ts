@@ -1,3 +1,6 @@
+import type { Tempo } from "./think-time";
+import { tourOpponent } from "./tour";
+
 export type Opponent = {
   id: string;
   name: string;
@@ -13,6 +16,8 @@ export type Opponent = {
   secret?: boolean;
   /** "stockfish": never use Maia (human-like) – pure engine at the given rating. */
   brain?: "stockfish";
+  /** Thinking tempo (tournament bots); ladder bots use OPPONENT_TEMPO. */
+  tempo?: Tempo;
 };
 
 /** What the UI prints as the opponent's rating. */
@@ -32,7 +37,9 @@ export const OPPONENTS: Opponent[] = [
   { id: "mike", name: "Mike", elo: 2250, emoji: "🧌", hue: 145, portrait: "/bots/mike.png", secret: true, brain: "stockfish", style: "Treneren selv – den hemmelige sluttbossen", line: "You beat ET? Cute. Now show me what I actually taught you.", winLine: "You beat ME?! I've got nothing left to teach you. Go get that 2000 – I'll be watching." },
 ];
 
+/** Ladder opponents by id; tournament bots as "tour:<id>". */
 export function getOpponent(id: string | undefined): Opponent | undefined {
+  if (id?.startsWith("tour:")) return tourOpponent(id);
   return OPPONENTS.find((o) => o.id === id);
 }
 

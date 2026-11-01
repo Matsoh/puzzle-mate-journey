@@ -500,3 +500,23 @@
 @keyframes call-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
 @keyframes call-ring { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
 @keyframes call-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+/* ---- Turnering ---- */
+.tour-dots { display: inline-flex; gap: 3px; align-items: center; }
+.tour-dots i { width: 6px; height: 6px; border-radius: 999px; background: var(--primary); animation: tour-dot 1.2s ease-in-out infinite; }
+.tour-dots i:nth-child(2) { animation-delay: 0.2s; }
+.tour-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes tour-dot { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+.tour-table { border-collapse: collapse; }
+.tour-table th { padding: 4px 3px; font-weight: 600; color: var(--muted-foreground); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.tour-table td { padding: 3px 2px; white-space: nowrap; border-bottom: 1px solid color-mix(in oklab, var(--border) 50%, transparent); }
+.tour-table .tour-name { max-width: 108px; }
+@media (max-width: 519px) { .tour-table .tour-name { max-width: 92px; } .tour-cell { min-width: 24px; padding: 1px 2px; font-size: 10px; } .tour-table td, .tour-table th { padding-inline: 1px; } }
+.tour-table .tour-name > span > span { display: block; overflow: hidden; text-overflow: ellipsis; }
+.tour-table .tour-club { max-width: 96px; overflow: hidden; text-overflow: ellipsis; }
+.tour-table tr.is-me td { background: color-mix(in oklab, var(--primary) 14%, transparent); font-weight: 600; }
+.tour-cell { display: inline-block; min-width: 26px; padding: 1px 3px; border-radius: 6px; font-variant-numeric: tabular-nums; background: var(--muted); color: var(--muted-foreground); }
+.tour-cell.is-pending { animation: call-pulse 1.2s ease-in-out infinite; }
+.tour-cell.is-win { background: color-mix(in oklab, var(--success) 28%, transparent); color: var(--foreground); }
+.tour-cell.is-loss { background: color-mix(in oklab, var(--destructive) 28%, transparent); color: var(--foreground); }
+.tour-cell.is-draw { background: color-mix(in oklab, var(--gold) 28%, transparent); color: var(--foreground); }
