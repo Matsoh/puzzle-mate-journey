@@ -28,7 +28,6 @@ import { celebrateBadges, celebrateDiff } from "@/lib/celebrate";
 import { K_GAME, levelFromXp, newRating, XP } from "@/lib/rules";
 import { applyBadges, type Badge } from "@/lib/badges";
 import { play, unlockAudio } from "@/lib/sound";
-import { primeMikeVoice, sayMike } from "@/lib/mike-voice";
 import { rememberLadderWin } from "@/lib/daily-coach";
 import { today } from "@/lib/progress";
 import { MikeCompanion } from "@/components/MikeCompanion";
@@ -304,7 +303,7 @@ function Game() {
   useEffect(() => { if (reaction) setLastLine(reaction); }, [reaction]);
 
   return (
-    <main className="page-layout" onPointerDown={() => { unlockAudio(); primeMikeVoice(); }}>
+    <main className="page-layout" onPointerDown={unlockAudio}>
       <AppHeader title={title} />
 
       {phase === "intro" && opponent && (
@@ -327,8 +326,6 @@ function Game() {
                 className=" w-full max-w-sm "
                 onClick={() => {
                   unlockAudio();
-                  primeMikeVoice();
-                  if (!isTour) void sayMike(mikeIntro, true); // tournaments are text-only: five games would eat the voice quota
                   play("boss");
                   startedAt.current = Date.now();
                   setPhase("playing");
@@ -386,7 +383,7 @@ function Game() {
           {phase === "playing" && (
             <>
               <MaiaBrain compact />
-              <MikeCompanion mode="game" line={lastLine} context={gameContext(snapshot)} compact speak={!isTour} />
+              <MikeCompanion mode="game" line={lastLine} context={gameContext(snapshot)} compact />
               <div className="card-game p-3 max-h-64 overflow-y-auto text-sm font-medium leading-7">
                 {moveListSan.length === 0 ? (
                   <span className="text-muted-foreground">{player === "w" ? "Du starter – lykke til! 🍀" : "Motstanderen starter…"}</span>
@@ -455,7 +452,7 @@ function Game() {
 
           {phase === "review" && (
             <>
-              {result && <MikeCompanion mode="review" line={reviewLine(mistakes, result.outcome)} context={reviewContext(mistakes, result.outcome, opponent)} speak={!isTour} important />}
+              {result && <MikeCompanion mode="review" line={reviewLine(mistakes, result.outcome)} context={reviewContext(mistakes, result.outcome, opponent)} />}
               {result && <CoachDebrief mistakes={mistakes} outcome={result.outcome} orientation={orientation} />}
               {review && <GameReview review={review} orientation={orientation} names={player === "w" ? { w: avatarName(getProgress()), b: title } : { w: title, b: avatarName(getProgress()) }} />}
               {isTour ? (
