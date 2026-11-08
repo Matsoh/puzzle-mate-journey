@@ -3,6 +3,7 @@ import { dedupeCredits } from "./sync-merge";
 import { dayKey, nextStreak } from "./rules";
 import type { ImportedGame } from "./games-import";
 import type { Notebook } from "./notebook";
+import type { Cinema } from "./cinema";
 
 export type RatingPoint = { t: number; game: number; puzzle: number };
 export type DailyState = { day: string; ids: string[]; results: Record<string, "solved" | "failed"> };
@@ -60,6 +61,8 @@ export type Progress = {
   tourPlayed: number;
   tourWins: number;
   tourPodiums: number;
+  /** Kinosalen: clips watched/proven and coins paid per day. */
+  cinema: Cinema;
 };
 
 export const DEFAULT_PROGRESS: Progress = {
@@ -103,6 +106,7 @@ export const DEFAULT_PROGRESS: Progress = {
   tourPlayed: 0,
   tourWins: 0,
   tourPodiums: 0,
+  cinema: { seen: {}, dayCoins: {} },
 };
 
 // Old anonymous key — read only for the one-time import offer, never deleted.

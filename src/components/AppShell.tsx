@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Ellipsis, BookOpen, MessageCircle, Globe, Users, Trophy } from "lucide-react";
+import { ChartNoAxesCombined, House, Puzzle, Swords, Crown, ChessKnight, GraduationCap, Ellipsis, BookOpen, MessageCircle, Globe, Users, Trophy, Clapperboard } from "lucide-react";
 import { Celebrations } from "./Celebrations";
 import type { ReactNode } from "react";
 import { MuteToggle } from "./AppHeader";
@@ -26,6 +26,7 @@ export const MORE_NAV = [
   { to: "/turnering", label: "Turnering", hint: "10 spillere, 5 runder, pallplass og premier", icon: Trophy },
   { to: "/fritt", label: "Fritt parti", hint: "Velg styrke, farge og tempo", icon: Swords },
   { to: "/trener", label: "Mike Skolen", hint: "Timeplan, klassetrinn, eksamen og turneringsforberedelse", icon: GraduationCap },
+  { to: "/kino", label: "Kinosalen", hint: "GothamChess-videoer koblet til pensum – se, bevis, tjen mynter", icon: Clapperboard },
 ] as const;
 
 const MORE_PATHS: readonly string[] = MORE_NAV.map((n) => n.to);

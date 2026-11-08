@@ -520,3 +520,7 @@
 .tour-cell.is-win { background: color-mix(in oklab, var(--success) 28%, transparent); color: var(--foreground); }
 .tour-cell.is-loss { background: color-mix(in oklab, var(--destructive) 28%, transparent); color: var(--foreground); }
 .tour-cell.is-draw { background: color-mix(in oklab, var(--gold) 28%, transparent); color: var(--foreground); }
+
+/* ---- Kinosalen ---- */
+.yt { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.yt iframe, .yt > div { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }

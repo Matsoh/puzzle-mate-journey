@@ -14,6 +14,7 @@ import { Route as AvatarRouteImport } from './routes/avatar'
 import { Route as FremgangRouteImport } from './routes/fremgang'
 import { Route as FrittRouteImport } from './routes/fritt'
 import { Route as InnloggingRouteImport } from './routes/innlogging'
+import { Route as KinoRouteImport } from './routes/kino'
 import { Route as MerRouteImport } from './routes/mer'
 import { Route as MikeRouteImport } from './routes/mike'
 import { Route as PartiRouteImport } from './routes/parti'
@@ -52,6 +53,11 @@ const FrittRoute = FrittRouteImport.update({
 const InnloggingRoute = InnloggingRouteImport.update({
   id: '/innlogging',
   path: '/innlogging',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KinoRoute = KinoRouteImport.update({
+  id: '/kino',
+  path: '/kino',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MerRoute = MerRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
+  '/kino': typeof KinoRoute
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
+  '/kino': typeof KinoRoute
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
+  '/kino': typeof KinoRoute
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
+    | '/kino'
     | '/mer'
     | '/mike'
     | '/parti'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
+    | '/kino'
     | '/mer'
     | '/mike'
     | '/parti'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
+    | '/kino'
     | '/mer'
     | '/mike'
     | '/parti'
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   FremgangRoute: typeof FremgangRoute
   FrittRoute: typeof FrittRoute
   InnloggingRoute: typeof InnloggingRoute
+  KinoRoute: typeof KinoRoute
   MerRoute: typeof MerRoute
   MikeRoute: typeof MikeRoute
   PartiRoute: typeof PartiRoute
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/innlogging'
       fullPath: '/innlogging'
       preLoaderRoute: typeof InnloggingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kino': {
+      id: '/kino'
+      path: '/kino'
+      fullPath: '/kino'
+      preLoaderRoute: typeof KinoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mer': {
@@ -421,6 +441,7 @@ const rootRouteChildren: RootRouteChildren = {
   FremgangRoute: FremgangRoute,
   FrittRoute: FrittRoute,
   InnloggingRoute: InnloggingRoute,
+  KinoRoute: KinoRoute,
   MerRoute: MerRoute,
   MikeRoute: MikeRoute,
   PartiRoute: PartiRoute,

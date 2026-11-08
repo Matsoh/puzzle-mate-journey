@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, GraduationCap, Lock, Play, Swords, Trophy, Calendar, Target, BookOpen, Dumbbell, Pencil } from "lucide-react";
+import { Check, ChevronRight, GraduationCap, Lock, Play, Swords, Trophy, Calendar, Target, BookOpen, Dumbbell, Pencil, Clapperboard } from "lucide-react";
+import { PROVE_COINS, clipLabel, dailyClip, seenOf, watchCoins } from "@/lib/cinema";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { MikeCompanion } from "@/components/MikeCompanion";
@@ -136,6 +137,8 @@ function SchoolPage() {
         </div>
       </section>
 
+      <CinemaCard p={p} day={day} periods={periods} />
+
       <Link to="/turnering" className="quest mb-4" data-testid="school-tour">
         <span className="quest__check"><Trophy className="size-5" /></span>
         <span className="min-w-0"><span className="block font-semibold">Turnering mot klubbspillere</span><span className="block text-xs text-muted-foreground">Test det du har lært: 10 spillere, 5 runder, ekte tabell. Teller på ratingen som stigen.</span></span>
@@ -239,6 +242,20 @@ function Exam({ p, day, cls }: { p: Progress; day: string; cls: ReturnType<typeo
 }
 
 /** Next tournament: date + name. The timetable turns into "turneringsuke" for the last seven days. */
+/** Kinosalen: today's GothamChess clip, chosen from the same timetable. */
+function CinemaCard({ p, day, periods }: { p: Progress; day: string; periods: Period[] }) {
+  if (!day || !periods.length) return null;
+  const clip = dailyClip(p, day, periods);
+  const s = seenOf(p, clip.id);
+  return (
+    <Link to="/kino" search={{ klipp: undefined }} className="quest mb-4" data-testid="school-cinema">
+      <span className={`quest__check ${s?.proven ? "is-done" : ""}`}><Clapperboard className="size-5" /></span>
+      <span className="min-w-0"><span className="block font-semibold">Kinosalen · {clip.title}</span><span className="block text-xs text-muted-foreground">{s?.proven ? "Sett og bevist ✓ – se flere i Kinosalen" : s?.done ? "Sett ✓ – bevis det du lærte for bonus" : `GothamChess, ${clipLabel(clip)} · +${watchCoins(clip)} 🪙 for å se, +${PROVE_COINS} for å bevise`}</span></span>
+      <ChevronRight className="size-4 text-muted-foreground" />
+    </Link>
+  );
+}
+
 function TournamentCard({ current, inDays, day }: { current: Tournament | null; inDays: number | null; day: string }) {
   const [edit, setEdit] = useState(false);
   const [name, setName] = useState("Klubbturnering");
