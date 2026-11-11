@@ -7,7 +7,10 @@ import type { LessonId } from "./notebook";
 import type { Progress } from "./progress";
 
 export type CinemaSeen = { day: string; secs: number; done: boolean; proven: boolean };
-export type Cinema = { seen: Record<string, CinemaSeen>; dayCoins: Record<string, number> };
+/** Gotham Shorts feed: shorts already counted (ids, oldest first) and per-day tallies. */
+export type FeedDay = { coins: number; watched: number; pauses: number; bonus: number };
+export type Feed = { seen: string[]; day: Record<string, FeedDay> };
+export type Cinema = { seen: Record<string, CinemaSeen>; dayCoins: Record<string, number>; feed?: Feed };
 export const emptyCinema = (): Cinema => ({ seen: {}, dayCoins: {} });
 
 /** Coins per day from the cinema, all clips included. */
@@ -97,12 +100,18 @@ export function shortsToday(p: Progress, day: string): number {
   return Object.entries(cinemaOf(p).seen).filter(([id, s]) => s.day === day && s.done && getClip(id)?.kind === "short").length;
 }
 
+/** Keep only the latest `n` day keys so per-day tallies never grow without bound. */
+function lastDays<T>(rec: Record<string, T>, n = 14): Record<string, T> {
+  const keys = Object.keys(rec).sort();
+  return keys.length <= n ? rec : Object.fromEntries(keys.slice(-n).map((k) => [k, rec[k]!]));
+}
+
 function pay(p: Progress, day: string, coins: number): [Progress, number] {
   const used = coinsToday(p, day);
   const give = Math.max(0, Math.min(coins, DAY_CAP - used));
   if (!give) return [p, 0];
   const c = cinemaOf(p);
-  return [{ ...p, coins: p.coins + give, cinema: { ...c, dayCoins: { ...c.dayCoins, [day]: used + give } } }, give];
+  return [{ ...p, coins: p.coins + give, cinema: { ...c, dayCoins: lastDays({ ...c.dayCoins, [day]: used + give }) } }, give];
 }
 
 /** Record seconds watched; when the clip crosses 80 %, mark it done and pay once. */
@@ -164,4 +173,61 @@ export function mikeCinemaLine(p: Progress, today: Clip, day: string): { text: s
   if (s?.proven) return { text: `Watched and proven. ${used >= DAY_CAP ? "That's the cinema budget for today – the rest is for fun." : "Pick another one from the list, or go play."}`, mood: "happy" };
   if (s?.done) return { text: "You watched it. Now the part that matters: prove it. Three puzzles, no pressure – just show me it stuck.", mood: "think" };
   return { text: `Today's video: ${today.orig}. ${today.mike}`, mood: "chill" };
+}
+
+// ---- Gotham Shorts: the scroll feed ----
+
+/** Coins per day from scrolling (one per short not seen before). */
+export const FEED_CAP = 15;
+/** Mike's scroll break: one puzzle after this many shorts. */
+export const FEED_PAUSE_EVERY = 8;
+export const FEED_PAUSE_COINS = 2;
+export const FEED_BONUS_PER_DAY = 5;
+export const FEED_SEEN_MAX = 1500;
+
+const EMPTY_DAY: FeedDay = { coins: 0, watched: 0, pauses: 0, bonus: 0 };
+export const feedOf = (p: Progress): Feed => cinemaOf(p).feed ?? { seen: [], day: {} };
+export const feedToday = (p: Progress, day: string): FeedDay => ({ ...EMPTY_DAY, ...feedOf(p).day[day] });
+
+/** A short counts once it has played 8 seconds, or 60 % of a shorter one. */
+export function shortWatched(playedSecs: number, duration: number): boolean {
+  const need = duration > 0 ? Math.min(8, duration * 0.6) : 8;
+  return playedSecs >= need;
+}
+
+/** Scroll order: shorts not seen yet first (newest first), then the seen ones reshuffled per day. */
+export function feedOrder(ids: readonly string[], seen: readonly string[], salt: string): string[] {
+  const was = new Set(seen);
+  const fresh = ids.filter((id) => !was.has(id));
+  const old = ids.filter((id) => was.has(id)).map((id) => [seed(salt + id), id] as const).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
+  return [...fresh, ...old];
+}
+
+function withFeedDay(p: Progress, day: string, f: (d: FeedDay) => FeedDay, seen?: string[]): Progress {
+  const c = cinemaOf(p);
+  const feed = feedOf(p);
+  return { ...p, cinema: { ...c, feed: { seen: seen ?? feed.seen, day: lastDays({ ...feed.day, [day]: f({ ...EMPTY_DAY, ...feed.day[day] }) }) } } };
+}
+
+/** A short was watched in the feed: one coin the first time, up to the daily cap; always counted towards Mike's break. */
+export function withFeedShort(p: Progress, id: string, day: string): { p: Progress; paid: number } {
+  const feed = feedOf(p);
+  const isNew = !feed.seen.includes(id);
+  const paid = isNew && feedToday(p, day).coins < FEED_CAP ? 1 : 0;
+  const seen = isNew ? [...feed.seen, id].slice(-FEED_SEEN_MAX) : feed.seen;
+  const next = withFeedDay(p, day, (d) => ({ ...d, coins: d.coins + paid, watched: d.watched + 1 }), seen);
+  return { p: paid ? { ...next, coins: next.coins + paid } : next, paid };
+}
+
+/** Time for Mike's scroll break? */
+export const pauseDue = (p: Progress, day: string): boolean => {
+  const d = feedToday(p, day);
+  return d.watched >= (d.pauses + 1) * FEED_PAUSE_EVERY;
+};
+
+/** The break's puzzle was attempted: the feed opens again; a correct answer pays a small bonus (a few per day). */
+export function withFeedPause(p: Progress, day: string, ok: boolean): { p: Progress; paid: number } {
+  const paid = ok && feedToday(p, day).bonus < FEED_BONUS_PER_DAY ? FEED_PAUSE_COINS : 0;
+  const next = withFeedDay(p, day, (d) => ({ ...d, pauses: Math.max(d.pauses + 1, Math.floor(d.watched / FEED_PAUSE_EVERY)), bonus: d.bonus + (paid ? 1 : 0) }));
+  return { p: paid ? { ...next, coins: next.coins + paid } : next, paid };
 }

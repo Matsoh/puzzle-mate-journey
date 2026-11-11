@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CLIPS, getClip } from "@/data/gotham";
-import { DAY_CAP, PROVE_COINS, SHORTS_PER_DAY, clipsFor, dailyClip, grouped, mikeCinemaLine, recommendation, shortsToday, watchCoins, withProven, withWatched } from "./cinema";
+import { DAY_CAP, FEED_BONUS_PER_DAY, FEED_CAP, FEED_PAUSE_COINS, FEED_PAUSE_EVERY, PROVE_COINS, SHORTS_PER_DAY, clipsFor, dailyClip, feedOf, feedOrder, feedToday, grouped, mikeCinemaLine, pauseDue, recommendation, shortWatched, shortsToday, watchCoins, withFeedPause, withFeedShort, withProven, withWatched } from "./cinema";
+import { SHORT_IDS } from "@/data/gotham-shorts";
 import { CLASSES, timetable } from "./curriculum";
 import { OPENINGS } from "@/data/openings";
 import { MASTER_GAMES } from "@/data/master-games";
@@ -122,5 +123,76 @@ describe("watching and proving", () => {
     expect(r.why).toMatch(/hengt/);
     const q: Progress = { ...P, notebook: { entries: [], patterns: { missedMate: 4 } } };
     expect(recommendation(q)!.clip.topics).toContain("tactic:mateIn2");
+  });
+});
+
+describe("gotham shorts feed", () => {
+  it("has a big, unique, well-formed id list", () => {
+    expect(SHORT_IDS.length).toBeGreaterThan(1000);
+    expect(new Set(SHORT_IDS).size).toBe(SHORT_IDS.length);
+    expect(SHORT_IDS.every((id) => /^[\w-]{11}$/.test(id))).toBe(true);
+  });
+  it("counts a short after 8 seconds, or 60 % of a shorter one", () => {
+    expect(shortWatched(7.9, 30)).toBe(false);
+    expect(shortWatched(8, 30)).toBe(true);
+    expect(shortWatched(3.1, 5)).toBe(true);
+    expect(shortWatched(2.9, 5)).toBe(false);
+    expect(shortWatched(7, 0)).toBe(false);
+  });
+  it("orders unseen shorts first (newest first) and reshuffles the seen ones per day", () => {
+    const ids = ["a", "b", "c", "d", "e", "f"];
+    expect(feedOrder(ids, [], "x")).toEqual(ids);
+    const o = feedOrder(ids, ["b", "d", "a"], MON);
+    expect(o.slice(0, 3)).toEqual(["c", "e", "f"]);
+    expect([...o.slice(3)].sort()).toEqual(["a", "b", "d"]);
+    expect(feedOrder(ids, ["b", "d", "a"], MON)).toEqual(o);
+    expect(feedOrder(ids, ids, MON).length).toBe(6);
+  });
+  it("pays one coin per new short up to the daily cap, never twice for the same short", () => {
+    let p = P;
+    let paid = 0;
+    for (let i = 0; i < 20; i++) { const r = withFeedShort(p, SHORT_IDS[i]!, MON); p = r.p; paid += r.paid; }
+    expect(paid).toBe(FEED_CAP);
+    expect(p.coins).toBe(P.coins + FEED_CAP);
+    expect(feedToday(p, MON)).toMatchObject({ coins: FEED_CAP, watched: 20 });
+    expect(feedOf(p).seen).toHaveLength(20);
+    // same short again: counted for the break, never paid
+    const again = withFeedShort(p, SHORT_IDS[0]!, TUE);
+    expect(again.paid).toBe(0);
+    expect(feedToday(again.p, TUE).watched).toBe(1);
+    // a new day pays again for new shorts, and the curated cinema budget is untouched
+    expect(withFeedShort(p, SHORT_IDS[30]!, TUE).paid).toBe(1);
+    expect(p.cinema.dayCoins[MON]).toBeUndefined();
+    expect(withWatched(p, "s-fork", 32, MON).paid).toBe(1);
+  });
+  it("calls Mike's break every eight shorts and pays a small bonus for a solved puzzle", () => {
+    let p = P;
+    for (let i = 0; i < FEED_PAUSE_EVERY - 1; i++) p = withFeedShort(p, SHORT_IDS[i]!, MON).p;
+    expect(pauseDue(p, MON)).toBe(false);
+    p = withFeedShort(p, SHORT_IDS[7]!, MON).p;
+    expect(pauseDue(p, MON)).toBe(true);
+    const solved = withFeedPause(p, MON, true);
+    expect(solved.paid).toBe(FEED_PAUSE_COINS);
+    expect(pauseDue(solved.p, MON)).toBe(false);
+    const failed = withFeedPause(p, MON, false);
+    expect(failed.paid).toBe(0);
+    expect(pauseDue(failed.p, MON)).toBe(false);
+    // bonus runs out, the break still clears
+    let q = P;
+    let bonus = 0;
+    for (let n = 0; n < 8; n++) {
+      for (let i = 0; i < FEED_PAUSE_EVERY; i++) q = withFeedShort(q, SHORT_IDS[n * 8 + i]!, MON).p;
+      expect(pauseDue(q, MON)).toBe(true);
+      const r = withFeedPause(q, MON, true); q = r.p; bonus += r.paid;
+      expect(pauseDue(q, MON)).toBe(false);
+    }
+    expect(bonus).toBe(FEED_BONUS_PER_DAY * FEED_PAUSE_COINS);
+    expect(q.coins).toBe(P.coins + FEED_CAP + bonus);
+  });
+  it("keeps only two weeks of day tallies", () => {
+    let p = P;
+    for (let d = 1; d <= 20; d++) p = withFeedShort(p, SHORT_IDS[d]!, `2026-10-${String(d).padStart(2, "0")}`).p;
+    expect(Object.keys(feedOf(p).day)).toHaveLength(14);
+    expect(feedOf(p).day["2026-10-20"]?.watched).toBe(1);
   });
 });

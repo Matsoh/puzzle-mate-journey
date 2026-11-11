@@ -4,20 +4,31 @@ import { useEffect, useRef } from "react";
 // feed from other channels). Reports seconds actually played, so Kinosalen can
 // pay for watching rather than for opening.
 
-type YT = {
+export type YT = {
   Player: new (el: HTMLElement, opts: {
     host?: string;
-    videoId: string;
+    videoId?: string;
     playerVars?: Record<string, string | number>;
-    events?: { onReady?: (e: { target: Player }) => void; onStateChange?: (e: { data: number; target: Player }) => void; onError?: (e: { data: number }) => void };
-  }) => Player;
+    events?: { onReady?: (e: { target: YTPlayer }) => void; onStateChange?: (e: { data: number; target: YTPlayer }) => void; onError?: (e: { data: number }) => void };
+  }) => YTPlayer;
   PlayerState: { PLAYING: number; ENDED: number; PAUSED: number };
 };
-type Player = { getCurrentTime: () => number; getPlayerState: () => number; destroy: () => void; pauseVideo: () => void };
+export type YTPlayer = {
+  getCurrentTime: () => number;
+  getDuration: () => number;
+  getPlayerState: () => number;
+  loadVideoById: (id: string) => void;
+  playVideo: () => void;
+  pauseVideo: () => void;
+  seekTo: (secs: number, allowSeekAhead: boolean) => void;
+  destroy: () => void;
+};
+type Player = YTPlayer;
 declare global { interface Window { YT?: YT; onYouTubeIframeAPIReady?: () => void } }
 
 let apiPromise: Promise<YT> | null = null;
-function loadApi(): Promise<YT> {
+/** Load YouTube's IFrame API once (shared by the cinema player and the shorts feed). */
+export function loadApi(): Promise<YT> {
   if (typeof window === "undefined") return new Promise(() => { /* never on the server */ });
   if (window.YT?.Player) return Promise.resolve(window.YT);
   if (!apiPromise) {

@@ -5,11 +5,12 @@ import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { MikeCompanion } from "@/components/MikeCompanion";
 import { YouTube } from "@/components/YouTube";
+import { ShortsFeed } from "@/components/ShortsFeed";
 import { PuzzleSet } from "@/components/school/PuzzleSet";
 import { OpeningDrill } from "@/components/school/OpeningDrill";
 import { MasterGame } from "@/components/school/MasterGame";
 import { getClip, type Clip } from "@/data/gotham";
-import { DAY_CAP, PROVE_COINS, SHORTS_PER_DAY, cinemaSummary, clipLabel, clipLocked, coinsToday, dailyClip, grouped, mikeCinemaLine, recommendation, seenOf, shortsToday, watchCoins, withProven, withWatched } from "@/lib/cinema";
+import { DAY_CAP, FEED_CAP, FEED_PAUSE_EVERY, PROVE_COINS, SHORTS_PER_DAY, feedToday, cinemaSummary, clipLabel, clipLocked, coinsToday, dailyClip, grouped, mikeCinemaLine, recommendation, seenOf, shortsToday, watchCoins, withProven, withWatched } from "@/lib/cinema";
 import { classOf, daysUntil, pickItems, timetable } from "@/lib/curriculum";
 import { recordDrill } from "@/lib/prep";
 import { updatePrep, usePrep } from "@/lib/prep-store";
@@ -49,6 +50,7 @@ function CinemaPage() {
   const todays = useMemo(() => (day ? dailyClip(p, day, periods) : null), [p, day, periods]);
   const rec = useMemo(() => recommendation(p), [p]);
   const [chosen, setChosen] = useState<string | null>(klipp ?? null);
+  const [feed, setFeed] = useState(false);
   const active = (chosen && getClip(chosen)) || todays;
   const line = useMemo(() => (todays && day ? mikeCinemaLine(p, active ?? todays, day) : { text: "Loading the projector…", mood: "chill" as const }), [p, todays, active, day]);
   const sum = cinemaSummary(p);
@@ -60,7 +62,18 @@ function CinemaPage() {
       <AppHeader title="Kinosalen" />
       <MikeCompanion mode="trainer" line={line} context={`Kinosalen: GothamChess videos tied to the syllabus. Today's clip: ${active.orig} (${active.topics.join(", ")}). Watched ${sum.seen} of ${sum.total}, proven ${sum.proven}. Coins from the cinema today: ${used} of ${DAY_CAP}.`} compact className="mb-4" />
 
-      <Player key={active.id} clip={active} day={day} isToday={active.id === todays.id} onBack={() => setChosen(null)} />
+      {/* The lesson player is unmounted while the shorts feed is open, so two videos never play at once. */}
+      {!feed && <Player key={active.id} clip={active} day={day} isToday={active.id === todays.id} onBack={() => setChosen(null)} />}
+      {feed && <ShortsFeed day={day} onClose={() => setFeed(false)} />}
+
+      <button type="button" className="quest mb-4 w-full border-gold/60 text-left" onClick={() => setFeed(true)} data-testid="open-feed">
+        <span className="quest__check text-xl">📱</span>
+        <span className="min-w-0">
+          <span className="block font-semibold">Gotham Shorts – scroll i vei</span>
+          <span className="block text-xs text-muted-foreground">Alle shorts fra kanalen, nyeste først · 1 🪙 per ny short ({feedToday(p, day).coins}/{FEED_CAP} i dag) · Mike-pause med én oppgave hver {FEED_PAUSE_EVERY}.</span>
+        </span>
+        <Play className="size-4 text-muted-foreground" />
+      </button>
 
       {rec && rec.clip.id !== active.id && (
         <section className="card-game mb-4 p-4" aria-label="Mike anbefaler">
