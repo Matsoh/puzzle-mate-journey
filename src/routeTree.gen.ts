@@ -14,12 +14,14 @@ import { Route as AvatarRouteImport } from './routes/avatar'
 import { Route as FremgangRouteImport } from './routes/fremgang'
 import { Route as FrittRouteImport } from './routes/fritt'
 import { Route as InnloggingRouteImport } from './routes/innlogging'
+import { Route as KartRouteImport } from './routes/kart'
 import { Route as KinoRouteImport } from './routes/kino'
 import { Route as MerRouteImport } from './routes/mer'
 import { Route as MikeRouteImport } from './routes/mike'
 import { Route as PartiRouteImport } from './routes/parti'
 import { Route as PartierRouteImport } from './routes/partier'
 import { Route as PuslerRouteImport } from './routes/pusler'
+import { Route as RivalerRouteImport } from './routes/rivaler'
 import { Route as SamlingRouteImport } from './routes/samling'
 import { Route as StigenRouteImport } from './routes/stigen'
 import { Route as TilbakestillPassordRouteImport } from './routes/tilbakestill-passord'
@@ -55,6 +57,11 @@ const InnloggingRoute = InnloggingRouteImport.update({
   path: '/innlogging',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KartRoute = KartRouteImport.update({
+  id: '/kart',
+  path: '/kart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KinoRoute = KinoRouteImport.update({
   id: '/kino',
   path: '/kino',
@@ -83,6 +90,11 @@ const PartierRoute = PartierRouteImport.update({
 const PuslerRoute = PuslerRouteImport.update({
   id: '/pusler',
   path: '/pusler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RivalerRoute = RivalerRouteImport.update({
+  id: '/rivaler',
+  path: '/rivaler',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SamlingRoute = SamlingRouteImport.update({
@@ -137,12 +149,14 @@ export interface FileRoutesByFullPath {
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
+  '/kart': typeof KartRoute
   '/kino': typeof KinoRoute
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
   '/partier': typeof PartierRoute
   '/pusler': typeof PuslerRoute
+  '/rivaler': typeof RivalerRoute
   '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
   '/tilbakestill-passord': typeof TilbakestillPassordRoute
@@ -159,12 +173,14 @@ export interface FileRoutesByTo {
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
+  '/kart': typeof KartRoute
   '/kino': typeof KinoRoute
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
   '/partier': typeof PartierRoute
   '/pusler': typeof PuslerRoute
+  '/rivaler': typeof RivalerRoute
   '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
   '/tilbakestill-passord': typeof TilbakestillPassordRoute
@@ -182,12 +198,14 @@ export interface FileRoutesById {
   '/fremgang': typeof FremgangRoute
   '/fritt': typeof FrittRoute
   '/innlogging': typeof InnloggingRoute
+  '/kart': typeof KartRoute
   '/kino': typeof KinoRoute
   '/mer': typeof MerRoute
   '/mike': typeof MikeRoute
   '/parti': typeof PartiRoute
   '/partier': typeof PartierRoute
   '/pusler': typeof PuslerRoute
+  '/rivaler': typeof RivalerRoute
   '/samling': typeof SamlingRoute
   '/stigen': typeof StigenRoute
   '/tilbakestill-passord': typeof TilbakestillPassordRoute
@@ -206,12 +224,14 @@ export interface FileRouteTypes {
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
+    | '/kart'
     | '/kino'
     | '/mer'
     | '/mike'
     | '/parti'
     | '/partier'
     | '/pusler'
+    | '/rivaler'
     | '/samling'
     | '/stigen'
     | '/tilbakestill-passord'
@@ -228,12 +248,14 @@ export interface FileRouteTypes {
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
+    | '/kart'
     | '/kino'
     | '/mer'
     | '/mike'
     | '/parti'
     | '/partier'
     | '/pusler'
+    | '/rivaler'
     | '/samling'
     | '/stigen'
     | '/tilbakestill-passord'
@@ -250,12 +272,14 @@ export interface FileRouteTypes {
     | '/fremgang'
     | '/fritt'
     | '/innlogging'
+    | '/kart'
     | '/kino'
     | '/mer'
     | '/mike'
     | '/parti'
     | '/partier'
     | '/pusler'
+    | '/rivaler'
     | '/samling'
     | '/stigen'
     | '/tilbakestill-passord'
@@ -273,12 +297,14 @@ export interface RootRouteChildren {
   FremgangRoute: typeof FremgangRoute
   FrittRoute: typeof FrittRoute
   InnloggingRoute: typeof InnloggingRoute
+  KartRoute: typeof KartRoute
   KinoRoute: typeof KinoRoute
   MerRoute: typeof MerRoute
   MikeRoute: typeof MikeRoute
   PartiRoute: typeof PartiRoute
   PartierRoute: typeof PartierRoute
   PuslerRoute: typeof PuslerRoute
+  RivalerRoute: typeof RivalerRoute
   SamlingRoute: typeof SamlingRoute
   StigenRoute: typeof StigenRoute
   TilbakestillPassordRoute: typeof TilbakestillPassordRoute
@@ -327,6 +353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InnloggingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kart': {
+      id: '/kart'
+      path: '/kart'
+      fullPath: '/kart'
+      preLoaderRoute: typeof KartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kino': {
       id: '/kino'
       path: '/kino'
@@ -367,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: '/pusler'
       fullPath: '/pusler'
       preLoaderRoute: typeof PuslerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rivaler': {
+      id: '/rivaler'
+      path: '/rivaler'
+      fullPath: '/rivaler'
+      preLoaderRoute: typeof RivalerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/samling': {
@@ -441,12 +481,14 @@ const rootRouteChildren: RootRouteChildren = {
   FremgangRoute: FremgangRoute,
   FrittRoute: FrittRoute,
   InnloggingRoute: InnloggingRoute,
+  KartRoute: KartRoute,
   KinoRoute: KinoRoute,
   MerRoute: MerRoute,
   MikeRoute: MikeRoute,
   PartiRoute: PartiRoute,
   PartierRoute: PartierRoute,
   PuslerRoute: PuslerRoute,
+  RivalerRoute: RivalerRoute,
   SamlingRoute: SamlingRoute,
   StigenRoute: StigenRoute,
   TilbakestillPassordRoute: TilbakestillPassordRoute,

@@ -1,12 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { GameRow } from "@/components/GameRow";
 import { useEffect, useState } from "react";
-import { Flame, Puzzle, Swords, Check, ChevronRight, Sparkles, MessageCircle, GraduationCap } from "lucide-react";
+import { Flame, Puzzle, Swords, Check, ChevronRight, Sparkles, MessageCircle } from "lucide-react";
 import { today, updateProgress, useProgress, withCredit } from "@/lib/progress";
 import { levelFromXp, liveStreak } from "@/lib/rules";
-import { OPPONENTS } from "@/lib/opponents";
-import { classOf, periodsDone, timetable } from "@/lib/curriculum";
-import { schoolDone } from "@/lib/school";
 import { unlockAudio } from "@/lib/sound";
 import { allQuestsDone, dailyQuests, levelTitle, questCreditId, questDone, QUEST_BONUS_XP, type Quest } from "@/lib/quests";
 import { mikeHomeLine, mikeLevelLine } from "@/lib/mike";
@@ -18,6 +15,7 @@ import { collectionSummary } from "@/lib/collection";
 import { play } from "@/lib/sound";
 import { notebookLine } from "@/lib/notebook";
 import { Globe, Trophy } from "lucide-react";
+import { RivalBell, WorldHero, useWorldUi } from "@/components/world/WorldUi";
 import { ROUNDS, phase } from "@/lib/tour";
 import { useTour } from "@/lib/tour-store";
 
@@ -39,6 +37,7 @@ function Home() {
   const p = useProgress();
   const tour = useTour().current;
   const navigate = useNavigate();
+  const worldUi = useWorldUi();
   const lvl = levelFromXp(p.xp);
   const [t, setT] = useState("");
   useEffect(() => {
@@ -52,7 +51,6 @@ function Home() {
   const quests = t ? dailyQuests(p, t) : [];
   const done = quests.filter(questDone).length;
   const complete = quests.length > 0 && allQuestsDone(quests);
-  const nextOpp = OPPONENTS.find((o) => !p.beaten.includes(o.id));
   const base = t ? mikeHomeLine(p, quests, t, streak) : null;
   const nb = notebookLine(p);
   const mike = base && nb && !complete && t.endsWith("1") === false && (Number(t.slice(-2)) % 2 === 0) ? { text: nb, mood: "think" as const } : base;
@@ -82,6 +80,7 @@ function Home() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <RivalBell onOpen={worldUi.openInbox} />
           <Link to="/avatar" className="coin-chip" title="Mynter">🪙 {p.coins ?? 0}</Link>
           <span className={`streak-chip ${streak >= 3 ? "is-hot" : ""}`} title="Dager på rad"><Flame className="size-4" />{streak}</span>
         </div>
@@ -97,13 +96,9 @@ function Home() {
         <div className="xp-big__track"><div className="xp-big__fill" style={{ width: `${Math.max(3, (lvl.into / lvl.needed) * 100)}%` }} /></div>
       </section>
 
-      {t && (
-        <Link to="/trener" className="quest mb-4 border-primary/50" aria-label="Mike Skolen">
-          <span className="quest__check"><GraduationCap className="size-5" /></span>
-          <span className="min-w-0"><span className="block font-semibold">Mike Skolen · {classOf(p).name}</span><span className="block text-xs text-muted-foreground">{schoolDone(p, t) ? "Skoledagen er fullført 🎓" : `Dagens timeplan: ${periodsDone(p, t)}/4 timer · neste: ${timetable(p, t)[periodsDone(p, t)]?.title ?? "ferdig"}`}</span></span>
-          <ChevronRight className="size-4 text-muted-foreground" />
-        </Link>
-      )}
+      {/* The world: the region he is in, with the school, the gym and whoever has spotted him. */}
+      <WorldHero day={t} controller={worldUi} />
+
       {tour && (
         <Link to="/turnering" className="quest mb-4 border-gold/60" aria-label="Turnering">
           <span className="quest__check"><Trophy className="size-5" /></span>
@@ -111,11 +106,6 @@ function Home() {
           <ChevronRight className="size-4 text-muted-foreground" />
         </Link>
       )}
-      <Link to="/stigen" className="btn-play mb-7">
-        <Swords />
-        {nextOpp ? <span>Spill mot {nextOpp.name.split(" ")[0]}</span> : <span>Spill</span>}
-      </Link>
-
       <section aria-labelledby="quests-h" className="mb-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="quests-h" className="text-lg font-bold">Dagens oppdrag</h2>

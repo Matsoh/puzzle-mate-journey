@@ -16,7 +16,8 @@ export type Celebration =
   | { kind: "schoolday"; days: number }
   | { kind: "week"; coins: number; weeks: number }
   | { kind: "classup"; cls: number; name: string }
-  | { kind: "tour"; place: number; tier: string; xp: number; coins: number };
+  | { kind: "tour"; place: number; tier: string; xp: number; coins: number }
+  | { kind: "shadow"; region: number; name: string; last: boolean };
 
 export type ChestTier = "vanlig" | "stor" | "jackpot";
 

@@ -71,6 +71,14 @@ function Body({ c }: { c: Celebration }) {
         <p className="celebrate__sub">+100 XP og +50 🪙. {c.cls > 7 ? "Du har gått hele skolen. Nå: 2000." : "Nye åpninger, nye motstandere, nytt pensum fra i morgen."}</p>
         <p className="mike-bubble mt-4 text-sm">{c.cls > 7 ? "You finished my school. I'm not crying, I'm felt. Go get the rating." : "Passed. I knew it. New class, new tricks – and I get to be tougher on you."}</p>
       </>;
+    case "shadow":
+      return <>
+        <img src="/rivals/shadow.svg" alt="" className="mx-auto w-28 opacity-80" />
+        <p className="celebrate__eyebrow">Skyggen · {c.name}</p>
+        <h2 className="celebrate__title">{c.last ? "Skyggen er borte!" : "Skyggen falt!"}</h2>
+        <p className="celebrate__sub">+40 XP og +20 🪙. Skyggens segl {c.region}/7 er ditt.</p>
+        <p className="mike-bubble mt-4 text-sm">{c.last ? "Seven regions, seven shadows. Every one of them was an old habit of yours. Look how far up you are." : "You beat the Shadow here. It'll be waiting higher up – a little smarter. So will you."}</p>
+      </>;
     case "tour":
       return <>
         <div className="celebrate__emoji">{c.place === 1 ? "🥇" : c.place === 2 ? "🥈" : c.place === 3 ? "🥉" : "🏁"}</div>

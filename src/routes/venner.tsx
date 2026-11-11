@@ -54,6 +54,12 @@ function FriendsPage() {
       <AppHeader title="Venner" />
       {s.error && <p role="alert" className="mb-3 text-sm text-destructive">{s.error}</p>}
 
+      <Link to="/rivaler" className="quest mb-4" data-testid="rivals-link">
+        <span className="quest__check text-xl">👾</span>
+        <span className="min-w-0"><span className="block font-semibold">Rivalboken</span><span className="block text-xs text-muted-foreground">Spillerne fra Goblin-verdenen som har utfordret deg – stillingen mellom dere og omkamper</span></span>
+        <span />
+      </Link>
+
       <section className="card-game mb-4 p-4" aria-label="Din vennekode">
         <p className="eyebrow mb-1">Din vennekode</p>
         <div className="flex items-center justify-between gap-3">

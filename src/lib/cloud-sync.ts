@@ -77,6 +77,12 @@ export function createSyncedStore<T>(def: StoreDef<T>) {
   const notify = () => listeners.forEach((l) => l());
   const s: Store<T> = { def, get: () => state, replace: (n) => { state = n; notify(); }, base: undefined, rev: 0, dirty: false, inflight: false, timer: null, failures: 0 };
   stores.push(s as Store);
+  // Route chunks load lazily, so a store can be created after the user was activated.
+  // Hydrate it right away from what activation fetched – never leave it at defaults.
+  if (hydrated && uid) {
+    if (localOnly) { const cache = readCache(uid, def.key); state = cache ? def.migrate(cache.data) : def.empty(); writeCache(s as Store); }
+    else { hydrateStore(s as Store, uid, lastRows?.get(def.key)); if (s.dirty) schedule(s as Store, 200); }
+  }
   return {
     get: () => state,
     /** Local edit. Ignored until an approved user is hydrated — defaults never overwrite cloud data. */
@@ -159,6 +165,31 @@ export function retrySync() {
   stores.forEach((s) => { if (s.dirty && !s.inflight) schedule(s, 0); });
 }
 
+type Row = { data: unknown; revision: number };
+/** The rows fetched at activation, kept for stores that are created later (lazy route chunks). */
+let lastRows: Map<string, Row> | null = null;
+
+/** Bring one store up to the server row (plus unsynced edits from the device cache). */
+function hydrateStore(s: Store, userId: string, row: Row | undefined) {
+  const cache = readCache(userId, s.def.key);
+  s.failures = 0;
+  if (row) {
+    s.rev = row.revision;
+    s.base = row.data;
+    if (cache?.dirty) {
+      // Unsynced edits from last visit: keep them, merged on top of what the server has now.
+      s.replace(cache.rev === row.revision ? s.def.migrate(cache.data) : merge(s, cache.base, row.data, cache.data));
+      s.dirty = true;
+    } else { s.replace(s.def.migrate(row.data)); s.dirty = false; }
+  } else {
+    s.rev = 0;
+    s.base = undefined;
+    if (cache?.dirty) { s.replace(s.def.migrate(cache.data)); s.dirty = true; }
+    else { s.replace(s.def.empty()); s.dirty = false; }
+  }
+  writeCache(s);
+}
+
 /** Load the approved user's stores from the server. Throws on network error (fail closed). */
 export async function activateUser(userId: string): Promise<{ cloudEmpty: boolean }> {
   deactivate();
@@ -167,27 +198,9 @@ export async function activateUser(userId: string): Promise<{ cloudEmpty: boolea
   if (error) throw error;
   if (g !== gen) throw new Error("stale");
   uid = userId;
-  const rows = new Map((data ?? []).map((r) => [r.store_key, r]));
-  for (const s of stores) {
-    const row = rows.get(s.def.key);
-    const cache = readCache(userId, s.def.key);
-    s.failures = 0;
-    if (row) {
-      s.rev = row.revision;
-      s.base = row.data;
-      if (cache?.dirty) {
-        // Unsynced edits from last visit: keep them, merged on top of what the server has now.
-        s.replace(cache.rev === row.revision ? s.def.migrate(cache.data) : merge(s, cache.base, row.data, cache.data));
-        s.dirty = true;
-      } else { s.replace(s.def.migrate(row.data)); s.dirty = false; }
-    } else {
-      s.rev = 0;
-      s.base = undefined;
-      if (cache?.dirty) { s.replace(s.def.migrate(cache.data)); s.dirty = true; }
-      else { s.replace(s.def.empty()); s.dirty = false; }
-    }
-    writeCache(s);
-  }
+  const rows = new Map<string, Row>((data ?? []).map((r) => [r.store_key, { data: r.data, revision: r.revision }]));
+  lastRows = rows;
+  for (const s of stores) hydrateStore(s, userId, rows.get(s.def.key));
   hydrated = true;
   stores.forEach((s) => { if (s.dirty) schedule(s, 200); });
   recomputeStatus();
@@ -224,6 +237,7 @@ export function deactivate() {
   gen++;
   hydrated = false;
   uid = null;
+  lastRows = null;
   merged = 0;
   for (const s of stores) {
     if (s.timer) clearTimeout(s.timer);

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { MaiaBrain } from "@/components/MaiaBrain";
 
 export const Route = createFileRoute("/stigen")({
+  validateSearch: (s: Record<string, unknown>): { boss?: string | undefined } => ({ boss: typeof s["boss"] === "string" ? s["boss"] : undefined }),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -27,7 +28,9 @@ export const Route = createFileRoute("/stigen")({
 
 function Ladder() {
   const p = useProgress();
-  const [open, setOpen] = useState<string | null>(null);
+  // From the map: the gym leader's card opens straight away.
+  const { boss } = Route.useSearch();
+  const [open, setOpen] = useState<string | null>(boss ?? null);
   const beatenCount = OPPONENTS.filter((o) => p.beaten.includes(o.id)).length;
   const tour = useTour().current;
 

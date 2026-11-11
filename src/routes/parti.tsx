@@ -36,9 +36,13 @@ import { botMood } from "@/lib/bot-mood";
 import { gameContext, gameReaction, introLine, reviewContext, reviewLine } from "@/lib/mike-game";
 import { boardIntro, isTourOpponent, myBoard, ROUNDS } from "@/lib/tour";
 import { getTour, recordTourResult, useTour } from "@/lib/tour-store";
-import { Trophy } from "lucide-react";
+import { Trophy, Map as MapIcon, UserPlus } from "lucide-react";
+import { PERSONAS, winBonus, gamesOf, h2h, isRivalOpponent, isShadowOpponent, rivalDef, rivalIntro, rivalOpponent, shadowIntro, shadowOpponent, shadowRegion } from "@/lib/rivals";
+import { answerRequest, getRivals, recordRivalGame, recordShadowWin, useRivals } from "@/lib/rivals-store";
+import { regionOf } from "@/lib/world";
+import { celebrate } from "@/lib/celebrate";
 
-type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeControl; color: ColorChoice; tour?: string | undefined; round?: number | undefined };
+type Search = { opp?: string | undefined; elo?: number | undefined; tc: TimeControl; color: ColorChoice; tour?: string | undefined; round?: number | undefined; enc?: string | undefined };
 
 export const Route = createFileRoute("/parti")({
   ssr: false,
@@ -49,6 +53,7 @@ export const Route = createFileRoute("/parti")({
     color: s["color"] === "b" || s["color"] === "r" ? s["color"] : "w",
     tour: typeof s["tour"] === "string" ? s["tour"] : undefined,
     round: s["round"] !== undefined && Number.isInteger(Number(s["round"])) ? Number(s["round"]) : undefined,
+    enc: typeof s["enc"] === "string" ? s["enc"] : undefined,
   }),
   head: () => ({
     meta: [
@@ -73,8 +78,15 @@ function fmtClock(ms: number) {
 }
 
 function Game() {
-  const { opp: oppId, elo: freeElo, tc, color, tour: tourId, round: tourRound } = Route.useSearch();
-  const opponent = getOpponent(oppId);
+  const { opp: oppId, elo: freeElo, tc, color, tour: tourId, round: tourRound, enc: encId } = Route.useSearch();
+  // Rivals from the map and Skyggen: ordinary rated bot games, but the score goes to Rivalboken, not the ladder.
+  const isRival = isRivalOpponent(oppId);
+  const isShadow = isShadowOpponent(oppId);
+  const rivalId = isRival && oppId ? oppId.slice(6) : null;
+  const rivalsState = useRivals();
+  // Frozen for the whole game: the record (and the hidden rating) changes the moment the game ends.
+  const [rivalStart] = useState(() => (rivalId ? { rec: getRivals().recs[rivalId], opp: rivalOpponent(rivalId, getRivals().recs[rivalId], getProgress().rating, today()), text: getRivals().encounters.find((e) => e.id === encId)?.text } : null));
+  const opponent = isRival ? rivalStart?.opp : isShadow && oppId ? shadowOpponent(oppId) : getOpponent(oppId);
   const engineElo = opponent?.elo ?? freeElo ?? 1600;
   const isTour = isTourOpponent(oppId) && !!tourId && tourRound !== undefined;
   // Tournament game: the live tournament must match the link, and the board must still be open.
@@ -121,14 +133,20 @@ function Game() {
       play(outcome === "win" ? "win" : outcome === "loss" ? "lose" : "correct");
       let rw: Reward | null = null;
       const tourGame = isTour && getTour().current?.id === tourId;
+      const offLadder = tourGame || isRival || isShadow;
+      const region = shadowRegion(oppId);
       updateProgress((p0) => {
         const score = outcome === "win" ? 1 : outcome === "draw" ? 0.5 : 0;
         const before = levelFromXp(p0.xp).level;
         let gained = outcome === "win" ? XP.gameWin : outcome === "draw" ? XP.gameDraw : XP.gameLoss;
-        const firstBeat = outcome === "win" && opponent && !tourGame && !p0.beaten.includes(opponent.id);
+        const firstBeat = outcome === "win" && opponent && !offLadder && !p0.beaten.includes(opponent.id);
         if (firstBeat) gained += XP.bossWinBonus;
+        // One-time bonuses: the first win over a rival, and Skyggen falling in a region.
+        const bonus = winBonus(p0.credits, oppId, outcome);
+        if (bonus) gained += bonus.xp;
         let p = {
           ...p0,
+          ...(bonus ? { credits: { ...p0.credits, [bonus.id]: bonus.xp }, coins: p0.coins + bonus.coins } : {}),
           xp: p0.xp + gained,
           games: p0.games + 1,
           wins: p0.wins + (outcome === "win" ? 1 : 0),
@@ -138,7 +156,7 @@ function Game() {
           maxBeatenElo: outcome === "win" ? Math.max(p0.maxBeatenElo, engineElo) : p0.maxBeatenElo,
         };
         p = withDayGame(withHistoryPoint(markActive(p)), today(), outcome === "win");
-        p = withAppGame(p, { id: `app:${Date.now()}`, source: "app", opponent: opponent ? `${opponent.name}${tourGame ? " (turnering)" : ""}` : `Stockfish ${engineElo}`, opponentRating: engineElo, player, result: outcome, moves: game.current.history(), timeClass: tcCfg ? tcClass(tcCfg[0], tcCfg[1]) : "none" });
+        p = withAppGame(p, { id: `app:${Date.now()}`, source: "app", opponent: opponent ? `${opponent.name}${tourGame ? " (turnering)" : isRival ? " (rival)" : ""}` : `Stockfish ${engineElo}`, opponentRating: engineElo, player, result: outcome, moves: game.current.history(), timeClass: tcCfg ? tcClass(tcCfg[0], tcCfg[1]) : "none" });
         const b = applyBadges(p);
         rw = { xp: gained, ratingBefore: p0.rating, ratingAfter: p.rating, badges: b.earned, levelUp: levelFromXp(p.xp).level > before };
         celebrateDiff(p0, b.progress);
@@ -147,9 +165,12 @@ function Game() {
       });
       setReward(rw);
       if (tourGame && tourId && tourRound !== undefined) recordTourResult(tourId, tourRound, outcome, Date.now() - startedAt.current);
-      else if (outcome === "win" && opponent) rememberLadderWin(opponent.id, today());
+      else if (rivalId) recordRivalGame(rivalId, outcome, engineElo, encId);
+      else if (isShadow) {
+        if (outcome === "win" && !getRivals().shadow.includes(region)) { recordShadowWin(region); celebrate({ kind: "shadow", region, name: regionOf(region).name, last: region >= 7 }); }
+      } else if (outcome === "win" && opponent) rememberLadderWin(opponent.id, today());
     },
-    [opponent, engineElo, isTour, tourId, tourRound],
+    [opponent, engineElo, isTour, tourId, tourRound, rivalId, isShadow, encId, oppId],
   );
 
   const checkEnd = useCallback(() => {
@@ -292,8 +313,14 @@ function Game() {
 
   const title = opponent ? opponent.name : `Fritt parti · ${engineElo}`;
   const oppClockIdx = player === "w" ? 1 : 0;
-  const nextOpp = opponent && !isTour ? OPPONENTS[OPPONENTS.indexOf(opponent) + 1] : undefined;
-  const mikeIntro = tour && tourRound !== undefined ? boardIntro(tour, tourRound) : opponent ? introLine(opponent) : "";
+  const offMap = isRival || isShadow;
+  const nextOpp = opponent && !isTour && !offMap ? OPPONENTS[OPPONENTS.indexOf(opponent) + 1] : undefined;
+  const rDef = rivalId ? rivalDef(rivalId) : undefined;
+  const rivalNow = rivalId ? rivalsState.recs[rivalId] : undefined;
+  const mikeIntro = tour && tourRound !== undefined ? boardIntro(tour, tourRound) : rDef ? rivalIntro(rDef, rivalStart?.rec) : isShadow ? shadowIntro(shadowRegion(oppId)) : opponent ? introLine(opponent) : "";
+  const introEyebrow = isTour && tourRound !== undefined ? `Runde ${tourRound + 1} av ${ROUNDS}${tourSeat ? ` · Bord ${tourSeat.no}` : ""}` : isShadow ? `Skyggen · ${regionOf(shadowRegion(oppId)).name}` : rDef ? (gamesOf(rivalStart?.rec) === 0 ? "En mystisk spiller!" : `Omkamp · ${h2h(rivalStart?.rec)}`) : "Neste utfordring";
+  // What the rival says afterwards (the ladder bosses use their own lines).
+  const afterLine = !opponent || !result ? "" : rDef ? ((l: string[]) => l[moves.length % l.length] ?? "gg.")(PERSONAS[rDef.persona][result.outcome === "win" ? "lost" : "won"]) : result.outcome === "win" ? opponent.winLine : opponent.line;
   const moveListSan = useMemo(() => moves.map((m) => m.san), [moves]);
   const myClockMs = tcCfg ? clock[player === "w" ? 0 : 1] : null;
   const snapshot = useMemo(() => ({ fen, moves, player, opponent, myClockMs: tcCfg ? Math.round(myClockMs! / 5000) * 5000 : null, tc }), [fen, moves, player, opponent, tcCfg, myClockMs, tc]);
@@ -312,10 +339,10 @@ function Game() {
             <BotAvatar opponent={opponent} mood="smug" size={200} quips={false} />
           </div>
           <div className="p-6 text-center space-y-3 safe-bottom animate-pop">
-            <p className="text-3xl font-semibold text-primary">{isTour && tourRound !== undefined ? `Runde ${tourRound + 1} av ${ROUNDS}${tourSeat ? ` · Bord ${tourSeat.no}` : ""}` : "Neste utfordring"}</p>
+            <p className="text-3xl font-semibold text-primary">{introEyebrow}</p>
             <h2 className="text-3xl">{opponent.name}</h2>
             <p className="font-medium text-primary">{ratingLabel(opponent)} · {opponent.style}</p>
-            <p className="text-lg italic">«{opponent.line}»</p>
+            <p className="text-lg italic">«{rivalStart?.text ?? opponent.line}»</p>
             <p className="mike-bubble mx-auto max-w-sm text-left text-sm"><span className="mike-bubble__name">Mike</span>{mikeIntro}</p>
             {isTour && !tourSeat && <p className="text-sm text-muted-foreground">Denne turneringen er ikke aktiv lenger.</p>}
             {isTour && tourSeat && tourSeat.board.result && <p className="text-sm text-muted-foreground">Dette partiet er allerede spilt.</p>}
@@ -345,7 +372,7 @@ function Game() {
               <BotAvatar opponent={opponent} name={opponent ? opponent.name : "Stockfish"} mood={mood} size={opponent ? 84 : 56} />
               <span className="min-w-0">
                 <span className="bot-bar__name truncate">{opponent ? opponent.name : "Stockfish"}</span>
-                <span className="bot-bar__sub">{engineElo}{opponent ? ` · ${opponent.style}` : ""}{thinking && phase === "playing" ? " · tenker…" : ""}</span>
+                <span className="bot-bar__sub">{opponent ? ratingLabel(opponent) : engineElo}{opponent ? ` · ${opponent.style}` : ""}{thinking && phase === "playing" ? " · tenker…" : ""}</span>
               </span>
               {tcCfg && <span className="bot-bar__clock">{fmtClock(clock[oppClockIdx])}</span>}
             </div>
@@ -411,7 +438,9 @@ function Game() {
                   {result.outcome === "win" ? "Seier!" : result.outcome === "draw" ? "Remis" : "Tap"}
                 </p>
                 <p className="font-medium text-muted-foreground">{result.reason}</p>
-                {opponent && <p className="italic">«{result.outcome === "win" ? opponent.winLine : opponent.line}»</p>}
+                {opponent && <p className="italic">«{afterLine}»</p>}
+                {rDef && opponent?.secret && <p className="text-sm text-muted-foreground">{rDef.alias} hadde {engineElo} i rating.{rivalNow ? ` Stillingen mellom dere: ${h2h(rivalNow)}.` : ""}</p>}
+                {rDef && !opponent?.secret && rivalNow && <p className="text-sm text-muted-foreground">Stillingen mellom dere: {h2h(rivalNow)}.</p>}
                 {reward && (
                   <div className="flex flex-wrap justify-center gap-2 pt-2">
                     <span className="chip text-accent">+{reward.xp} XP</span>
@@ -428,11 +457,24 @@ function Game() {
                 {result.outcome === "win" && nextOpp && <p className="font-medium text-accent pt-1"><LockKeyholeOpen className="inline size-4" /> {nextOpp.name} er låst opp!</p>}
                 {isTour && <p className="font-medium text-accent pt-1"><Trophy className="inline size-4" /> Resultatet er ført i turneringstabellen.</p>}
               </div>
+              {rDef && rivalNow?.friend === "asked" && (
+                <div className="card-game border-primary p-4 text-center space-y-3 animate-pop" data-testid="rival-request">
+                  <p className="font-semibold"><UserPlus className="inline size-4 text-primary" /> {rDef.alias} vil legge deg til som rival!</p>
+                  <p className="text-sm italic text-muted-foreground">«{PERSONAS[rDef.persona].request[0]}»</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button variant="outline" onClick={() => answerRequest(rDef.id, false)}>Nei takk</Button>
+                    <Button onClick={() => { answerRequest(rDef.id, true); play("correct"); }}>Godta</Button>
+                  </div>
+                </div>
+              )}
+              {rDef && rivalNow?.friend === "yes" && rivalStart?.rec?.friend !== "yes" && <p className="text-center text-sm font-medium text-primary">{rDef.alias} er nå i Rivalboken din – de kommer til å utfordre deg igjen.</p>}
               <MikeCompanion mode="review" compact context={`${gameContext(snapshot)}\nResult: Tobias ${result.outcome === "win" ? "won" : result.outcome === "draw" ? "drew" : "lost"} (${result.reason}). The engine analysis has not been run yet.`}
                 line={{ text: result.outcome === "win" ? "That's a win. Say it out loud. Then let's see where it nearly wasn't." : result.outcome === "draw" ? "Draw. Half a point and a full lesson, if we look." : "Lost. Good. Losses are where the XP is. Run the analysis.", mood: result.outcome === "win" ? "happy" : "think" }} />
               <Button className=" w-full" disabled={moves.length < 2} onClick={startAnalysis}><Search /> Analyser partiet</Button>
               {isTour ? (
                 <Link to="/turnering" className="btn-game btn-primary w-full"><Trophy /> Til turneringen – se de andre bordene</Link>
+              ) : offMap ? (
+                <Link to="/" className="btn-game btn-primary w-full" data-testid="to-map"><MapIcon /> Tilbake til kartet</Link>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Omkamp</Button>
@@ -457,6 +499,8 @@ function Game() {
               {review && <GameReview review={review} orientation={orientation} names={player === "w" ? { w: avatarName(getProgress()), b: title } : { w: title, b: avatarName(getProgress()) }} />}
               {isTour ? (
                 <Link to="/turnering" className="btn-game btn-primary w-full"><Trophy /> Til turneringen</Link>
+              ) : offMap ? (
+                <Link to="/" className="btn-game btn-primary w-full"><MapIcon /> Tilbake til kartet</Link>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="outline" className="" onClick={() => window.location.reload()}><RotateCcw /> Ny kamp</Button>

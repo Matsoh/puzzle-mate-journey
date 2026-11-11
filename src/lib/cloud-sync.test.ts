@@ -28,7 +28,7 @@ vi.mock("@/integrations/supabase/client", () => {
   return { supabase: { rpc, from, auth: { signOut: vi.fn(async () => ({ error: null })) } } };
 });
 
-import { activateUser, deactivate, importLegacy, legacySnapshot } from "./cloud-sync";
+import { activateUser, createSyncedStore, deactivate, importLegacy, legacySnapshot } from "./cloud-sync";
 import { DEFAULT_PROGRESS, getProgress, updateProgress } from "./progress";
 
 const flush = async (ms = 1000) => { await vi.advanceTimersByTimeAsync(ms); };
@@ -38,6 +38,42 @@ beforeEach(() => {
   deactivate();
   db.rows.clear(); db.rpcCalls.length = 0; db.failRpc = false;
   localStorage.clear();
+});
+
+describe("stores created after activation (lazy route chunks)", () => {
+  type Late = { n: number; tags: string[] };
+  const def = (key: string) => ({ key, empty: (): Late => ({ n: 0, tags: [] }), migrate: (raw: unknown): Late => ({ n: 0, tags: [], ...(raw && typeof raw === "object" ? (raw as Partial<Late>) : {}) }), legacyKeys: [], hasData: (t: Late) => t.n > 0 });
+  it("hydrates from the rows fetched at activation instead of staying at defaults", async () => {
+    db.rows.set("late-a", { data: { n: 7, tags: ["x"] }, revision: 3 });
+    await activateUser("user-a");
+    const store = createSyncedStore<Late>(def("late-a"));
+    expect(store.get()).toEqual({ n: 7, tags: ["x"] });
+    // and it saves on top of the right revision – no blind overwrite, no needless conflict
+    store.set((t) => ({ ...t, n: t.n + 1 }));
+    await flush();
+    expect(db.rows.get("late-a")).toMatchObject({ revision: 4, data: { n: 8, tags: ["x"] } });
+    expect(db.rpcCalls.filter((c) => c.p_key === "late-a")).toEqual([{ p_user: "user-a", p_key: "late-a", p_expected: 3 }]);
+  });
+  it("starts empty when the server has nothing, and keeps unsynced device edits", async () => {
+    await activateUser("user-a");
+    const fresh = createSyncedStore<Late>(def("late-b"));
+    expect(fresh.get()).toEqual({ n: 0, tags: [] });
+    localStorage.setItem("goblin-chess.u.user-a.late-c", JSON.stringify({ rev: 0, dirty: true, data: { n: 2, tags: ["offline"] } }));
+    const dirty = createSyncedStore<Late>(def("late-c"));
+    expect(dirty.get()).toEqual({ n: 2, tags: ["offline"] });
+    await flush();
+    expect(db.rows.get("late-c")).toMatchObject({ revision: 1, data: { n: 2 } });
+  });
+  it("is wiped on logout like every other store", async () => {
+    db.rows.set("late-d", { data: { n: 5, tags: [] }, revision: 1 });
+    await activateUser("user-a");
+    const store = createSyncedStore<Late>(def("late-d"));
+    expect(store.get().n).toBe(5);
+    deactivate();
+    expect(store.get().n).toBe(0);
+    store.set((t) => ({ ...t, n: 99 }));
+    expect(store.get().n).toBe(0);
+  });
 });
 
 describe("cloud sync", () => {
